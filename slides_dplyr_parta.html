@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>data manipulation, part a: basics of data frames</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_dplyr_parta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_dplyr_parta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_dplyr_parta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# data manipulation, part a: basics of data frames
+
+---
+
+
+
+
+# What you will learn
+
+- Install and load packages
+- Create data frames and 'tibbles'
+- Subset rows and columns with base `R`
+- Load csv files
+
+
+**Main reference:** R4DS chapters 5, 9, 10, 11
+
+---
+# Packages
+
+Packages are collections of `R` code created by users like you and me.
+
+The `tidyverse` package is really a collection of packages and has essentially all of the data manipulation and presentation tools we will use in this class, including the `dplyr` package.
+
+To **install** any package, type `install.packages('package_name')` into the `R` console.
+
+
+```r
+install.packages('tidyverse')
+```
+
+To **load** a package, making its functions available for use, do
+
+
+```r
+library('tidyverse')
+```
+
+---
+# Data frames and tibbles
+
+**Data frame:** 
+- data object organized into rows and columns 
+- ubiquitous idea: Excel, Python
+
+**Tibble:** 
+- `tidyverse` version of a data frame
+- behind-the-scenes improvements
+
+**I will use 'data frame' to refer to 'tibbles'** unless to call out specific differences.
+---
+# Making tibbles on your computer
+.center[![](https://fsmedia.imgix.net/20/c2/28/4c/8620/495f/8419/9ad435c7f36a/deep-space-nine-tribbles-4jpg.jpeg?rect=0%2C57%2C694%2C347&amp;auto=format%2Ccompress&amp;w=650)]
+
+
+```r
+tibble(words = c("W", "T", "F?"),
+           numbers = c(2, 2^2, 2^3))
+```
+
+```
+## # A tibble: 3 x 2
+##   words numbers
+##   &lt;chr&gt;   &lt;dbl&gt;
+## 1 W           2
+## 2 T           4
+## 3 F?          8
+```
+
+---
+Same result using the base `R` function, *except* the default is to convert strings (characters) to factor type.
+
+
+```r
+data.frame(words = c("W", "T", "F?"),
+           numbers = c(2, 2^2, 2^3))
+```
+
+Failing to supply column names gives default names, which make later programming annoying.
+
+
+```r
+tibble(c("W", "T", "F?"),
+           c(2, 2^2, 2^3))
+```
+
+```
+## # A tibble: 3 x 2
+##   `c("W", "T", "F?")` `c(2, 2^2, 2^3)`
+##   &lt;chr&gt;                          &lt;dbl&gt;
+## 1 W                                  2
+## 2 T                                  4
+## 3 F?                                 8
+```
+
+---
+# Some tricks
+
+You can use functions to generate vectors in a data frame. 
+
+```r
+data.frame(rad = pi * seq(1, 6))
+```
+
+```
+##         rad
+## 1  3.141593
+## 2  6.283185
+## 3  9.424778
+## 4 12.566371
+## 5 15.707963
+## 6 18.849556
+```
+
+With `tibble`, you can create new variables from previous ones. This would generate an error
+
+```r
+data.frame(rad = pi * seq(1, 6), y = cos(rad))
+```
+
+This works
+
+```r
+tibble(rad = pi * seq(1, 6), y = cos(rad))
+```
+
+---
+
+Create a data frame from previously stored vectors. Default names are the object names.
+
+
+```r
+x &lt;- seq(1, 10)
+big_x &lt;- x &gt;= 5
+
+tibble(x, big_x)
+```
+
+```
+## # A tibble: 10 x 2
+##        x big_x
+##    &lt;int&gt; &lt;lgl&gt;
+##  1     1 FALSE
+##  2     2 FALSE
+##  3     3 FALSE
+##  4     4 FALSE
+##  5     5 TRUE 
+##  6     6 TRUE 
+##  7     7 TRUE 
+##  8     8 TRUE 
+##  9     9 TRUE 
+## 10    10 TRUE
+```
+
+---
+# Subsetting
+
+
+```r
+df &lt;- tibble(rad = pi * seq(1, 5), y = cos(rad))
+```
+
+Extract a column vector: `data_frame_name$column_name`. Do this to evaluate the `sin` of `rad` in our data frame. 
+
+
+```r
+sin(df$rad)
+```
+
+```
+## [1]  1.224647e-16 -2.449294e-16  3.673940e-16 -4.898587e-16  6.123234e-16
+```
+
+This syntax also works
+
+
+```r
+sin(df[, "rad"])
+```
+
+```
+## # A tibble: 5 x 1
+##         rad
+##       &lt;dbl&gt;
+## 1  1.22e-16
+## 2 -2.45e-16
+## 3  3.67e-16
+## 4 -4.90e-16
+## 5  6.12e-16
+```
+
+---
+We can use this syntax to specify a particular row number for the `rad` column.
+
+
+```r
+sin(df[2, "rad"])
+```
+
+```
+## # A tibble: 1 x 1
+##         rad
+##       &lt;dbl&gt;
+## 1 -2.45e-16
+```
+
+This is also how we **extract rows** from the data frame.
+
+
+```r
+df[2, ]
+```
+
+```
+## # A tibble: 1 x 2
+##     rad     y
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1  6.28     1
+```
+
+We can extract a **subset of rows** by giving a vector of row locations.
+
+
+```r
+df[c(2, 4, 5), ]
+```
+
+---
+# Adding and replacing columns
+
+Now I want to **add the `sin` output to my data frame as a new column**, called `z`.
+
+
+```r
+df$z &lt;- sin(df$rad)
+
+df
+```
+
+```
+## # A tibble: 5 x 3
+##     rad     y         z
+##   &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+## 1  3.14    -1  1.22e-16
+## 2  6.28     1 -2.45e-16
+## 3  9.42    -1  3.67e-16
+## 4 12.6      1 -4.90e-16
+## 5 15.7     -1  6.12e-16
+```
+
+---
+Actually, I want to **replace the `z` column** with `rad` (radians) in degrees, by multiplying `rad` with `\(180 / \pi\)`.
+
+
+```r
+df$z &lt;- df$rad * (180 / pi)
+
+df
+```
+
+```
+## # A tibble: 5 x 3
+##     rad     y     z
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1  3.14    -1   180
+## 2  6.28     1   360
+## 3  9.42    -1   540
+## 4 12.6      1   720
+## 5 15.7     -1   900
+```
+
+---
+# Subsetting rows using conditional statements
+
+We can use logical statements to subset rows of a data frame. If we specify a logical vector as follows, only the row indices corresponding to `TRUE` values will be returned
+
+
+```r
+df[c(TRUE, FALSE, FALSE, TRUE, FALSE), ]
+```
+
+```
+## # A tibble: 2 x 3
+##     rad     y     z
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1  3.14    -1   180
+## 2 12.6      1   720
+```
+
+---
+We can now subset rows based on information in the data itself. E.g. to get only rows whose cosine is -1, generate this logical vector
+
+
+```r
+df$y &lt; 0
+```
+
+```
+## [1]  TRUE FALSE  TRUE FALSE  TRUE
+```
+
+and use it like this
+
+
+```r
+df[df$y &lt; 0, ]
+```
+
+```
+## # A tibble: 3 x 3
+##     rad     y     z
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1  3.14    -1   180
+## 2  9.42    -1   540
+## 3 15.7     -1   900
+```
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+**15 minutes to**, using the base `R` functions only,
+
+Create an hmtl R Markdown document with the following:
+
+1. Load the `starwars` dataset from the `tidyverse` package. (Just load the package and a hidden object called `starwars` is available to you.)
+2. Create a new data frame with only name, height in cm, mass in kg and species variables.
+3. Add a column called `mph` with mass per height for each observation.
+4. Convert the height variable from cm to inches.
+5. Report the following summary statistics for height in inches:
+  - average
+  - maximum
+  - median (hint: use `quantile`)
+  
+Learn about the dataset by typing `?starwars`.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
