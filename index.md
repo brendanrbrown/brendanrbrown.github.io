@@ -1,7 +1,16 @@
-# STOR 320, sec. 1: Introduction to data science
-XXX intro XXX
+# STOR 320: Introduction to data science
+Welcome to section one of the spring 2020 course.
 
-## Course materials
+## Overview
+The course is divided into three parts,
+
+1. Core data science coding skills
+  i. data manipulation and cleaning
+  ii. exploration through visuals and summaries
+  iii. fundamentals of programming
+2.  
+
+
 
 ## Lectures
 
