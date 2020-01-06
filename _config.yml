@@ -1,2 +1,4 @@
 theme: jekyll-theme-minimal
 title: STOR 320.1, Spring 2020
+toc:
+  toc_float: true
