@@ -1,4 +1,3 @@
-# STOR 320: Introduction to data science
 Welcome to section one of the spring 2020 course.
 
 ## Overview
