@@ -16,6 +16,7 @@ The course is divided into three parts,
 |Date | Slides |
 |------|-------|
 |Jan. 8| [test](google.com) |
+|Jan. 10| [RMarkdown and basic coding](slides_workflow.html) |
 
 
 ## Homework
