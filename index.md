@@ -9,19 +9,19 @@ Taylor Petty (TA)
 See the [syllabus](syllabus_stor320_1.pdf) for details. The course is divided into three parts,
 
 1. Core data science coding skills
-  i. data manipulation and cleaning
-  ii. exploration through visuals and summaries
-  iii. fundamentals of programming
-  iv. strings and regular expressions
+ - data manipulation and cleaning
+ - exploration through visuals and summaries
+ - fundamentals of programming
+ - strings and regular expressions
 2. Modeling
-  i. cross validation
-  ii. linear
-  iii. classification
-  iv. clustering
+  - cross validation
+  - linear
+  - classification
+  - clustering
 3. Advanced topics (as time allows)
-  i. mapping
-  ii. Shiny
-  iii. industry and ethics
+  - mapping
+  - Shiny
+  - industry and ethics
 
 
 
