@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>R Markdown and basic coding</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_workflow_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_workflow_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_workflow_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# R Markdown and basic coding
+
+---
+
+
+
+
+# What you will learn
+
+- Knit markdown files through `RStudio`
+- Assign values to objects in `R`
+- Call functions
+- Create vectors of data
+- Check data types
+
+**Main reference:** R4DS chapter 4. 
+
+**Resources**
+- [RStudio interface cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/rstudio-ide.pdf)
+- [RMarkdown cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/rmarkdown-2.0.pdf)
+- [markdown syntax tutorial](https://www.markdowntutorial.com/)
+- [markdown html guide](https://bookdown.org/yihui/rmarkdown/html-document.html).
+- [RMarkdown reference guide](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+- [base R cheat sheet](http://github.com/rstudio/cheatsheets/raw/master/base-r.pdf)
+---
+# By this point...
+
+You should have 
+
+- **installed** `R` and R Studio on your computer
+- **experimented** with coding in the console
+
+e.g. basic things like
+
+
+```r
+2*4
+```
+
+```
+## [1] 8
+```
+
+
+```r
+x &lt;- 2*4
+x
+```
+
+```
+## [1] 8
+```
+
+**Will reinforce this today**
+---
+# R Markdown
+
+These days, the **only way I program in R**  is through R Markdown.
+
+
+
+## Benefits
+
+- Run code from top to bottom in an isolated session
+- Helps with reproducibility: Data objects created in a previous run do not affect the current run
+- Combines code with text, pictures, links etc
+- Create a variety of presentable documents, e.g. html, pdf, word or various slide formats
+
+## Reminder on assignment submission
+
+All assignments must be submitted as printed HTML files through RMarkdown. They **must 'knit'** and produce an html output to be valid homework submissions.
+
+If you can't knit your code to html, mostly likely there's a bug in your code you should fix.
+
+---
+# Basics: create an html markdown document
+
+In RStudio, `File -&gt; New File -&gt; R Markdown` or use the shortcut. Select html output.
+
+**Why HTML?** Other formats require additional programs, such as LaTeX for pdf documents. HTML documents are versatile, trouble-free and suffice for this course.
+
+The top of your new document will look like this
+
+```
+---
+title: "Assignment one"
+author: "B. Brown"
+date: "Jan. 19, 2020"
+output: html_document
+---
+```
+
+followed by some dummy examples. Here is a rundown of the [basics in R Markdown](https://rmarkdown.rstudio.com/authoring_basics.html). 
+
+---
+# Code chunks, object assignment
+
+Insert R code into the document by clicking the green insert button on the top right of the markdown document in R Studio. Select the `R` code format. 
+
+This is called a **code chunk**. By default, markdown will display the code and the output. Here we compute `\(\pi^2 / 6\)`.
+
+
+```r
+pi^2 / 6
+```
+
+```
+## [1] 1.644934
+```
+
+## Assignment
+To assign output to an object in R, use `&lt;-`. We can then use the assigned object in further calculations.
+
+
+```r
+x &lt;- pi^2 / 6
+
+x - 1
+```
+
+```
+## [1] 0.6449341
+```
+
+---
+# Function calls
+
+Each function call has the following basic syntax: `function(argument1, argument2, ...)` and returns an output.
+
+
+```r
+sin(x)
+```
+
+```
+## [1] 0.9972531
+```
+
+Many functions take multiple arguments, and return a different type of object than the argument. 
+
+For example, `seq` takes two arguments `from` and `to`, and generates a sequence of numbers.
+
+
+```r
+seq(50, 55)
+```
+
+```
+## [1] 50 51 52 53 54 55
+```
+
+We can assign arguments explicitly, in which case the argument order doesn't matter.
+
+
+```r
+seq(to = 55, from = 50)
+```
+
+```
+## [1] 50 51 52 53 54 55
+```
+
+
+---
+# Function calls
+Another example: `rep` simply repeats an input a specified number of times.
+
+
+```r
+rep("acorns", 5)
+```
+
+```
+## [1] "acorns" "acorns" "acorns" "acorns" "acorns"
+```
+
+To learn more about a particular function use `?` before the function name, as follows
+
+
+```r
+?seq
+```
+
+This will tell you the names and types of arguments required and values returned.
+
+## Google it
+Best way to figure out which R function does a thing: **search it on the internet**
+
+---
+# Vectors
+
+A vector is a series of data elements, typically numbers or characters. Create one from scratch using the `c` function in R.
+
+
+
+```r
+nonsense &lt;- c("orangutan", "orang utan", "O Rang You Tan!")
+nonsense
+```
+
+```
+## [1] "orangutan"       "orang utan"      "O Rang You Tan!"
+```
+
+Functions taking single arguments and elementary operations such as multiplication `*`, if given a vector of arguments, will evaluate themselves for each element in the vector.
+
+
+```r
+n &lt;- seq(1, 4)
+pi*n
+```
+
+```
+## [1]  3.141593  6.283185  9.424778 12.566371
+```
+
+
+
+```r
+x &lt;- pi*n
+sin(x)
+```
+
+```
+## [1]  1.224647e-16 -2.449294e-16  3.673940e-16 -4.898587e-16
+```
+
+---
+# Data types
+Vectors hold a single type of data, each treated differently in `R`. Checked with `class`.
+
+- **Numeric:** Can be multiplied, divided etc
+- **Character:** A kind of 'default' type. Stores generic non-numeric information or 'strings'
+- **Logical:** `TRUE` or `FALSE`
+- **Factor:** Categorical data, ordered or not
+
+
+```r
+class(c(1, 2, 3))
+```
+
+```
+## [1] "numeric"
+```
+
+
+```r
+class(c(TRUE, TRUE, FALSE))
+```
+
+```
+## [1] "logical"
+```
+
+Combined types default to character.
+
+
+```r
+class(c(1, TRUE, 'three'))
+```
+
+```
+## [1] "character"
+```
+
+---
+# Now you try!
+
+![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)
+
+Orangutan are good at [observation, imitation and tinkering](http://www.bbc.com/earth/story/20140924-diy-orangutans). In-class tutorials require exactly those skills.
+
+The markdown syntax to include this picture from the internet is
+
+```
+![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)
+```
+
+---
+# Tutorial
+
+**This first tutorial, we do together.** This time, follow along.
+
+- Create an **html document in R Markdown** with
+- Names of team members
+- A picture of a squirrel
+- 4 numbers randomly sampled from the sequence of numbers `\(1, 2, ... 10\)`. **Use the internet to find the function!**
+- Assign the output from the previous task to an object (you name it), and sort the numbers from lowest to highest
+
+
+### For subsequent tutorials
+
+- Work in groups of **max 3 people in adjacent seats**. You can work alone
+- **Display all code** and output
+- **10 groups randomly selected** and will email me the html output
+- Graded on completion and effort, see syllabus
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
