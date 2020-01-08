@@ -31,7 +31,7 @@ These will be posted as they become relevant.
 
 |Date | Slides |
 |------|-------|
-|Jan. 8| [test](google.com) |
+|Jan. 8| [Welcome](slides_welcome.html) |
 |Jan. 10| [RMarkdown and basic coding](slides_workflow.html) |
 
 
@@ -40,6 +40,7 @@ These will be posted as they become relevant.
 
 |Date assigned | Instructions | Date due|
 |--- | ---- |
+|Jan. 8 | [hw 0](hw0.html) | Jan. 10|
 
 ## Resources
 
