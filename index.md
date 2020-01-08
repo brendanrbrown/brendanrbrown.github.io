@@ -6,7 +6,7 @@ Brendan Brown (instructor)
 Taylor Petty (TA)
 
 ## About the course
-See the [syllabus](stor_320.1.pdf) for details. The course is divided into three parts,
+See the [syllabus](syllabus_stor320_1.pdf) for details. The course is divided into three parts,
 
 1. Core data science coding skills
   i. data manipulation and cleaning
