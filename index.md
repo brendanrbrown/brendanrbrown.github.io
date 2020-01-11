@@ -38,3 +38,11 @@ Our textbook for programming is [R4DS](https://r4ds.had.co.nz/), and for modelin
 [R studio cheatsheets](https://rstudio.com/resources/cheatsheets/) are a good place to start. [Advanced R](https://adv-r.hadley.nz/) has a lot of good information, too, but probably more than you need.
 
 Become good at Googling your problems.
+
+## Examples in data science
+These link to examples I mention in class, which might help give context for the kinds of data and analysis you can use in the project.
+
+
+|Date | Example |
+|------|-------|
+|Jan. 10| [Sermons](https://www.pewforum.org/2019/12/16/the-digital-pulpit-a-nationwide-analysis-of-online-sermons/) |
