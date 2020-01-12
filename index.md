@@ -22,7 +22,7 @@ These will be posted as they become relevant.
 |------|-------|
 |Jan. 8| [Welcome](slides_welcome.html) |
 |Jan. 10| [RMarkdown and basic coding](slides_workflow.html) |
-|Jan. 13| [dplyr part a]() |
+|Jan. 13| dplyr part a|
 
 
 ## Homework
@@ -48,3 +48,4 @@ These link to examples I mention in class, which might help give context for the
 |Date | Example |
 |------|-------|
 |Jan. 10| [Sermons](https://www.pewforum.org/2019/12/16/the-digital-pulpit-a-nationwide-analysis-of-online-sermons/) |
+|Jan. 13| [Dog shelters](https://pudding.cool/2019/10/shelters/) |
