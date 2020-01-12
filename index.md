@@ -22,6 +22,7 @@ These will be posted as they become relevant.
 |------|-------|
 |Jan. 8| [Welcome](slides_welcome.html) |
 |Jan. 10| [RMarkdown and basic coding](slides_workflow.html) |
+|Jan. 13| [dplyr part a]() |
 
 
 ## Homework
@@ -30,6 +31,7 @@ These will be posted as they become relevant.
 |Date assigned | Instructions | Date due|
 |--- | ---- |
 |Jan. 8 | [hw 0](hw0.html) | Jan. 10|
+|Jan. 13 | [hw 1](hw1.Rmd) | Jan. 22|
 
 ## Resources
 
