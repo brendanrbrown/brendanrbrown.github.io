@@ -24,7 +24,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |------|-------|
 |Jan. 8| [Welcome](slides_welcome.html) |
 |Jan. 10| [RMarkdown and basic coding](slides_workflow.html) |
-|Jan. 13| dplyr part a|
+|Jan. 13| [dplyr part a](slides_dplyr_parta.html)|
 
 
 ## Homework
