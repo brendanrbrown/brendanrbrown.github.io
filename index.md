@@ -16,7 +16,9 @@ See the [syllabus](syllabus_stor320_1.pdf) for details. The course is divided in
 
 
 ## Lectures
-These will be posted as they become relevant.
+These will be posted as they become relevant. You will have laptops in class, but my advice is to be diligent and stay focused on the lecture material.
+
+Trying to do other stuff while participating in a lecture is very 2010s. In the 2020s, we should all be aware that multitasking [does not work](https://www.psychologytoday.com/us/blog/creativity-without-borders/201405/the-myth-multitasking) and [might even be bad for you](https://appliedpsychologydegree.usc.edu/blog/to-multitask-or-not-to-multitask/).
 
 |Date | Slides |
 |------|-------|
