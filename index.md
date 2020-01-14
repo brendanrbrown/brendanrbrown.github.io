@@ -20,11 +20,11 @@ These will be posted as they become relevant. You will have laptops in class, bu
 
 Trying to do other stuff while participating in a lecture is very 2010s. In the 2020s, we should all be aware that multitasking [does not work](https://www.psychologytoday.com/us/blog/creativity-without-borders/201405/the-myth-multitasking) and [might even be bad for you](https://appliedpsychologydegree.usc.edu/blog/to-multitask-or-not-to-multitask/).
 
-|Date | Slides |
-|------|-------|
-|Jan. 8| [Welcome](slides_welcome.html) |
-|Jan. 10| [RMarkdown and basic coding](slides_workflow.html) |
-|Jan. 13| [dplyr part a](slides_dplyr_parta.html)|
+|Date | Slides | Tutorial example|
+|------|-------|----|
+|Jan. 8| [Welcome](slides_welcome.html) | |
+|Jan. 10| [RMarkdown and basic coding](slides_workflow.html) | |
+|Jan. 13| [dplyr part a](slides_dplyr_parta.html)|[Rees Braam](1-13-19.html)
 
 
 ## Homework
