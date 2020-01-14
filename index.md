@@ -51,3 +51,4 @@ These link to examples I mention in class, which might help give context for the
 |------|-------|
 |Jan. 10| [Sermons](https://www.pewforum.org/2019/12/16/the-digital-pulpit-a-nationwide-analysis-of-online-sermons/) |
 |Jan. 13| [Dog shelters](https://pudding.cool/2019/10/shelters/) |
+|Jan. 15| [Climate action](https://climateactiontracker.org/data-portal/?mode=countries)
