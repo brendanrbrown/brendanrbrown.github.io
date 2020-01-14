@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>data manipulation, part b: filtering and subsetting in dplyr</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_dplyr_partb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_dplyr_partb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_dplyr_partb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# data manipulation, part b: filtering and subsetting in dplyr
+
+---
+
+
+
+
+# What you will learn
+
+Load csv files and display top-line information
+
+- `read_csv`
+- `view`, `summary`, `head`
+
+Data frame subsetting functions from `dplyr`,
+
+- `select` to subset columns
+- `filter` to subset rows
+
+
+**Main reference:** R4DS chapters 11 (data import), 5 (filter and select)
+
+**Resources**
+- [Data import cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-import.pdf)
+- [Data transformation cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf)
+
+---
+# BISON dataset
+.center[![](http://www.defenders.org/sites/default/files/magazine-spring-2016-bison-jim-shane.jpg)]
+Plains bison, *Bison bison bison.*
+
+---
+# Know your data
+
+**Before any coding**, you should have decent answers to
+- who generated this data?
+- how and when was it collected?
+- what does it contain, e.g. what exactly does each variable represent?
+
+**For this dataset**
+- USGS [Biodeversity Serving Our Nation (BISON) resource](https://bison.usgs.gov/)
+- BISON collates observed plant and animal species occurance across many sources
+- human-or-instrument observations with date and place stamps
+- codebook for variables provided
+- have subset for **Orange County, N.C.**
+- years 1700-2015
+
+---
+# csv files to data frames
+
+Two ways
+
+- Base `R`: `read.csv(file_path)`
+- `tidyverse`: `read_csv(file_path)`
+
+Latter has sensible defaults, so we use it.
+
+
+```r
+library(tidyverse)
+bison &lt;- read_csv('~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv')
+```
+
+Look it's a tibble!
+
+
+```r
+class(bison)
+```
+
+```
+## [1] "spec_tbl_df" "tbl_df"      "tbl"         "data.frame"
+```
+
+The file path can also be a url pointing to the dataset.
+
+---
+# First look at the data
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Woodland_Vole_Microtus_Pinetorum.jpg/220px-Woodland_Vole_Microtus_Pinetorum.jpg)
+Woodland vole. *Microtus pinetorum*
+
+`head` and `tail` show the first and last several rows
+
+
+```r
+head(bison)
+```
+
+```
+## # A tibble: 6 x 37
+##   bisonID basisOfRecord catalogNumber collectorNumber recordedBy providerID
+##     &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;lgl&gt;           &lt;chr&gt;           &lt;dbl&gt;
+## 1  8.44e8 observation   OBS174171744  NA              obsr143470        602
+## 2  8.44e8 observation   OBS173343892  NA              obsr143470        602
+## 3  8.46e8 observation   OBS174269666  NA              obsr143470        602
+## 4  8.47e8 observation   OBS173343881  NA              obsr143470        602
+## 5  8.47e8 observation   OBS174171742  NA              obsr143470        602
+## 6  9.41e8 observation   OBS182987416  NA              obsr143470        602
+## # … with 31 more variables: institutionCode &lt;chr&gt;, resourceID &lt;dbl&gt;,
+## #   ownerInstitutionCollectionCode &lt;chr&gt;, eventDate &lt;dttm&gt;, year &lt;dbl&gt;,
+## #   providedScientificName &lt;chr&gt;, scientificName &lt;chr&gt;,
+## #   ITISscientificName &lt;chr&gt;, providedCommonName &lt;chr&gt;, ITIScommonName &lt;chr&gt;,
+## #   ITIStsn &lt;chr&gt;, validAcceptedITIStsn &lt;dbl&gt;, providedTSN &lt;lgl&gt;,
+## #   decimalLatitude &lt;dbl&gt;, decimalLongitude &lt;dbl&gt;, geodeticDatum &lt;lgl&gt;,
+## #   coordinatePrecision &lt;lgl&gt;, coordinateUncertaintyInMeters &lt;chr&gt;,
+## #   verbatimElevation &lt;chr&gt;, verbatimDepth &lt;lgl&gt;, centroid &lt;lgl&gt;,
+## #   higherGeographyID &lt;lgl&gt;, computedCountyFips &lt;dbl&gt;, providedCounty &lt;chr&gt;,
+## #   calculatedCounty &lt;chr&gt;, providedState &lt;chr&gt;, calculatedState &lt;chr&gt;,
+## #   countryCode &lt;chr&gt;, institutionID &lt;chr&gt;, collectionID &lt;chr&gt;,
+## #   relatedResourceID &lt;lgl&gt;
+```
+
+
+---
+`str` gives information on column vector data types, number of observations etc.
+
+
+```r
+str(bison)
+```
+
+```
+## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':	65499 obs. of  37 variables:
+##  $ bisonID                       : num  8.44e+08 8.44e+08 8.46e+08 8.47e+08 8.47e+08 ...
+##  $ basisOfRecord                 : chr  "observation" "observation" "observation" "observation" ...
+##  $ catalogNumber                 : chr  "OBS174171744" "OBS173343892" "OBS174269666" "OBS173343881" ...
+##  $ collectorNumber               : logi  NA NA NA NA NA NA ...
+##  $ recordedBy                    : chr  "obsr143470" "obsr143470" "obsr143470" "obsr143470" ...
+##  $ providerID                    : num  602 602 602 602 602 602 602 602 602 602 ...
+##  $ institutionCode               : chr  "Cornell Lab of Ornithology" "Cornell Lab of Ornithology" "Cornell Lab of Ornithology" "Cornell Lab of Ornithology" ...
+##  $ resourceID                    : num  60243 60243 60243 60243 60243 ...
+##  $ ownerInstitutionCollectionCode: chr  "eBird" "eBird" "eBird" "eBird" ...
+##  $ eventDate                     : POSIXct, format: "2012-12-29 00:00:00" "2012-12-21 00:00:00" ...
+##  $ year                          : num  2012 2012 2012 2012 2012 ...
+##  $ providedScientificName        : chr  "Setophaga coronata" "Sialia sialis (Linnaeus, 1758)" "Thryothorus ludovicianus (Latham, 1790)" "Zenaida macroura (Linnaeus, 1758)" ...
+##  $ scientificName                : chr  "Setophaga coronata" "Sialia sialis" "Thryothorus ludovicianus" "Zenaida macroura" ...
+##  $ ITISscientificName            : chr  "Setophaga coronata" "Sialia sialis" "Thryothorus ludovicianus" "Zenaida macroura" ...
+##  $ providedCommonName            : chr  "Yellow-rumped Warbler" "Eastern Bluebird" "Carolina Wren" "Mourning Dove" ...
+##  $ ITIScommonName                : chr  "Myrtle Warbler;Yellow-rumped Warbler;Chipe coronado;Paruline à croupion jaune" "Eastern Bluebird;Azulejo garganta canela;merlebleu de l'est" "Carolina Wren;Chivirín de Carolina;troglodyte de Caroline" "Mourning Dove;Paloma huilota;tourterelle triste" ...
+##  $ ITIStsn                       : chr  "950046" "179801" "178581" "177125" ...
+##  $ validAcceptedITIStsn          : num  950046 179801 178581 177125 178581 ...
+##  $ providedTSN                   : logi  NA NA NA NA NA NA ...
+##  $ decimalLatitude               : num  35.9 35.9 35.9 35.9 35.9 ...
+##  $ decimalLongitude              : num  -79.1 -79.1 -79.1 -79.1 -79.1 ...
+##  $ geodeticDatum                 : logi  NA NA NA NA NA NA ...
+##  $ coordinatePrecision           : logi  NA NA NA NA NA NA ...
+##  $ coordinateUncertaintyInMeters : chr  NA NA NA NA ...
+##  $ verbatimElevation             : chr  NA NA NA NA ...
+##  $ verbatimDepth                 : logi  NA NA NA NA NA NA ...
+##  $ centroid                      : logi  NA NA NA NA NA NA ...
+##  $ higherGeographyID             : logi  NA NA NA NA NA NA ...
+##  $ computedCountyFips            : num  37135 37135 37135 37135 37135 ...
+##  $ providedCounty                : chr  "Orange" "Orange" "Orange" "Orange" ...
+##  $ calculatedCounty              : chr  "Orange County" "Orange County" "Orange County" "Orange County" ...
+##  $ providedState                 : chr  "North Carolina" "North Carolina" "North Carolina" "North Carolina" ...
+##  $ calculatedState               : chr  "North Carolina" "North Carolina" "North Carolina" "North Carolina" ...
+##  $ countryCode                   : chr  "US" "US" "US" "US" ...
+##  $ institutionID                 : chr  "http://www.birds.cornell.edu" "http://www.birds.cornell.edu" "http://www.birds.cornell.edu" "http://www.birds.cornell.edu" ...
+##  $ collectionID                  : chr  "http://ebird.org/" "http://ebird.org/" "http://ebird.org/" "http://ebird.org/" ...
+##  $ relatedResourceID             : logi  NA NA NA NA NA NA ...
+##  - attr(*, "problems")=Classes 'tbl_df', 'tbl' and 'data.frame':	29068 obs. of  5 variables:
+##   ..$ row     : int  3878 3879 3880 3881 3882 4855 4855 4856 4856 4857 ...
+##   ..$ col     : chr  "verbatimDepth" "verbatimDepth" "verbatimDepth" "verbatimDepth" ...
+##   ..$ expected: chr  "1/0/T/F/TRUE/FALSE" "1/0/T/F/TRUE/FALSE" "1/0/T/F/TRUE/FALSE" "1/0/T/F/TRUE/FALSE" ...
+##   ..$ actual  : chr  "to 4'" "to 4'" "to 4'" "to 4'" ...
+##   ..$ file    : chr  "'~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv'" "'~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv'" "'~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv'" "'~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv'" ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   bisonID = col_double(),
+##   ..   basisOfRecord = col_character(),
+##   ..   catalogNumber = col_character(),
+##   ..   collectorNumber = col_logical(),
+##   ..   recordedBy = col_character(),
+##   ..   providerID = col_double(),
+##   ..   institutionCode = col_character(),
+##   ..   resourceID = col_number(),
+##   ..   ownerInstitutionCollectionCode = col_character(),
+##   ..   eventDate = col_datetime(format = ""),
+##   ..   year = col_double(),
+##   ..   providedScientificName = col_character(),
+##   ..   scientificName = col_character(),
+##   ..   ITISscientificName = col_character(),
+##   ..   providedCommonName = col_character(),
+##   ..   ITIScommonName = col_character(),
+##   ..   ITIStsn = col_character(),
+##   ..   validAcceptedITIStsn = col_double(),
+##   ..   providedTSN = col_logical(),
+##   ..   decimalLatitude = col_double(),
+##   ..   decimalLongitude = col_double(),
+##   ..   geodeticDatum = col_logical(),
+##   ..   coordinatePrecision = col_logical(),
+##   ..   coordinateUncertaintyInMeters = col_character(),
+##   ..   verbatimElevation = col_character(),
+##   ..   verbatimDepth = col_logical(),
+##   ..   centroid = col_logical(),
+##   ..   higherGeographyID = col_logical(),
+##   ..   computedCountyFips = col_double(),
+##   ..   providedCounty = col_character(),
+##   ..   calculatedCounty = col_character(),
+##   ..   providedState = col_character(),
+##   ..   calculatedState = col_character(),
+##   ..   countryCode = col_character(),
+##   ..   institutionID = col_character(),
+##   ..   collectionID = col_character(),
+##   ..   relatedResourceID = col_logical()
+##   .. )
+```
+
+---
+# Subsetting columns: `select`
+
+Syntax is `select(data_frame, column1, column2, ...)` with **unquoted** column names.
+
+
+```r
+select(bison, eventDate, year)
+```
+
+```
+## # A tibble: 65,499 x 2
+##    eventDate            year
+##    &lt;dttm&gt;              &lt;dbl&gt;
+##  1 2012-12-29 00:00:00  2012
+##  2 2012-12-21 00:00:00  2012
+##  3 2012-12-30 00:00:00  2012
+##  4 2012-12-21 00:00:00  2012
+##  5 2012-12-29 00:00:00  2012
+##  6 2013-02-23 00:00:00  2013
+##  7 2013-02-23 00:00:00  2013
+##  8 2013-02-23 00:00:00  2013
+##  9 2013-02-23 00:00:00  2013
+## 10 2013-02-23 00:00:00  2013
+## # … with 65,489 more rows
+```
+
+---
+To select all columns **except** specified columns, use minus sign before the column name.
+
+
+```r
+select(bison, -eventDate, -year)
+```
+
+```
+## # A tibble: 65,499 x 35
+##    bisonID basisOfRecord catalogNumber collectorNumber recordedBy providerID
+##      &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;lgl&gt;           &lt;chr&gt;           &lt;dbl&gt;
+##  1  8.44e8 observation   OBS174171744  NA              obsr143470        602
+##  2  8.44e8 observation   OBS173343892  NA              obsr143470        602
+##  3  8.46e8 observation   OBS174269666  NA              obsr143470        602
+##  4  8.47e8 observation   OBS173343881  NA              obsr143470        602
+##  5  8.47e8 observation   OBS174171742  NA              obsr143470        602
+##  6  9.41e8 observation   OBS182987416  NA              obsr143470        602
+##  7  9.41e8 observation   OBS182987420  NA              obsr143470        602
+##  8  9.41e8 observation   OBS182987419  NA              obsr143470        602
+##  9  9.41e8 observation   OBS182987418  NA              obsr143470        602
+## 10  9.41e8 observation   OBS182987421  NA              obsr143470        602
+## # … with 65,489 more rows, and 29 more variables: institutionCode &lt;chr&gt;,
+## #   resourceID &lt;dbl&gt;, ownerInstitutionCollectionCode &lt;chr&gt;,
+## #   providedScientificName &lt;chr&gt;, scientificName &lt;chr&gt;,
+## #   ITISscientificName &lt;chr&gt;, providedCommonName &lt;chr&gt;, ITIScommonName &lt;chr&gt;,
+## #   ITIStsn &lt;chr&gt;, validAcceptedITIStsn &lt;dbl&gt;, providedTSN &lt;lgl&gt;,
+## #   decimalLatitude &lt;dbl&gt;, decimalLongitude &lt;dbl&gt;, geodeticDatum &lt;lgl&gt;,
+## #   coordinatePrecision &lt;lgl&gt;, coordinateUncertaintyInMeters &lt;chr&gt;,
+## #   verbatimElevation &lt;chr&gt;, verbatimDepth &lt;lgl&gt;, centroid &lt;lgl&gt;,
+## #   higherGeographyID &lt;lgl&gt;, computedCountyFips &lt;dbl&gt;, providedCounty &lt;chr&gt;,
+## #   calculatedCounty &lt;chr&gt;, providedState &lt;chr&gt;, calculatedState &lt;chr&gt;,
+## #   countryCode &lt;chr&gt;, institutionID &lt;chr&gt;, collectionID &lt;chr&gt;,
+## #   relatedResourceID &lt;lgl&gt;
+```
+
+---
+Get all columns containing a certain character pattern with the **helper function** `contains`.
+
+Not case sensitive by default!
+
+
+```r
+select(bison, contains("name"))
+```
+
+```
+## # A tibble: 65,499 x 5
+##    providedScienti… scientificName ITISscientificN… providedCommonN…
+##    &lt;chr&gt;            &lt;chr&gt;          &lt;chr&gt;            &lt;chr&gt;           
+##  1 Setophaga coron… Setophaga cor… Setophaga coron… Yellow-rumped W…
+##  2 Sialia sialis (… Sialia sialis  Sialia sialis    Eastern Bluebird
+##  3 Thryothorus lud… Thryothorus l… Thryothorus lud… Carolina Wren   
+##  4 Zenaida macrour… Zenaida macro… Zenaida macroura Mourning Dove   
+##  5 Thryothorus lud… Thryothorus l… Thryothorus lud… Carolina Wren   
+##  6 Sitta carolinen… Sitta carolin… Sitta carolinen… White-breasted …
+##  7 Pipilo erythrop… Pipilo erythr… Pipilo erythrop… Eastern Towhee  
+##  8 Setophaga coron… Setophaga cor… Setophaga coron… Yellow-rumped W…
+##  9 Toxostoma rufum… Toxostoma ruf… Toxostoma rufum  Brown Thrasher  
+## 10 Cardinalis card… Cardinalis ca… Cardinalis card… Northern Cardin…
+## # … with 65,489 more rows, and 1 more variable: ITIScommonName &lt;chr&gt;
+```
+
+---
+Case-sensitive option
+
+
+```r
+select(bison, contains("NAME", ignore.case = FALSE))
+```
+
+```
+## # A tibble: 65,499 x 0
+```
+
+Nothing to see here...
+---
+Several other select helper functions. See `?select_helpers`, e.g.
+
+
+```r
+select(bison, ends_with("tude"))
+```
+
+```
+## # A tibble: 65,499 x 2
+##    decimalLatitude decimalLongitude
+##              &lt;dbl&gt;            &lt;dbl&gt;
+##  1            35.9            -79.1
+##  2            35.9            -79.1
+##  3            35.9            -79.1
+##  4            35.9            -79.1
+##  5            35.9            -79.1
+##  6            35.9            -79.1
+##  7            35.9            -79.1
+##  8            35.9            -79.1
+##  9            35.9            -79.1
+## 10            35.9            -79.1
+## # … with 65,489 more rows
+```
+
+---
+# Renaming variables
+Rename variables using syntax `rename(data_frame, new_name = old_name, ...)`.
+
+Can do this in `select` using the same syntax.
+
+Let's keep only the variables we might use later.
+
+
+```r
+bison &lt;- select(bison, 
+                latitude = decimalLatitude, longitude = decimalLongitude,
+                contains("ID", ignore.case = FALSE), 
+                contains("name"), institutionCode,
+                eventDate, year)
+```
+
+
+---
+# Looking at data
+As an aside: We can look at a spreadsheet of the data in RStudio using the `view` function.
+
+With large datasets, this is impractical.
+
+But often we just want to *see* the data, e.g. which values a character vector can take.
+
+Best way to do this is with **high-level summaries**, which we will do a lot of soon.
+
+Two simple options to investigate data with base `R`
+
+- `summary` for data frames
+- `unique` for vectors
+
+---
+
+`unique` gives a vector of the unique values of the input vector. Here I show only the first 3.
+
+
+```r
+unique(bison$ITIScommonName)[1:3]
+```
+
+```
+## [1] "Myrtle Warbler;Yellow-rumped Warbler;Chipe coronado;Paruline à croupion jaune"
+## [2] "Eastern Bluebird;Azulejo garganta canela;merlebleu de l'est"                  
+## [3] "Carolina Wren;Chivirín de Carolina;troglodyte de Caroline"
+```
+
+
+`summary` gives a numerical summary of a data frame.
+
+```r
+summary(select(bison, year, ITIScommonName))
+```
+
+```
+##       year      ITIScommonName    
+##  Min.   :1700   Length:65499      
+##  1st Qu.:1991   Class :character  
+##  Median :2006   Mode  :character  
+##  Mean   :2000                     
+##  3rd Qu.:2011                     
+##  Max.   :2015                     
+##  NA's   :1933
+```
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+
+---
+# Tutorial: Part 1
+Create a markdown html file that does the following:
+
+1. Load the dataset into R from the following link (see [here](http://www3.dsi.uminho.pt/pcortez/forestfires/) for a description):
+http://www.dsi.uminho.pt/~pcortez/forestfires/forestfires.csv
+2. Display the number of rows and columns for the dataset, and each variable type.
+3. Remove all columns except `X`, `Y`, `month`, `day`, `temp`, `rain` and `area`
+4. Write one sentence describing the source and content of the dataset.
+
+
+---
+# Subsetting rows: `filter`
+![](https://www.allaboutbirds.org/guide/PHOTO/LARGE/carolina_chickadee_3.jpg)
+Carolina chickadee. *Poecile carolinensis*
+
+Syntax is `filter(data_frame, logical_conditions)`, e.g. to get all observations of the Carolina chickadee,
+
+
+
+```r
+filter(bison, ITIScommonName == "Carolina Chickadee")
+```
+
+---
+Think of `filter` as returning all rows in which the logical conditions evaluate to `TRUE`. Similar to row subsetting with logical vectors in base `R`.
+
+Often want to use **multiple conditions**, e.g. to get all observations with common name Carolina chickadee AND `year &gt;= 2013` we use a comma
+
+
+```r
+filter(bison, ITIScommonName == "Carolina Chickadee", year &gt;= 2013)
+```
+
+
+Same as using `&amp;`, the logical operator for AND
+
+
+```r
+filter(bison, ITIScommonName == "Carolina Chickadee" &amp; year &gt;= 2013)
+```
+
+
+---
+# Logical operations crash course
+Have seen some logical statements in `R` using operators `=` `=` (equals) , `&lt;` `=` (less than or equal to), `&gt;`. Will use these extensively when filtering. Operator `|` means **or**, `&amp;` means **and**.
+
+Here is a quick **visual guide to logical operations from the textbook.**
+
+![](http://r4ds.had.co.nz/diagrams/transform-logical.png)
+
+---
+Exclamation `!` **negates** a logical vector, so `!` `=` means *not equal to*, and 
+
+
+```r
+!c(TRUE, TRUE, FALSE)
+```
+
+```
+## [1] FALSE FALSE  TRUE
+```
+
+so the negation of `FALSE` is `TRUE` in the same way that `\((-1)\times(-1) = 1\)`
+
+
+### Notation
+In `filter` statements below and future slides, I will use usual math notation, so 
+
+`=` `=` typed in `R` will appear as `==`
+
+`&lt;` `=` typed in `R` will appear as `&lt;=`
+
+`!` `=` will appear as `!=`
+
+---
+# More `filter` examples
+`filter` is useful for quick data quality checks. 
+
+Check if there are any `NA` values for scientific or common names.
+
+`is.na` returns a logical vector, as required for `filter` logical conditions.
+
+```r
+is.na(c(1, 2, NA, 3))
+```
+
+```
+## [1] FALSE FALSE  TRUE FALSE
+```
+
+**We found a problem!**
+
+```r
+filter(bison, is.na(ITISscientificName) | is.na(ITIScommonName))
+```
+
+```
+## # A tibble: 2,059 x 17
+##    latitude longitude bisonID providerID resourceID higherGeography…
+##       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;           
+##  1     36.0     -79.0  1.22e9        440  440100057 NA              
+##  2     36.0     -79.0  1.22e9        440  440100057 NA              
+##  3     36.0     -79.0  1.22e9        440  440100057 NA              
+##  4     36.0     -79.0  1.22e9        440  440100057 NA              
+##  5     36.0     -79.0  1.22e9        440  440100057 NA              
+##  6     36.0     -79.0  1.22e9        440  440100057 NA              
+##  7     35.9     -79.0  1.22e9        440  440100057 NA              
+##  8     35.9     -79.0  1.22e9        440  440100057 NA              
+##  9     36.0     -79.0  1.22e9        440  440100057 NA              
+## 10     36.0     -79.0  1.22e9        440  440100057 NA              
+## # … with 2,049 more rows, and 11 more variables: institutionID &lt;chr&gt;,
+## #   collectionID &lt;chr&gt;, relatedResourceID &lt;lgl&gt;, providedScientificName &lt;chr&gt;,
+## #   scientificName &lt;chr&gt;, ITISscientificName &lt;chr&gt;, providedCommonName &lt;chr&gt;,
+## #   ITIScommonName &lt;chr&gt;, institutionCode &lt;chr&gt;, eventDate &lt;dttm&gt;, year &lt;dbl&gt;
+```
+
+
+---
+# Now you try!
+.center[![](https://cdn.arstechnica.net/wp-content/uploads/2018/01/Crow-new-1-800x523.jpg)]
+
+
+
+---
+# Tutorial: Part 2
+Add the following to your markdown file:
+
+5. Find the number of observations with temperatures at least 30 degrees C AND no more than 0.2 `\(mm/m^2\)` of rain AND a burned area of at least 10 hectares.
+6. Create a new data frame with only the observations on weekdays.
+
+
+
+
+---
+# Montesinho Natural Park, Portugal
+Fires data come from here
+![](http://www.visitportoandnorth.travel/var/porto_norte/storage/images/porto-and-the-north/visit/artigos/montesinho-natural-park/940900-2-eng-US/Montesinho-Natural-Park.jpg)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
