@@ -1,8 +1,3 @@
----
-title: "Homework 1: UNC department salaries"
-subtitle: "Due Jan. 22, 2:30pm"
-output: html_document
----
 Universities are typically opaque, bureaucratic institutions. Many public schools such as the University of North Carolina system make [data about university employees publically](http://www.newsobserver.com/news/databases/public-salaries/) available. Using this dataset what can we learn about the university?
 
 
@@ -46,11 +41,14 @@ x <- sum(1:10)
 
 # The data
 
+```{r}
+library(tidyverse)
+```
+
+
 First download the data set from Ryan Thornburg's website (it is also on stor390's github repo). You may want to set `cache=TRUE` for this chunk so you don't have to download the data set every time you run the script.
 ```{r setup, message=FALSE, cache=FALSE}
-library(tidyverse)
-# Load the UNC departments data
-data <- read_csv(url("http://ryanthornburg.com/wp-content/uploads/2015/05/UNC_Salares_NandO_2015-05-06.csv"))
+data <- read_csv("http://ryanthornburg.com/wp-content/uploads/2015/05/UNC_Salares_NandO_2015-05-06.csv")
 ```
 
 Take a first look at the data
