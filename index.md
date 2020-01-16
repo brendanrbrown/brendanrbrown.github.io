@@ -26,6 +26,8 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 10| [RMarkdown and basic coding](slides_workflow.html) | |
 |Jan. 13| [dplyr part a](slides_dplyr_parta.html)|[Rees Braam](1-13-19.html)|
 |Jan. 15| [dplyr part b](slides_dplyr_partb.html)|[Josh McCorquodale](1_15-Lecture.html)|
+|Jan. 17| dply part c||
+|Jan. 20| MLK day||
 
 
 ## Homework
@@ -52,4 +54,5 @@ These link to examples I mention in class, which might help give context for the
 |------|-------|
 |Jan. 10| [Sermons](https://www.pewforum.org/2019/12/16/the-digital-pulpit-a-nationwide-analysis-of-online-sermons/) |
 |Jan. 13| [Dog shelters](https://pudding.cool/2019/10/shelters/) |
-|Jan. 15| [Climate action](https://climateactiontracker.org/data-portal/?mode=countries)
+|Jan. 15| [Climate action](https://climateactiontracker.org/data-portal/?mode=countries)|
+|Jan. 17| [Federal Reserve financial accounts](https://www.federalreserve.gov/releases/Z1/)|
