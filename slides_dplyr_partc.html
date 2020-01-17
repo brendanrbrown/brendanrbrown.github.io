@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>data manipulation, part c: changing, summarising, grouping</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_dplyr_partc_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_dplyr_partc_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_dplyr_partc_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# data manipulation, part c: changing, summarising, grouping
+
+---
+
+
+
+
+# What you will learn
+- create and alter variables with `mutate`
+- `pipe` syntax to streamline code
+- generate statistics with `summarize`
+- group observations with `group_by`
+- groupwise summaries
+
+
+
+**Main reference:** R4DS chapter 5
+
+**Resources:**
+
+- [Data transformation cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf)
+
+
+
+---
+# BISON dataset
+.center[![](http://www.defenders.org/sites/default/files/magazine-spring-2016-bison-jim-shane.jpg)]
+Plains bison, *Bison bison bison.*
+
+---
+Last time we trimmed the columns.
+
+```r
+library(tidyverse)
+bison &lt;- read_csv('~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv')
+bison &lt;- select(bison, 
+                latitude = decimalLatitude, longitude = decimalLongitude,
+                contains("ID", ignore.case = FALSE), 
+                contains("name"), institutionCode,
+                eventDate, year)
+```
+
+
+---
+# Manipulating data frames with `mutate`
+
+Another fundamental tool in the `dplyr` package.
+
+We use `mutate` to
+
+- alter existing columns
+- create new columns
+
+Syntax is 
+
+```
+mutate(data_frame, variable_name1 = function(variable_name2))
+```
+
+To **alter** an existing column use the **same name for both** in the above.
+
+Otherwise, the syntax above will **add** a new column named `variable_name1`. 
+---
+Here we **create** two new variables, with latitude and longitude in radians rather than degrees.
+
+```r
+bison &lt;- mutate(bison, 
+                latitude_rad = pi * latitude / 180,
+                longitude_rad = pi * longitude / 180)
+```
+
+Here we **alter** common names to be in all lower case
+
+```r
+bison &lt;- mutate(bison, providedCommonName = tolower(providedCommonName))
+```
+
+I often do this to avoid errors from case-sensitive operations on character vectors.
+
+---
+# Changing multiple columns at once
+
+**`mutate_all`** applies a function to all columns, replacing originals.
+```
+data_frame &lt;- mutate_at(data_frame, function)
+```
+
+**`mutate_at`** applies a function to all specified columns, replacing originals.
+
+```
+mutate_at(data_frame, c("variable one", "variable two"), function)
+```
+
+or if you want to use the helper functions from `select` as above, use `vars()`. 
+
+```
+mutate_at(data_frame, vars(helper_function), function)
+```
+
+**`mutate_if`** alters all columns satisfying a logical criterion.
+
+```
+mutate_at(data_frame, logical_criterion, function)
+```
+
+The logical criterion applies to columns *as vector objects*. For example, this would change all character-type columns to factor-type columns.
+
+
+```r
+mutate_if(bison, is.character, as.factor)
+```
+
+
+---
+Here we change all columns containing the word *name* to be lower-case.
+
+
+```r
+bison &lt;- mutate_at(bison, vars(contains("name")), tolower)
+```
+
+Checking it worked
+
+```r
+head(select(bison, contains("name")))
+```
+
+```
+## # A tibble: 6 x 5
+##   providedScienti… scientificName ITISscientificN… providedCommonN…
+##   &lt;chr&gt;            &lt;chr&gt;          &lt;chr&gt;            &lt;chr&gt;           
+## 1 setophaga coron… setophaga cor… setophaga coron… yellow-rumped w…
+## 2 sialia sialis (… sialia sialis  sialia sialis    eastern bluebird
+## 3 thryothorus lud… thryothorus l… thryothorus lud… carolina wren   
+## 4 zenaida macrour… zenaida macro… zenaida macroura mourning dove   
+## 5 thryothorus lud… thryothorus l… thryothorus lud… carolina wren   
+## 6 sitta carolinen… sitta carolin… sitta carolinen… white-breasted …
+## # … with 1 more variable: ITIScommonName &lt;chr&gt;
+```
+
+
+---
+# Pipes to keep your code clean
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Northern_hogsucker_Hypentelium_nigricans.jpg/1280px-Northern_hogsucker_Hypentelium_nigricans.jpg)
+
+---
+The operator `%&gt;%` is called a **pipe**, and it comes as part of the `tidyverse` to make coding statements easier to read.
+
+A pipe 
+
+- takes the ouput from the previous operation
+- applies it to the input of the current operation
+
+For example
+
+```r
+head(select(bison, contains("name")))
+```
+
+using pipes is
+
+
+```r
+select(bison, contains("name")) %&gt;% head
+```
+
+---
+For functions with multiple arguments, the default is to place the previous output in the first argument.
+
+For example
+
+
+```r
+head(select(mutate(bison, dummy_name = rep("DUMMY", nrow(bison)), contains("dummy")))
+```
+
+is the same as 
+
+
+```r
+mutate(bison, dummy_name = rep("DUMMY", nrow(bison))) %&gt;% 
+  select(contains("dummy")) %&gt;% 
+  head
+```
+
+```
+## # A tibble: 6 x 1
+##   dummy_name
+##   &lt;chr&gt;     
+## 1 DUMMY     
+## 2 DUMMY     
+## 3 DUMMY     
+## 4 DUMMY     
+## 5 DUMMY     
+## 6 DUMMY
+```
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+
+---
+# Tutorial
+Create a markdown html file that does the following:
+
+- Load the forest fires dataset from last time http://www.dsi.uminho.pt/~pcortez/forestfires/forestfires.csv
+- This is AMERICA: Convert using `mutate`
+  - `temp` from Celsius to Fahrenheit using `\(F = C(9/5) + 32\)` 
+  - `wind` from km/h to miles/h
+  - `area` from hectares to acres
+  
+- Create a new data frame called `cold_days` for observations with temperatures no larger than 50 degrees F AND wind speeds at least 3 mph.
+
+
+---
+# Grouping and summarising
+![](https://virginiawildflowers.files.wordpress.com/2012/09/img_9946.jpg?w=672&amp;h=372&amp;crop=1)
+
+Yellow crownbeard, *Verbesina occidentalis*
+
+---
+Sometimes you want to
+
+- **count** the observations satisfying a rule, e.g. with the same species name in our BISON data
+- **compare** summary statistics for different subgroups
+- **transform subgroups** of rows differently, e.g. subtract group averages
+- **filter by group**, e.g. remove observations from groups that are small in number
+
+We do this with
+
+- `summarize` (or `summarise`) for summary statistics of columns
+- `group_by` to create a group structure
+- `group_by` then `mutate` for groupwise transformations
+- `group_by` then `summarize` for groupwise summaries
+- `group_by` then `filter`
+
+---
+# Warning
+
+Group operations can be tricky, especially with mutate and filter. Until you become expert, always check that what intended to do is what you did.
+
+## Aggregation vs. window functions
+
+&gt;A window function is a variation on an aggregation function. Where an aggregation function, like sum() and mean(), takes n inputs and returns a single value, a window function returns n values,
+
+from this helpful demo on [window functions](https://cran.r-project.org/web/packages/dplyr/vignettes/window-functions.html).
+
+In general,
+
+- `summarize` uses aggregation
+- grouped `mutate` uses both
+- grouped `filter` uses both
+
+---
+# Ungrouped summaries
+
+Takes a data frame and returns a data frame of summary stats. Syntax `summarize(data_frame, stat_name = aggr_fun(column_name))`.
+
+Examples
+
+
+```r
+summarize(bison, mean = mean(year, na.rm = TRUE), median = quantile(year, .5, na.rm = TRUE), sd = sd(year, na.rm = TRUE))
+```
+
+```
+## # A tibble: 1 x 3
+##    mean median    sd
+##   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1 2000.   2006  15.6
+```
+
+
+```r
+summarize(bison, lat_mean = mean(latitude), long_mean = mean(longitude))
+```
+
+```
+## # A tibble: 1 x 2
+##   lat_mean long_mean
+##      &lt;dbl&gt;     &lt;dbl&gt;
+## 1     36.0     -79.1
+```
+
+That's about [half way](https://www.google.com/maps/place/36%C2%B000'00.0%22N+79%C2%B006'00.0%22W/@36.0135937,-79.0510625,12.46z/data=!4m5!3m4!1s0x0:0x0!8m2!3d36!4d-79.1) between Chapel Hill and Hillsborough! 
+
+---
+# Summarize multiple columns
+
+Analogous to `mutate_all` etc. from above. `summarize_at(data_frame, columns, function)`
+
+**New trick:** Use multiple functions substituting `function` in the syntax with `.funs = list(name1 = function1, name2 = function2)`
+
+
+```r
+summarize_at(bison, vars(ends_with("tude")), .funs = list(mean = mean, sd = sd))
+```
+
+```
+## # A tibble: 1 x 4
+##   latitude_mean longitude_mean latitude_sd longitude_sd
+##           &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;
+## 1          36.0          -79.1      0.0856       0.0540
+```
+
+equivalently
+
+
+```r
+select(bison, ends_with("tude")) %&gt;% summarize_all(.funs = list(mean = mean, sd = sd))
+```
+
+```
+## # A tibble: 1 x 4
+##   latitude_mean longitude_mean latitude_sd longitude_sd
+##           &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;
+## 1          36.0          -79.1      0.0856       0.0540
+```
+
+Multi-function syntax also works with `mutate_all` etc.
+---
+# Grouped summaries
+
+`group_by(data_frame, group_criteria)` returns a *grouped* data frame object. Display grouping variables with `groups(grouped_data_frame)`. 
+
+Criteria are either
+
+- column names in the data frame, one group assigned to each unique value
+- logical criteria as in `filter` statements, one group to `TRUE` and one to `FALSE`
+
+Groups are species common names
+
+```r
+group_by(bison, providedCommonName)
+```
+
+Three groups for observations up to 1900, after 1900 and `NA` year values
+
+```r
+group_by(bison, old = year&lt;=1900)
+```
+
+**Beware** missing values in grouping variables!
+
+---
+# Grouped summaries
+
+How many sightings for each species? Use the `dplyr` helper function `n()`, which just counts.
+
+
+```r
+group_by(bison, providedCommonName) %&gt;% 
+  summarize(n = n()) %&gt;% head
+```
+
+```
+## # A tibble: 6 x 2
+##   providedCommonName     n
+##   &lt;chr&gt;              &lt;int&gt;
+## 1 'brassy jumprock'      4
+## 2 acadian flycatcher   110
+## 3 ailanthus             14
+## 4 american beech        54
+## 5 american coot          9
+## 6 american crow       1100
+```
+
+---
+What year was the first sighting of each species?
+
+
+```r
+group_by(bison, providedCommonName) %&gt;% 
+  summarize(first_seen = min(year, na.rm = TRUE)) %&gt;% head
+```
+
+```
+## # A tibble: 6 x 2
+##   providedCommonName first_seen
+##   &lt;chr&gt;                   &lt;dbl&gt;
+## 1 'brassy jumprock'        1958
+## 2 acadian flycatcher       2004
+## 3 ailanthus                2001
+## 4 american beech           1975
+## 5 american coot            2011
+## 6 american crow            1966
+```
+
+Can also use `summarize_all` etc. exactly as in the ungrouped case.
+---
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Corvus-brachyrhynchos-001.jpg/220px-Corvus-brachyrhynchos-001.jpg)
+American crow, *Corvus brachyrhynchos*
+
+First seen in 1966. 
+
+Seems late for this common bird, and demonstrates key feature of this dataset: 
+
+Sightings are only those humans thought to write down and now available to USGS.
+
+---
+# Now you try!
+.center[![](https://cdn.arstechnica.net/wp-content/uploads/2018/01/Crow-new-1-800x523.jpg)]
+
+
+
+---
+# Tutorial
+Add the following to your markdown file:
+
+- In `cold_days`, create a new variable for wind chill using the [National Weather Service formula](https://www.weather.gov/safety/cold-faqs)
+`$$\text{chill} = 35.74 + 0.6215 \times \text{temp} + \text{wind}^{0.16}\times (0.4275\times\text{temp}-35.75)$$`
+
+This is what temperature it *feels like* outside. The formula is not valid for temperatures above 50 degrees or below 3 mph.
+
+- In `cold_days` display **by month** the number of observations.
+
+- In `cold_days`, calculate and display **by month** the **average** and **max**
+  - temperature
+  - wind chill
+  - burned forest area
+
+*Hint: `group_by` followed by `summarize_all` or `summarize_at` will do the trick*
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
