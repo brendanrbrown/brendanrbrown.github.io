@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>data manipulation, part d: sorting, grouped mutate and filter</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_dplyr_partd_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_dplyr_partd_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_dplyr_partd_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# data manipulation, part d: sorting, grouped mutate and filter
+
+---
+
+
+
+
+# What you will learn
+
+Finally answer questions of the curious by
+
+- sorting data frame rows by variables with `arrange`
+- sorting within groups with `group_by` into `arrange`
+- altering groupwise with `mutate`
+- filtering groupwise with `filter`
+
+
+**Main reference:** R4DS chapter 5
+
+**Resources:**
+
+- [Data transformation cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf)
+
+
+
+---
+# BISON dataset
+.center[![](http://www.defenders.org/sites/default/files/magazine-spring-2016-bison-jim-shane.jpg)]
+Plains bison, *Bison bison bison.*
+
+---
+Trimming and grouping like last time
+
+```r
+library(tidyverse)
+bison &lt;- read_csv('~/Documents/Brendan/STOR320/bison_orangecounty_nc_alt.csv')
+bison &lt;- select(bison, 
+                latitude = decimalLatitude, longitude = decimalLongitude,
+                contains("ID", ignore.case = FALSE), 
+                contains("name"), institutionCode,
+                eventDate, year) %&gt;%
+  mutate_at(vars(contains("name")), tolower) %&gt;%
+  group_by(ITISscientificName)
+```
+
+---
+# Recap: Grouping and summarising
+
+- **count** the observations satisfying a rule, e.g. with the same species name in our BISON data
+- **compare** summary statistics for different subgroups
+- **transform subgroups** of rows differently, e.g. subtract group averages
+- **filter by group**, e.g. remove observations from groups that are small in number
+
+We do this with
+
+- `summarize` (or `summarise`) for summary statistics of columns
+- `group_by` to create a group structure
+- `group_by` then `mutate` for groupwise transformations
+- `group_by` then `summarize` for groupwise summaries
+- `group_by` then `filter`
+
+---
+# Recap: Aggregation vs. window functions
+
+Group operations can be tricky, especially with `mutate` and `filter`. Until you become expert, always check that what intended to do is what you did.
+
+## Aggregation vs. window functions
+
+&gt;A window function is a variation on an aggregation function. Where an aggregation function, like sum() and mean(), takes n inputs and returns a single value, a window function returns n values,
+
+from this helpful demo on [window functions](https://cran.r-project.org/web/packages/dplyr/vignettes/window-functions.html).
+
+In general,
+
+- `summarize` uses aggregation
+- grouped `mutate` uses both
+- grouped `filter` uses both
+
+
+---
+# Reordering with `arrange`
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Thamnophis_sirtalis_sirtalis_Wooster.jpg/1024px-Thamnophis_sirtalis_sirtalis_Wooster.jpg)
+
+Eastern garter snake
+
+---
+
+`arrange` is a data frame version of the window function `sort` for vectors.
+
+Reorder rows based on column values `arrange(data_frame, var1, var2 ...)`
+
+First order on `var1`, then on `var2` etc. **Default is low to high** for numeric values.
+
+
+```r
+df &lt;- tibble(x = c(1, 2, 3, 4, 5), y = c(2, 2, 1, 3, NA), z = c("pest", "past", "pest", "p ast", "last"))
+
+arrange(df, x, y)
+```
+
+```
+## # A tibble: 5 x 3
+##       x     y z    
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1     1     2 pest 
+## 2     2     2 past 
+## 3     3     1 pest 
+## 4     4     3 p ast
+## 5     5    NA last
+```
+
+`NA` values *always* at the end. `arrange` in descending order instead using `desc`.
+
+---
+
+
+```r
+arrange(df, y, x)
+```
+
+```
+## # A tibble: 5 x 3
+##       x     y z    
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1     3     1 pest 
+## 2     1     2 pest 
+## 3     2     2 past 
+## 4     4     3 p ast
+## 5     5    NA last
+```
+
+
+
+```r
+arrange(df, desc(y), x)
+```
+
+```
+## # A tibble: 5 x 3
+##       x     y z    
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1     4     3 p ast
+## 2     1     2 pest 
+## 3     2     2 past 
+## 4     3     1 pest 
+## 5     5    NA last
+```
+
+---
+
+Use character vectors too, but careful with non-alphabetic characters which have more [complex ordering](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/locales).
+
+
+```r
+arrange(df, z)
+```
+
+```
+## # A tibble: 5 x 3
+##       x     y z    
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1     5    NA last 
+## 2     4     3 p ast
+## 3     2     2 past 
+## 4     1     2 pest 
+## 5     3     1 pest
+```
+
+*The last shall be first!*
+
+`NA` value here is not in the sorting variable `z`, so it does not go at the end.
+
+---
+# Superlatives in BISON data
+
+Which species has the most observations? Remember data are grouped already.
+
+
+```r
+summarize(bison, n = n()) %&gt;% arrange(desc(n)) %&gt;% head
+```
+
+```
+## # A tibble: 6 x 2
+##   ITISscientificName           n
+##   &lt;chr&gt;                    &lt;int&gt;
+## 1 &lt;NA&gt;                      2059
+## 2 cardinalis cardinalis     1654
+## 3 thryothorus ludovicianus  1521
+## 4 poecile carolinensis      1478
+## 5 baeolophus bicolor        1459
+## 6 pinus taeda               1286
+```
+
+Lots of `NA` values a problem...
+
+---
+# Northern cardinal, *Cardinalis cardinalis*
+![](https://www.allaboutbirds.org/guide/assets/photo/63667281-720px.jpg)
+
+---
+Which was seen farthest West, i.e. longitude most negative? Rounding obscures the differences...
+
+
+```r
+summarize(bison, most_west = min(longitude)) %&gt;% arrange(most_west) %&gt;% head
+```
+
+```
+## # A tibble: 6 x 2
+##   ITISscientificName    most_west
+##   &lt;chr&gt;                     &lt;dbl&gt;
+## 1 leiothlypis peregrina     -79.3
+## 2 poecile carolinensis      -79.3
+## 3 cyprinella nivea          -79.3
+## 4 nocomis leptocephalus     -79.3
+## 5 notropis altipinnis       -79.3
+## 6 notropis amoenus          -79.3
+```
+
+That's almost to Mebane!
+
+---
+# Tennessee warbler headin to Mebane
+![](https://www.allaboutbirds.org/guide/assets/photo/64440361-720px.jpg)
+
+---
+# Grouped `arrange`
+
+`arrange` also works to sort within groups. In `bison`, sort each species from **first to last sighting**.
+
+Will use the date-time column `eventDate`. Won't cover dates in detail but see [R4DS ch 16](https://r4ds.had.co.nz/dates-and-times.html)
+
+
+```r
+class(bison$eventDate)
+```
+
+```
+## [1] "POSIXct" "POSIXt"
+```
+
+
+```r
+head(bison$eventDate)
+```
+
+```
+## [1] "2012-12-29 UTC" "2012-12-21 UTC" "2012-12-30 UTC" "2012-12-21 UTC"
+## [5] "2012-12-29 UTC" "2013-02-23 UTC"
+```
+
+Earlier dates are 'smaller'
+
+
+```r
+bison$eventDate[2] &lt; bison$eventDate[1]
+```
+
+```
+## [1] TRUE
+```
+
+---
+Arrange *within-group* given by scientific name from earliest to latest. Let's look at river birch, *Betula nigra* to check
+
+
+```r
+arrange(bison, eventDate) %&gt;% 
+  filter(ITISscientificName == "betula nigra") %&gt;%
+  select(eventDate, ITISscientificName, ITIScommonName)
+```
+
+```
+## # A tibble: 8 x 3
+## # Groups:   ITISscientificName [1]
+##   eventDate           ITISscientificName ITIScommonName
+##   &lt;dttm&gt;              &lt;chr&gt;              &lt;chr&gt;         
+## 1 1977-06-21 00:00:00 betula nigra       river birch   
+## 2 1977-07-06 00:00:00 betula nigra       river birch   
+## 3 1977-07-19 00:00:00 betula nigra       river birch   
+## 4 2000-05-18 00:00:00 betula nigra       river birch   
+## 5 2006-05-31 00:00:00 betula nigra       river birch   
+## 6 2015-03-15 15:35:00 betula nigra       river birch   
+## 7 NA                  betula nigra       river birch   
+## 8 NA                  betula nigra       river birch
+```
+
+---
+# Grouped `mutate`
+
+Suppose we want to create a new variable with the **inter-observation times**, i.e. amount of time between sightings of a given species.
+
+`lag` function gives a vector with each entry shifted right.
+
+
+```r
+lag(c(1, 2, 3, 4))
+```
+
+```
+## [1] NA  1  2  3
+```
+
+First entry `NA` because no 0th observation, last observation dropped.
+
+To get chronological differences, first order.
+
+
+---
+Inter-observation time in the dataset in weeks, **disregarding species**
+
+
+```r
+dates &lt;- sort(bison$eventDate)
+tail(dates, n = 2)
+```
+
+```
+## [1] "2015-10-09 20:10:00 UTC" "2015-10-15 15:53:00 UTC"
+```
+
+
+```r
+as.numeric(dates - lag(dates), "weeks") %&gt;% tail(n = 2)
+```
+
+```
+## [1] 1.2827381 0.8316468
+```
+
+---
+For inter-observation times by species we need a grouped `mutate`!
+
+Order of operations
+- `group_by` species name, done above
+- `arrange` observations by time *within groups*
+- `mutate` to create inter-observation time in weeks, as in previous slide
+- `NA` values are a problem we ignore here but would resolve first, normally
+
+
+```r
+bison &lt;- arrange(bison, eventDate) %&gt;%
+  mutate(d_time = as.numeric(eventDate - lag(eventDate), "weeks"))
+```
+
+Note `lag` is an example of a window function, i.e. takes a vector length `\(n\)` and returns one of the same length.
+
+---
+Checking
+
+```r
+filter(bison, ITISscientificName == "betula nigra") %&gt;%
+  select(eventDate, d_time, ITISscientificName, ITIScommonName)
+```
+
+```
+## # A tibble: 8 x 4
+## # Groups:   ITISscientificName [1]
+##   eventDate            d_time ITISscientificName ITIScommonName
+##   &lt;dttm&gt;                &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;         
+## 1 1977-06-21 00:00:00   NA    betula nigra       river birch   
+## 2 1977-07-06 00:00:00    2.14 betula nigra       river birch   
+## 3 1977-07-19 00:00:00    1.86 betula nigra       river birch   
+## 4 2000-05-18 00:00:00 1191.   betula nigra       river birch   
+## 5 2006-05-31 00:00:00  315.   betula nigra       river birch   
+## 6 2015-03-15 15:35:00  459.   betula nigra       river birch   
+## 7 NA                    NA    betula nigra       river birch   
+## 8 NA                    NA    betula nigra       river birch
+```
+
+
+---
+Which species went longest between sightings?
+
+
+```r
+summarize(bison, d_time_max = max(d_time, na.rm = TRUE)) %&gt;%
+  arrange(desc(d_time_max)) %&gt;% slice(1:3)
+```
+
+```
+## # A tibble: 3 x 2
+##   ITISscientificName      d_time_max
+##   &lt;chr&gt;                        &lt;dbl&gt;
+## 1 lepomis gibbosus            13321.
+## 2 notemigonus crysoleucas     13321.
+## 3 notropis procne             13321.
+```
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Lepomis_gibbosus_PAQ.jpg/220px-Lepomis_gibbosus_PAQ.jpg)
+
+Pumpkinseed, *Lepomis gibbosus*, now a little invader in Western Europe.
+
+---
+We have to wonder about the 1700s sightings...
+
+```r
+filter(bison, ITISscientificName == "lepomis gibbosus") %&gt;% 
+  select(eventDate, d_time, ITISscientificName, ITIScommonName) %&gt;%
+  head
+```
+
+```
+## # A tibble: 6 x 4
+## # Groups:   ITISscientificName [1]
+##   eventDate            d_time ITISscientificName ITIScommonName                 
+##   &lt;dttm&gt;                &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;                          
+## 1 1700-01-01 00:00:00    NA   lepomis gibbosus   kiver;pumpkinseed;crapet-soleil
+## 2 1955-04-21 00:00:00 13321.  lepomis gibbosus   kiver;pumpkinseed;crapet-soleil
+## 3 1958-04-11 00:00:00   155.  lepomis gibbosus   kiver;pumpkinseed;crapet-soleil
+## 4 1958-10-08 00:00:00    25.7 lepomis gibbosus   kiver;pumpkinseed;crapet-soleil
+## 5 1962-09-25 00:00:00   207.  lepomis gibbosus   kiver;pumpkinseed;crapet-soleil
+## 6 1971-08-10 00:00:00   463   lepomis gibbosus   kiver;pumpkinseed;crapet-soleil
+```
+
+Worse, results change depending on which scientific name variable used because of `NA` value.
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+---
+# Tutorial: Part 1
+Create a markdown html file that does the following:
+
+- Load the forest fires dataset from last time http://www.dsi.uminho.pt/~pcortez/forestfires/forestfires.csv
+- Count and display the number of observations and total burned area by month, sorted from largest to smallest burn area
+- Create a new variable `prop_area` that is `area` divided by the month-total burn area
+
+This is an important case of using an **aggregate function in a grouped mutate**. The syntax is essentially the same as above.
+
+See R4DS [ch 5](https://r4ds.had.co.nz/transform.html#grouped-mutates-and-filters) for an example.
+
+---
+# Grouped `filter`
+![](http://images.mobot.org/TropicosImages2/PlantRecordImages/prod/small240/00031000/E116-0419121gk.jpg)
+White-tinged sedge, *Carex albicans*
+
+## Know what you get with `filter`
+
+- window functions filter observations within groups
+- aggregation functions filter whole groups
+
+---
+`rank` is a window function giving the order of each element in a vector. Ties are averaged by default
+
+
+```r
+rank(c(2, 5, 2, 3, 1))
+```
+
+```
+## [1] 2.5 5.0 2.5 4.0 1.0
+```
+
+Find the first 3 observations of each species like this
+
+
+```r
+filter(bison, rank(eventDate) &lt;= 3)
+```
+
+---
+e.g.
+
+
+```r
+filter(bison, rank(eventDate) &lt;= 3, ITISscientificName == "carex albicans") %&gt;%
+  select(eventDate, d_time, ITISscientificName, ITIScommonName)
+```
+
+```
+## # A tibble: 3 x 4
+## # Groups:   ITISscientificName [1]
+##   eventDate           d_time ITISscientificName ITIScommonName  
+##   &lt;dttm&gt;               &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;           
+## 1 1990-03-15 00:00:00  NA    carex albicans     whitetinge sedge
+## 2 1990-04-03 00:00:00   2.71 carex albicans     whitetinge sedge
+## 3 1990-04-03 00:00:00   0    carex albicans     whitetinge sedge
+```
+
+---
+`last` is an aggregation function giving the last value in a vector.
+
+
+```r
+last(c(2, 5, 2, 3, 1))
+```
+
+```
+## [1] 1
+```
+
+
+```r
+sort(c(2, 5, 2, 3, 1)) %&gt;% last
+```
+
+```
+## [1] 5
+```
+
+Filter groups last seen at least after 1991.
+
+Ignore rows with `year = NA` which mess things up
+
+
+```r
+filter(bison, !is.na(year)) %&gt;%
+  filter(last(year) &gt; 1991)
+```
+
+
+- filters **whole groups**
+- returns observations before 1991
+- so long as the last observation in the group was after 1991
+
+---
+e.g.
+
+
+```r
+filter(bison, !is.na(year)) %&gt;%
+  filter(last(year) &gt; 1991) %&gt;%
+  filter(ITISscientificName == "carex albicans") %&gt;%
+  select(year, eventDate, ITISscientificName, ITIScommonName) %&gt;%
+  head(3)
+```
+
+```
+## # A tibble: 3 x 4
+## # Groups:   ITISscientificName [1]
+##    year eventDate           ITISscientificName ITIScommonName  
+##   &lt;dbl&gt; &lt;dttm&gt;              &lt;chr&gt;              &lt;chr&gt;           
+## 1  1990 1990-03-15 00:00:00 carex albicans     whitetinge sedge
+## 2  1990 1990-04-03 00:00:00 carex albicans     whitetinge sedge
+## 3  1990 1990-04-03 00:00:00 carex albicans     whitetinge sedge
+```
+
+---
+# Last words on grouping
+Remove group labels with `ungroup` function.
+
+Replace grouping by re-doing `group_by`, e.g. replace current `bison` groups with `year` groups
+
+```r
+group_vars(bison)
+```
+
+```
+## [1] "ITISscientificName"
+```
+
+```r
+group_by(bison, year) %&gt;% group_vars
+```
+
+```
+## [1] "year"
+```
+
+Add more grouping variables by
+
+
+```r
+group_by(bison, year, add = TRUE) %&gt;% group_vars
+```
+
+```
+## [1] "ITISscientificName" "year"
+```
+
+same as 
+
+
+```r
+group_by(bison, ITISscientificName, year) %&gt;% group_vars
+```
+
+```
+## [1] "ITISscientificName" "year"
+```
+
+Multiple variables creates subgroups of scientific name and year pairs.
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+---
+# Tutorial: Part 2
+Add the following to your markdown file:
+
+- Filter the data to display the observation with the largest `prop_area` value in each month, including variables `prop_area`, `area`, `month`, `rain`, `wind`, `temp`
+
+These represent big fires in the park, relative to the time of year.
+
+*Hint:* In your filter statement ese the `rank` function above, except that you will use `rank(desc())` so that rank one is the largest rather than the smallest.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
