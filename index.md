@@ -28,7 +28,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 15| [dplyr part b](slides_dplyr_partb.html)|[Josh McCorquodale](1_15-Lecture.html)|
 |Jan. 17| [dplyr part c](slides_dplyr_partc.html)|[Kay Youngstrom](17-January-Tutorial.html)|
 |Jan. 20| MLK day||
-|Jan. 22| [dplyr part d](slides_dplyr_partd.html)||
+|Jan. 22| [dplyr part d](slides_dplyr_partd.html)|[Suyang Wang](In-class-Tutorial_Suyang-Wang.html)|
 
 
 ## Homework
