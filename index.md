@@ -39,6 +39,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |--- | ---- |
 |Jan. 8 | [hw 0](hw0.html) | Jan. 10|
 |Jan. 13 | [hw 1](hw1.Rmd) | Jan. 22|
+|Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
 
 ## Resources
 
