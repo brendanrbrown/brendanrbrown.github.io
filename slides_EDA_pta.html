@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Exploratory data analysis, part a: data prep</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_EDA_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_EDA_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_EDA_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Exploratory data analysis, part a: data prep
+
+---
+
+
+
+
+# What you will learn
+
+- frame questions a given dataset can answer
+- evaluate data quality issues
+- problem-solve to make the data appropriate for your goals
+- new tricks: `case_when` and `unite`
+
+
+
+
+---
+# Dataset: Death row inmates
+
+The Intercept did a [big project](https://theintercept.com/series/the-condemned/) to collect, analyze and report on death row inmates in the U.S. Link has details on data, collection, results.
+
+## Data collection
+
+Product of data collection from scratch, calls to many government orgs to request info
+
+Always remember: Data must be collected, usually the most difficult and important task
+
+Data scientists should be intimately familiar with how their data are collected
+
+**Crap data give crap results!**
+
+## About the data
+
+- all death-row inmates since Supreme Court decision Gregg v. Georgia in '76
+- name, race, date of birth, gender
+- sentencing year
+- state and county
+- execution, incarceration status
+
+---
+# A comment
+
+These datasets contain names of individuals who were convicted of grisly crimes.
+
+Our goal is
+- **not** to get caught up in the stories behind these names
+- **instead** to evaluate this dataset as part of a data science project, and
+- **reveal** the information it contains
+
+Resolving data quality issues sometimes requires getting more information, e.g. searching cases online
+
+Interesting datasets often touch on controversial or unpleasant topics
+
+We approach such things with professionalism
+
+And remember there are real people behind this data
+
+---
+# Fist look
+
+
+```r
+library(tidyverse)
+
+dp &lt;- read_csv('https://github.com/firstlookmedia/the-condemned-data/raw/master/the-condemed-data.csv')
+
+str(dp)
+```
+
+```
+## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':	7335 obs. of  21 variables:
+##  $ Status                : chr  "Not Currently on Death Row" "Not Currently on Death Row" "Not Currently on Death Row" "Not Currently on Death Row" ...
+##  $ state                 : chr  "AL" "AL" "AL" "AL" ...
+##  $ sentencing_date       : chr  "08/17/1976" "11/22/1976" "11/22/1976" "1977" ...
+##  $ sentencing_year       : num  1976 1976 1976 1977 1977 ...
+##  $ full_name             : chr  "Donald Thigpen" "Jerry Wayne Jacobs" "John Lewis Jacobs" "James Willie Cochran" ...
+##  $ last_name             : chr  "Thigpen" "Jacobs" "Jacobs" "Cochran" ...
+##  $ first_name            : chr  "Donald" "Jerry" "John" "James" ...
+##  $ race                  : chr  "Black" "White" "White" "Black" ...
+##  $ County                : chr  "Escambia" "Blount" "Blount" "Jefferson" ...
+##  $ DOB                   : chr  "1952" "1949" NA "1943" ...
+##  $ gender                : chr  "Male" "Male" "Male" "Male" ...
+##  $ currently_on_death_row: chr  "N" "N" "N" "N" ...
+##  $ executed              : chr  "N" "N" "N" "N" ...
+##  $ volunteer_execution   : chr  NA NA NA NA ...
+##  $ died                  : chr  NA NA NA NA ...
+##  $ suicide               : chr  NA NA NA NA ...
+##  $ commuted              : chr  NA NA NA NA ...
+##  $ exonerated            : chr  NA NA NA "Y" ...
+##  $ resentenced           : chr  "Y" "Y" NA "Y" ...
+##  $ current_sentence      : chr  "LPP" "LWOP" NA "DR" ...
+##  $ released              : chr  NA NA NA "Y" ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   Status = col_character(),
+##   ..   state = col_character(),
+##   ..   sentencing_date = col_character(),
+##   ..   sentencing_year = col_double(),
+##   ..   full_name = col_character(),
+##   ..   last_name = col_character(),
+##   ..   first_name = col_character(),
+##   ..   race = col_character(),
+##   ..   County = col_character(),
+##   ..   DOB = col_character(),
+##   ..   gender = col_character(),
+##   ..   currently_on_death_row = col_character(),
+##   ..   executed = col_character(),
+##   ..   volunteer_execution = col_character(),
+##   ..   died = col_character(),
+##   ..   suicide = col_character(),
+##   ..   commuted = col_character(),
+##   ..   exonerated = col_character(),
+##   ..   resentenced = col_character(),
+##   ..   current_sentence = col_character(),
+##   ..   released = col_character()
+##   .. )
+```
+
+---
+# Data quality problems
+
+Minor typographical difference separates 'not currently...' values
+
+```r
+unique(dp$Status)
+```
+
+```
+## [1] "Not Currently on Death Row" "Executed"                  
+## [3] "On Death Row"               "Not Currently On Death Row"
+```
+
+What do `NA` values mean?
+
+
+```r
+unique(dp$executed)
+```
+
+```
+## [1] "N" "Y" NA
+```
+
+`current_sentence` is a mess
+
+```r
+unique(dp$current_sentence) %&gt;% tail
+```
+
+```
+## [1] "5-10Y"    "19-40Y"   "5-10.25Y" "20-40Y"   "31Y"      "41Y"
+```
+
+
+---
+# Cleaning: boring but necessary
+
+**Data cleaning is an essential step** in a data science project
+
+You cannot escape this
+
+Could spend a majority of your time collecting, evaluating, cleaning a dataset
+
+## Steps in a data science project
+
+1. identify appropriate data for question or issue at hand
+2. collect, clean data, revise questions
+3. explore: summaries, statistics and graphs
+4. modeling
+5. conclusions, presentation
+
+
+**Today:** step 2
+
+**Next:** step 3
+
+---
+# Preliminary questions
+
+Dataset's purpose is mostly to give a clearer picture of death row in America
+
+Some questions:
+
+- how many (blank)? e.g. executed, sentence commuted etc.
+- what proportion (blank)? e.g. executions by race, executions by gender
+- differences by state? e.g. trends in the number of sentences over time
+- how long between sentencing and resolution?
+
+Last Q might be unanswerable here
+
+There is no date given for execution, release, commutation etc.!
+
+---
+# A plan
+
+Initial list of issues to address
+
+1. no duplicate categories in `Status`
+2. understand missing values and duplicate entries: drop? replace with another value?
+3. one variable for outcome, including death, suicide, execution etc.
+4. check vector types: `DOB` (date of birth) is a character, should be date-time or numeric
+5. create variable for time from sentencing till resolution
+6. do something about `current_sentence` if using
+
+## Goals of data cleaning
+
+- evaluate whether there are errors in data
+- handle missing values appropriately
+- put data into a consistent format easily explored in `R`
+
+e.g. the `current_sentence` variable is useless in its current form
+
+---
+# 1. Fixing `Status`
+
+
+```r
+unique(dp$Status)
+```
+
+```
+## [1] "Not Currently on Death Row" "Executed"                  
+## [3] "On Death Row"               "Not Currently On Death Row"
+```
+
+
+Since the only difference is capitalization, easy fix
+
+```r
+dp &lt;- mutate(dp, Status = tolower(Status))
+```
+
+
+```r
+unique(dp$Status)
+```
+
+```
+## [1] "not currently on death row" "executed"                  
+## [3] "on death row"
+```
+
+---
+# New trick: `case_when`
+
+We will be using `Status` alot, to filter, make graphs etc. So we want to map `Status` values to something less wordy, e.g.
+
+- if `Status == "not currently on death row"` change to `Status == "ndr"`
+- if `Status == "executed"` change to `Status == "exec"`
+
+### Primer on `ifelse`
+
+`ifelse(logical_statement, value_if_true, value_otherwise)` works like this
+
+
+```r
+ifelse(c(1, 2, -2, -1) &gt; 0, "positive", "nonpositive")
+```
+
+```
+## [1] "positive"    "positive"    "nonpositive" "nonpositive"
+```
+
+---
+
+`if_else` allows only one condition.
+
+```r
+test &lt;- tail(dp$Status)
+test
+```
+
+```
+## [1] "on death row"               "executed"                  
+## [3] "executed"                   "not currently on death row"
+## [5] "not currently on death row" "on death row"
+```
+
+
+```r
+if_else(test == "executed", "exec", test)
+```
+
+```
+## [1] "on death row"               "exec"                      
+## [3] "exec"                       "not currently on death row"
+## [5] "not currently on death row" "on death row"
+```
+
+
+
+---
+# `case_when` syntax
+`case_when` allows mutliple if-else statements.
+
+```
+case_when(logical_1 ~ replacement_if_true, logical_2 ~ replacement_if_true, ...)
+```
+
+Typically, your logical statement will be of the form `vector == something`.
+
+
+- conditions evaluated in order
+- if no conditions are true, returns `NA`
+
+### `case_when` example
+
+
+```r
+test
+```
+
+```
+## [1] "on death row"               "executed"                  
+## [3] "executed"                   "not currently on death row"
+## [5] "not currently on death row" "on death row"
+```
+
+```r
+case_when(test == "executed" ~ "exec", test == "not currently on death row" ~ "ndr")
+```
+
+```
+## [1] NA     "exec" "exec" "ndr"  "ndr"  NA
+```
+
+---
+# Shortening `Status`
+
+
+```r
+count(dp, Status)
+```
+
+```
+## # A tibble: 3 x 2
+##   Status                         n
+##   &lt;chr&gt;                      &lt;int&gt;
+## 1 executed                    1448
+## 2 not currently on death row  3135
+## 3 on death row                2752
+```
+
+
+
+```r
+dp &lt;- mutate(dp, Status = case_when(Status == "executed" ~ "exec", 
+                                    Status == "not currently on death row" ~ "ndr",
+                                    Status == "on death row" ~ "dr"))
+```
+
+
+```r
+count(dp, Status)
+```
+
+```
+## # A tibble: 3 x 2
+##   Status     n
+##   &lt;chr&gt;  &lt;int&gt;
+## 1 dr      2752
+## 2 exec    1448
+## 3 ndr     3135
+```
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+---
+# Tutorial: Part one
+Create an HTML file that does the following
+
+- Load the death row data using the link 'https://github.com/firstlookmedia/the-condemned-data/raw/master/the-condemed-data.csv'
+
+- Run the following to match my dataset
+
+
+```r
+dp &lt;- mutate(dp, Status = tolower(Status),
+             Status = case_when(Status == "executed" ~ "exec", 
+                                Status == "not currently on death row" ~ "ndr",
+                                Status == "on death row" ~ "dr"))
+```
+
+- Remove `currently_on_death_row` and `executed` columns using `select` and overwriting `dp`
+
+I will explain why we do the last step in a moment.
+
+---
+# 2. Missing values and duplicates
+
+As usual, unsatisfying answers. But we do have answers thanks to meticulous Intercept data scientists.
+
+See the Notes on Record-keeping in the [methodological writeup](https://theintercept.com/2019/12/03/death-penalty-capital-punishment-data/).
+
+## Main points
+
+- hidden missing values in `race`: 'other or unknown' category is `NA` for our purposes
+- several variables have values `Y` and `NA` only
+- `currently_on_death_row` and `executed` have `N`, `Y` and `NA` values
+
+### What to do?
+
+---
+
+`count(dp, var)` is shorthand for `group_by(dp, var) %&gt;% summarize(n = n())`
+
+
+```r
+count(dp, true_missing = is.na(currently_on_death_row)|is.na(executed))
+```
+
+```
+## # A tibble: 2 x 2
+##   true_missing     n
+##   &lt;lgl&gt;        &lt;int&gt;
+## 1 FALSE         7331
+## 2 TRUE             4
+```
+
+
+```r
+filter(dp, is.na(currently_on_death_row)) %&gt;%
+  select(full_name, sentencing_year, executed, state)
+```
+
+```
+## # A tibble: 4 x 4
+##   full_name          sentencing_year executed state
+##   &lt;chr&gt;                        &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;
+## 1 Shawn Rogers                  2017 &lt;NA&gt;     FL   
+## 2 Alton Coleman                 1986 &lt;NA&gt;     IN   
+## 3 David Brown                   2018 &lt;NA&gt;     LA   
+## 4 Craig Michael Wood            2018 &lt;NA&gt;     MO
+```
+
+---
+- Google searches show two of the cases above were in appeals in 2019
+- Alton Coleman, David Brown cases are 'duplicates'
+
+
+```r
+filter(dp, full_name == "Alton Coleman") %&gt;% select(currently_on_death_row, executed, Status, state)
+```
+
+```
+## # A tibble: 2 x 4
+##   currently_on_death_row executed Status state
+##   &lt;chr&gt;                  &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;
+## 1 &lt;NA&gt;                   &lt;NA&gt;     ndr    IN   
+## 2 N                      Y        exec   OH
+```
+
+**Many 'duplicates.'** `n_distinct` the number of distinct values
+
+```r
+nrow(dp) - n_distinct(dp$full_name)
+```
+
+```
+## [1] 76
+```
+
+---
+# Decisions and fixes
+
+### Accept that dataset has unique person-state cases, not unique individuals
+
+could remove 'duplicates,' but each case has distinct information
+
+e.g. Coleman observations have two different outcomes above for different states
+
+### Remove `currently_on_death_row` and `executed` since redundant with `Status` 
+
+You did this in the tutorial part one!
+
+### `NA` means `N`, ie NO, in variables with only `Y` and `NA` values
+
+`volunteer_execution` through `resentenced`, also in `released`
+
+
+
+---
+# 3. One outcome variable 
+
+Is `volunteer_execution = Y` only for cases where `executed = Y`?
+
+
+```r
+filter(dp, volunteer_execution == "Y", executed != "Y") %&gt;% dim
+```
+
+```
+## [1]  0 21
+```
+
+Only one of these should be `Y`
+
+```r
+select(dp, executed, died, suicide, released) %&gt;% head
+```
+
+```
+## # A tibble: 6 x 4
+##   executed died  suicide released
+##   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   
+## 1 N        &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;    
+## 2 N        &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;    
+## 3 N        &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;    
+## 4 N        &lt;NA&gt;  &lt;NA&gt;    Y       
+## 5 N        &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;    
+## 6 N        &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;
+```
+
+Project description suggests `died` means died from 'natural causes', i.e. not suicide or execution.
+
+---
+# Decisions and fixes
+
+Many of these variables fall under the concept of an outcome. For a given `Status`, it tells us what happened to the convicted person. 
+
+We will create **one variable** with this information.
+
+Will use `unite`. Example from the [help page](https://tidyr.tidyverse.org/reference/unite.html)
+
+
+```r
+df &lt;- expand_grid(x = c("a", NA), y = c("b", NA))
+df
+```
+
+```
+## # A tibble: 4 x 2
+##   x     y    
+##   &lt;chr&gt; &lt;chr&gt;
+## 1 a     b    
+## 2 a     &lt;NA&gt; 
+## 3 &lt;NA&gt;  b    
+## 4 &lt;NA&gt;  &lt;NA&gt;
+```
+
+### Syntax 
+`unite(data_frame, new_col, cols_to_unite, ...)`
+
+---
+
+
+
+```r
+unite(df, "z", x:y, na.rm = TRUE, remove = FALSE)
+```
+
+```
+## # A tibble: 4 x 3
+##   z     x     y    
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 "a_b" a     b    
+## 2 "a"   a     &lt;NA&gt; 
+## 3 "b"   &lt;NA&gt;  b    
+## 4 ""    &lt;NA&gt;  &lt;NA&gt;
+```
+
+This removes the old columns
+
+```r
+unite(df, "z", x:y, na.rm = TRUE, remove = TRUE)
+```
+
+```
+## # A tibble: 4 x 1
+##   z    
+##   &lt;chr&gt;
+## 1 "a_b"
+## 2 "a"  
+## 3 "b"  
+## 4 ""
+```
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+---
+# Tutorial: Part two
+Add the changes and fixes described above to your html file.
+
+Since this is maybe tricky, I will guide you through.
+
+- **Goal:** Create a variable `outcome` that says how each case was resolved.
+
+- `outcome = exon`, for example, if the record represents a person who was exonerated.
+
+
+
+### I will guide you, but you still must do this in your html file
+
+
+---
+
+## Steps
+
+1. Change `volunteer_execution` values to variable-specific values rather than just `Y` or `NA` (for 'no'), e.g. `Y` to `v_exec`
+2. `unite` all relevant variables into one `outcome` variable 
+
+Variables used to create `outcome` are 
+  - `volunteer_execution`
+  - `died`
+  - `suicide`
+  - `commuted`
+  - `exonorated`
+  - `resentenced`
+  - `released`
+
+---
+# Example for `volunteer_execution`
+Here I change `volunteer_execution = Y` values to `v_exec` and leave the rest as `NA`
+
+**Key:** In these columns, there are only `NA` and `Y` values.
+
+
+```r
+dp &lt;- mutate(dp, volunteer_execution = ifelse(!is.na(volunteer_execution), "v_exec", NA))
+```
+
+
+
+
+---
+# Now you complete step 1 for the other variables
+
+Pick appropriate short variable values, e.g. set `Y` in `suicide` to `sui`
+
+`ifelse(!is.na(suicide), "sui", NA)`
+
+Do it all in one `mutate` statement by continuing the example above.
+---
+# Now you do step 2: UNITE!
+
+  - `unite` all of the columns in the previous list, drop `NA` values as shown in the `unite` example
+  - call the new column `outcome`
+  - remove redundant columns from the previous list (`remove = TRUE` in the `unite` statement)
+
+Use the `unite` syntax above
+---
+
+Should get something like this for your last three rows, showing only relevant columns, using `tail(n=3)`
+
+*was*
+
+```
+## # A tibble: 3 x 7
+##   Status volunteer_execution suicide commuted exonerated resentenced released
+##   &lt;chr&gt;  &lt;chr&gt;               &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;   
+## 1 ndr    &lt;NA&gt;                &lt;NA&gt;    &lt;NA&gt;     &lt;NA&gt;       Y           &lt;NA&gt;    
+## 2 ndr    &lt;NA&gt;                &lt;NA&gt;    &lt;NA&gt;     &lt;NA&gt;       Y           &lt;NA&gt;    
+## 3 dr     &lt;NA&gt;                &lt;NA&gt;    &lt;NA&gt;     &lt;NA&gt;       &lt;NA&gt;        &lt;NA&gt;
+```
+
+*changed to*
+
+```
+## # A tibble: 3 x 2
+##   Status outcome
+##   &lt;chr&gt;  &lt;chr&gt;  
+## 1 ndr    "resen"
+## 2 ndr    "resen"
+## 3 dr     ""
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
