@@ -1,0 +1,93 @@
+---
+title: 'Homework 2'
+subtitle: 'Due: Feb. 3, 2:30 pm'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+
+
+
+## Instructions
+Answer each of the questions given below. Do so in a markdown file with html output.
+
+**Submit only the HTML file.** 
+
+Remember to `knit` often and use the techniques we discussed in class to handle code chunks with errors you cannot fix. Homework submitted in a format other than the html output from your document will not be accepted.
+
+## Dataset
+You will explore the data Harvard researchers used to write following article in Scientific Reports, "The Cannabinoid Content of Legal Cannabis in Washington State Varies Systematically Across Testing Facilities and Popular Consumer Products"
+
+I encourage you to check out the report through UNC libraries.
+
+### Link to data and related information
+[Harvard cannabis measurement study](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/E8TQSD)
+
+### Abstract
+> The majority of adults in the U.S. now have state-legal access to medical or recreational cannabis products, despite their federal prohibition. Given the wide array of pharmacologically active compounds in these products, it is essential that their biochemical profile is measured and reported to consumers, which requires accurate laboratory testing. However, no universal standards for laboratory testing protocols currently exist, and there is controversy as to whether all reported results are legitimate. To investigate these concerns, we analyzed a publicly available seed-to-sale traceability dataset from Washington state containing measurements of the cannabinoid content of legal cannabis products from state-certified laboratories. Consistent with previous work, we found that commercial Cannabisstrains fall into three broad chemotypes defined by the THC:CBD ratio. Moreover, we documented systematic differences in the cannabinoid content reported by different laboratories, relative stability in cannabinoid levels of commercial flower and concentrates over time, and differences between popular commercial strains. Importantly, interlab differences in cannabinoid reporting persisted even after controlling for plausible confounds. Our results underscore the need for standardized laboratory methodologies in the legal cannabis industry and provide a framework for quantitatively assessing laboratory quality.
+
+
+## Scoring
+Unlike HW 1, where all questions had equal point values, I have assigned point values to each of two parts. This homework is like the first part of a real data science project and therefore will be less structured.
+
+- Part one: 30 points
+- Part two: 50 points
+
+# Part one: Getting to know the data
+Answer the following questions using the codebook provided in the link above, and the dataset itself. You do not need to consult other sources.
+
+## Q1
+
+### Q: What source or sources are used to create the dataset? Be as specific as possible, e.g. say what organization(s) generated the dataset, what time span it covers, and how it was collected.
+
+### A:
+
+
+## Q2
+Write a list of four questions that you can plausibly attempt to answer with this dataset.
+
+You will need to actually attempt to answer them, so you should consider making an initial list then revising it after some exploration.
+
+The questions should not be boring. An example of a boring question is: How many observations are there in my dataset?
+
+If you are stuck, look at the original Harvard paper the data were used for and attempt to replicate some answers to the paper's questions. You do not need to do this, however, and are encouraged to explore your own line of thinking.
+
+## Q3
+
+Explore and identify two data quality issues that affect the questions you wrote for Q2.
+
+You can do this with elementary methods, e.g. by visually inspecting the data with `summary`, `unique`, `head` etc. You might find it easier to attempt the exploration in Part 2, then answer this question as you run into problems.
+
+### This question's response must include:
+
+- two clearly stated data quality issues
+- all code and output used to investigate those issues
+
+# Part two: Exploration and answers
+
+## Q1
+Explore the answers you wrote for Q2, part one. You probably will need to revise your questions as you explore.
+
+
+**Pay careful attention to these instructions.** Idiotic or meaningless summaries and plots that are not relevant to your dataset or do not contain any useful information will not be considered valid.
+
+### This question's response must include:
+
+- at least four data summaries, two of which must contain grouped summary information.
+- at least eight plots relevant to your questions.
+- a brief explanation, two to three sentences, after each data summary and each plot describing what the output shows and how it relates to your questions from Q2. If you have done more than four data summaries, or more than eight plots, you need only comment on the required number of those items. For example, if you have nine plots you need comment on only eight.
+- **all relevant interim work.** For example, code to modify the data to prepare it for exploration must be shown.
+
+## Q2
+Write a short response for each of the questions in Q2 Part one, no more than a paragraph, explaining how your exploratory work helps to answer the question.
+
+You **do not need to definitively answer the question.** Often, what you discover is that the data are insufficient or otherwise defective in some way. 
+
+Do as much as you can to answer the question and explain any shortcomings of the dataset.
