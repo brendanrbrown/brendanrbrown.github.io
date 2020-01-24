@@ -57,3 +57,4 @@ These link to examples I mention in class, which might help give context for the
 |Jan. 13| [Dog shelters](https://pudding.cool/2019/10/shelters/) |
 |Jan. 15| [Climate action](https://climateactiontracker.org/data-portal/?mode=countries)|
 |Jan. 17| [Federal Reserve financial accounts](https://www.federalreserve.gov/releases/Z1/)|
+|Jan. 24| [Death row](https://theintercept.com/series/the-condemned/)|
