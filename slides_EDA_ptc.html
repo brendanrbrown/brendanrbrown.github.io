@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Exploratory data analysis, part c: garden of ggplots</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_EDA_ptc_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_EDA_ptc_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_EDA_ptc_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Exploratory data analysis, part c: garden of ggplots
+
+---
+
+
+
+
+# What you will learn
+
+- explore variability with graphs
+- multiple variables on a single plot
+- side-by-side plots for different groups
+- modify aesthetics and labels for readability
+
+**Main reference:** R4DS chapter 3
+
+**Resources:**
+
+- [ggplot cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-visualization-2.1.pdf)
+
+---
+# Work from previous lectures 
+
+
+```r
+library(tidyverse)
+
+dp &lt;- read_csv('https://github.com/firstlookmedia/the-condemned-data/raw/master/the-condemed-data.csv') %&gt;%
+  mutate(Status = tolower(Status), Status = case_when(Status == "executed" ~ "exec", 
+                                    Status == "not currently on death row" ~ "ndr",
+                                    Status == "on death row" ~ "dr")) %&gt;%
+  select(-currently_on_death_row, -executed) %&gt;%
+  mutate(volunteer_execution = ifelse(!is.na(volunteer_execution), "v_exec", NA),
+         died = ifelse(!is.na(died), "died", NA),
+         suicide = ifelse(!is.na(suicide), "sui", NA),
+         commuted = ifelse(!is.na(commuted), "com", NA),
+         exonerated = ifelse(!is.na(exonerated), "exon", NA),
+         resentenced = ifelse(!is.na(resentenced), "resen", NA),
+         released = ifelse(!is.na(released), "rel", NA)) %&gt;%
+  unite("outcome", volunteer_execution, died,
+        suicide, commuted, exonerated, resentenced, released, na.rm = TRUE, remove = TRUE) %&gt;%
+  select(-DOB, -current_sentence, -sentencing_date)
+```
+
+
+---
+# Recap: Our generic questions
+
+
+- how many (blank)? e.g. executed, sentence commuted etc.
+- what proportion (blank)? e.g. executions by race, executions by gender
+- differences by state? e.g. trends in the number of sentences over time
+
+---
+# How many? Basics
+
+From the previous tutorial: This ugly graph.
+
+
+```r
+ggplot(dp, aes(x = outcome)) + geom_bar()
+```
+
+![](slides_EDA_ptc_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+---
+# Rotate axis labels
+
+Better, still ugly.
+
+```r
+ggplot(dp, aes(x = outcome)) + geom_bar() + theme(axis.text.x = element_text(angle = 45))
+```
+
+&lt;img src="slides_EDA_ptc_files/figure-html/unnamed-chunk-3-1.png" height="400" /&gt;
+
+---
+
+Focus on large enough groups with a grouped `filter`
+
+
+
+```r
+group_by(dp, outcome) %&gt;%
+  filter(n() &gt; 50) %&gt;%
+  ggplot(aes(x = outcome)) + geom_bar() + theme(axis.text.x = element_text(angle = 45))
+```
+
+&lt;img src="slides_EDA_ptc_files/figure-html/unnamed-chunk-4-1.png" height="400" /&gt;
+
+---
+# Comments on plot
+
+- by far most cases have `outcome = ''`
+- remember: `outcome` does not count those who were executed with no other status info
+- resentencing is second most common
+- `outcome` variable does recognize `v_exec_resen` and `v_exec` as being in the same group
+
+### Should plot this along with `Status` to get a better picture
+
+---
+# How many? outcome by Status
+
+Syntax `aes(x = var, fill = group_var)`
+
+
+```r
+group_by(dp, outcome) %&gt;%
+  filter(n() &gt; 50) %&gt;%
+  ggplot(aes(x = outcome, fill = Status)) + geom_bar() + theme(axis.text.x = element_text(angle = 45))
+```
+
+&lt;img src="slides_EDA_ptc_files/figure-html/unnamed-chunk-5-1.png" height="400" /&gt;
+
+---
+# With proportions
+
+
+```r
+group_by(dp, outcome) %&gt;%
+  filter(n() &gt; 50) %&gt;%
+  ggplot(aes(x = outcome, fill = Status)) + geom_bar(position = "fill") + theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+&lt;img src="slides_EDA_ptc_files/figure-html/unnamed-chunk-6-1.png" height="400" /&gt;
+
+
+---
+# How many? by race
+
+
+```r
+ggplot(dp, aes(x = race)) + geom_bar() + 
+  ggtitle("Death sentences by race")
+```
+
+&lt;img src="slides_EDA_ptc_files/figure-html/unnamed-chunk-7-1.png" height="400" /&gt;
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+
+---
+# Tutorial
+Create an html file that does the following
+
+- **Run** the cleaning and prep code above
+- **Plot** a bar chart of the number of observations in each `Status` category
+- **Plot** a bar chart of observations in each `Status` category **by outcome category**, for outcomes with more than 50 observations
+- **Write** one sentence after each plot describing what it tells you
+
+### Hints
+
+- Very similar to the plots above
+- Here `Status` is the primary variable of interest, rather than outcome
+- For the second plot: Use a grouped `filter` statement before plotting, exactly as above
+
+
+
+
+---
+# How many? by race and year
+
+
+### Plotting one y-variable across subgroups
+
+- y-variable is `n`, number of observations
+- x-variable is `sentencing_year`
+- groups are `race`
+
+### Syntax
+
+`aes(x = var_1, y = var_2, color = group_var)`
+
+
+---
+
+
+```r
+count(dp, race, sentencing_year) %&gt;%
+  ggplot(aes(x = sentencing_year, y = n, color = race)) + geom_line() + 
+  ggtitle("Death sentences by year and race")
+```
+
+&lt;img src="slides_EDA_ptc_files/figure-html/unnamed-chunk-8-1.png" height="400" /&gt;
+
+---
+# Customize
+`scale_color_brewer(type = ..., palette = ...)` allows you to use color palettes from [colorbrewer2.org](colorbrewer2.org). 
+
+Type and palette arguments as they appear on the website. 
+
+`ylab` and `xlab` change axis labels.
+
+```r
+count(dp, race, sentencing_year) %&gt;%
+  ggplot(aes(x = sentencing_year, y = n, color = race)) + geom_line() + theme_bw() +
+  scale_color_brewer(type = "div", palette = "RdBu") +
+  ggtitle("Death sentences by year and race") +
+  xlab("Year of sentencing") + ylab("Number of cases")
+```
+
+---
+![](slides_EDA_ptc_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+
+---
+# Facets
+Plot categories side by side with `facet_wrap`.
+
+### Syntax
+
+```
+ggplot(...) + geom_...() + facet_wrap(vars(unquoted_varname))
+
+```
+
+- Variable supplied to `facet_wrap` should represent groups
+- One minigraph will show up for each subgroup
+
+---
+# How many? cases by year in AL, TX, VA and NC
+
+![](slides_EDA_ptc_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+---
+# Now you try!
+![](https://static01.nyt.com/images/2019/07/13/arts/13video/bob-ross-cover-superJumbo-v2.png)
+
+---
+# Tutorial
+Add the following to your html file
+
+- **Plot** the of number of cases by year and gender, all on one plot with different colors for different gender categories, using a line plot
+- **Write** one sentence describing what the plot tells you
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
