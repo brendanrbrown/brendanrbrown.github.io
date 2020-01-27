@@ -30,6 +30,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 20| MLK day||
 |Jan. 22| [dplyr part d](slides_dplyr_partd.html)|[Suyang Wang](In-class-Tutorial_Suyang-Wang.html)|
 |Jan. 24| [explore part a](slides_EDA_pta.html) | [Michael Almaguer](Michaelexercise124.html)|
+|Jan. 27| [explore part b](slides_EDA_ptb.html) | |
 
 
 ## Homework
