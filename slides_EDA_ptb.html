@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Exploratory data analysis, part b: final data prep, first ggplots</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_EDA_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_EDA_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_EDA_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Exploratory data analysis, part b: final data prep, first ggplots
+
+---
+
+
+
+
+# What you will learn
+
+- limits of our abilities right now
+- `ggplot` basics
+
+**Main reference:** R4DS chapter 3
+
+**Resources:**
+
+- [ggplot cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/data-visualization-2.1.pdf)
+
+---
+# Dataset: Death row inmates
+
+The Intercept did a [big project](https://theintercept.com/series/the-condemned/) to collect, analyze and report on death row inmates in the U.S. Link has details on data, collection, results.
+
+
+
+```r
+library(tidyverse)
+
+dp &lt;- read_csv('https://github.com/firstlookmedia/the-condemned-data/raw/master/the-condemed-data.csv')
+```
+
+
+
+---
+# Recap: Steps in a data science project
+
+1. identify appropriate data for question or issue at hand
+2. collect, clean data, revise questions
+3. explore: summaries, statistics and graphs
+4. modeling
+5. conclusions, presentation
+
+
+**Today:** finish step 2, start step 3
+
+**Next:** finish step 3
+
+---
+# Recap: Preliminary questions
+
+- how many (blank)? e.g. executed, sentence commuted etc.
+- what proportion (blank)? e.g. executions by race, executions by gender
+- differences by state? e.g. trends in the number of sentences over time
+- how long between sentencing and resolution?
+
+Last Q might be unanswerable here
+
+There is no date given for execution, release, commutation etc.!
+
+---
+# Recap: A plan
+
+Initial list of issues to address
+
+1. no duplicate categories in `Status`
+2. understand missing values and duplicate entries: drop? replace with another value?
+3. one variable for outcome, including death, suicide, execution etc.
+4. check vector types: `DOB` (date of birth) is a character, should be date-time or numeric
+5. create variable for time from sentencing till resolution
+6. do something about `current_sentence` if using
+
+Together we resolved 1-3 last time
+
+The **rest are a bust**, as we shall see
+
+
+
+---
+# Work from last time
+
+```r
+dp &lt;- mutate(dp, 
+             Status = tolower(Status),
+             Status = case_when(Status == "executed" ~ "exec", 
+                                    Status == "not currently on death row" ~ "ndr",
+                                    Status == "on death row" ~ "dr")) %&gt;%
+  select(-currently_on_death_row, -executed) %&gt;%
+  mutate(volunteer_execution = ifelse(!is.na(volunteer_execution), "v_exec", NA),
+         died = ifelse(!is.na(died), "died", NA),
+         suicide = ifelse(!is.na(suicide), "sui", NA),
+         commuted = ifelse(!is.na(commuted), "com", NA),
+         exonerated = ifelse(!is.na(exonerated), "exon", NA),
+         resentenced = ifelse(!is.na(resentenced), "resen", NA),
+         released = ifelse(!is.na(released), "rel", NA)) %&gt;%
+  unite("outcome", volunteer_execution, died,
+        suicide, commuted, exonerated, resentenced, released, na.rm = TRUE, remove = TRUE)
+```
+
+---
+# Lingering issues
+
+`outcome` variable doesn't keep track of who was executed, except voluntary executions. That info is in `Status`.
+
+
+```r
+filter(dp, Status == "exec") %&gt;% select(Status, outcome) %&gt;% slice(1)
+```
+
+```
+## # A tibble: 1 x 2
+##   Status outcome
+##   &lt;chr&gt;  &lt;chr&gt;  
+## 1 exec   ""
+```
+
+Any other outcomes for the executed?
+
+```r
+filter(dp, Status == "exec", outcome != "", outcome != "v_exec") %&gt;% select(Status, outcome) %&gt;% tail(n = 3)
+```
+
+```
+## # A tibble: 3 x 2
+##   Status outcome
+##   &lt;chr&gt;  &lt;chr&gt;  
+## 1 exec   resen  
+## 2 exec   resen  
+## 3 exec   resen
+```
+
+Uh oh...
+
+---
+
+### It looks like execution does not preclude other outcomes
+
+### Will need to keep that in mind when looking at plots
+
+### Also...
+
+
+```r
+filter(dp, Status == "dr", outcome == "died") %&gt;% nrow
+```
+
+```
+## [1] 1
+```
+
+**You will be awash in data quality issues like this.**
+
+---
+# 4. Date of birth
+
+Have seen date-time vectors briefly.
+
+Problem is `DOB` is inconsistently formatted and has births in the year 2049
+
+`sentencing_date` has similar problems
+
+```r
+unique(dp$DOB) %&gt;% head
+```
+
+```
+## [1] "1952" "1949" NA     "1943" "1951" "1958"
+```
+
+
+
+```r
+unique(dp$DOB) %&gt;% tail
+```
+
+```
+## [1] "05/19/1965" "04/10/1970" "10/08/2049" "06/22/1969" "07/11/1969"
+## [6] "02/10/2045"
+```
+
+![](https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/whatsapp/238/loudly-crying-face_1f62d.png)
+
+
+---
+
+&gt;You know the data are dirty when you have to use stringr.
+
+&gt;   --- Me
+
+
+It will be in our power to solve this problem when we do **string manipulation** with the `stringr` package, i.e. messing with character vectors
+
+But not at the moment
+
+Remember this day when you are sad about working with strings later
+
+### 5, 6 are a bust for the same reason
+
+In fact, the dataset doesn't even contain a clear 'resolution' date, e.g. date of execution for those who were in fact executed
+
+**Get rid** of things we can't use for now
+
+
+```r
+dp &lt;- select(dp, -DOB, -current_sentence, -sentencing_date)
+```
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial: Part one
+Create an html file that does the following:
+
+- Load the death row dataset
+- Cut, paste and apply the cleaning code above that creates the `outcome` variable, fixes the `Status` variable etc.
+- Remove variables `DOB`, `current_sentence`, `sentencing_date`
+
+
+---
+# Onward and upward
+
+What information do we have?
+
+
+```r
+str(dp)
+```
+
+```
+## Classes 'tbl_df', 'tbl' and 'data.frame':	7335 obs. of  10 variables:
+##  $ Status         : chr  "ndr" "ndr" "ndr" "ndr" ...
+##  $ state          : chr  "AL" "AL" "AL" "AL" ...
+##  $ sentencing_year: num  1976 1976 1976 1977 1977 ...
+##  $ full_name      : chr  "Donald Thigpen" "Jerry Wayne Jacobs" "John Lewis Jacobs" "James Willie Cochran" ...
+##  $ last_name      : chr  "Thigpen" "Jacobs" "Jacobs" "Cochran" ...
+##  $ first_name     : chr  "Donald" "Jerry" "John" "James" ...
+##  $ race           : chr  "Black" "White" "White" "Black" ...
+##  $ County         : chr  "Escambia" "Blount" "Blount" "Jefferson" ...
+##  $ gender         : chr  "Male" "Male" "Male" "Male" ...
+##  $ outcome        : chr  "resen" "resen" "" "exon_resen_rel" ...
+```
+
+## Enough of this palaver! 
+
+## Let us plot!
+
+---
+# ggplot
+
+Flexible graphing tool developed for `R`
+
+- `ggplot` function accepts data to be plotted
+- `aes` statements within `ggplot` function define variables to plot from data
+- `+` used to added things to the `ggplot` object
+- `geom_...` define what kind of plot to use, e.g. line or points
+
+## Syntax: Generic for all ggplots
+
+```
+ggplot(data_frame, aes(x = x_var_name, y = y_var_name)) + geom_...()
+```
+
+Options for `geom_...` include `geom_point`, `geom_bar`, `geom_line` etc.
+
+## Syntax: Basic scatterplot
+
+```
+ggplot(data_frame, aes(x = x_var_name, y = y_var_name)) + geom_point()
+```
+
+---
+# Example: Count by sentencing year
+
+```r
+count(dp, sentencing_year) %&gt;%
+  ggplot(aes(x = sentencing_year, y = n)) + geom_point()
+```
+
+&lt;img src="slides_EDA_ptb_files/figure-html/unnamed-chunk-10-1.png" height="500" /&gt;
+
+---
+# Aesthetics
+Lots of aesthetic options to explore. See the help page: https://ggplot2.tidyverse.org/
+
+Change output size in chunk options, `out.width` and `out.height`. Type `colors()` in console to see options.
+
+
+```r
+count(dp, sentencing_year) %&gt;%
+  ggplot(aes(x = sentencing_year, y = n)) + geom_point(color = "rosybrown4") + 
+  theme_minimal() + ggtitle("Death sentences by year, in rosybrown4")
+```
+
+&lt;img src="slides_EDA_ptb_files/figure-html/unnamed-chunk-11-1.png" width="350" height="300" /&gt;
+
+
+---
+# Line plot
+Replace `geom_point` with `geom_line`
+
+```r
+count(dp, sentencing_year) %&gt;%
+  ggplot(aes(x = sentencing_year, y = n)) + geom_line() + 
+  ggtitle("Death sentences by year")
+```
+
+&lt;img src="slides_EDA_ptb_files/figure-html/unnamed-chunk-12-1.png" height="350" /&gt;
+
+---
+# Bar chart
+Best for categorical information.
+
+Default bar height is count of observations for that value.
+
+```r
+ggplot(dp, aes(x = Status)) + geom_bar() +
+  ggtitle(label = "Count by status")
+```
+
+&lt;img src="slides_EDA_ptb_files/figure-html/unnamed-chunk-13-1.png" height="350" /&gt;
+
+---
+# Boxplot
+
+
+```r
+ggplot(dp, aes(x = Status, y = sentencing_year)) + geom_boxplot(fill = "lightsteelblue1") + theme_bw() 
+```
+
+![](slides_EDA_ptb_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+
+---
+# Now you try!
+![](https://cdn.britannica.com/s:300x300/03/193803-050-CBC590FA/Bob-Ross.jpg)
+
+## Happy little pictures come to life with ggplot
+
+---
+# Tutorial
+Add the following to your html file:
+
+Using `ggplot`, 
+1. **create** one of each of the following plots
+2. with an appropriate **title**
+3. write one sentence **critiquing your own plot**: e.g. Axis labels are funny-looking? Different type of plot better?
+4. write another sentence **summarizing what the plot shows**
+
+### Plots
+- A bar chart of `outcome`
+- A line graph of number of observations for which `gender` is `Male`, by `sentencing_year`
+
+**Hint:** Notice you might need to do some subsetting or summarizing before plotting. Once you have done
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
