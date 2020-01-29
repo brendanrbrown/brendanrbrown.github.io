@@ -63,3 +63,4 @@ These link to examples I mention in class, which might help give context for the
 |Jan. 17| [Federal Reserve financial accounts](https://www.federalreserve.gov/releases/Z1/)|
 |Jan. 24| [Death row](https://theintercept.com/series/the-condemned/)|
 |Jan. 27| [FRED](https://fred.stlouisfed.org/)|
+|Jan. 29| [Diaspora in the U.S.](https://pudding.cool/2020/01/diaspora/)|
