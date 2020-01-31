@@ -32,7 +32,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 24| [explore part a](slides_EDA_pta.html) | [Michael Almaguer](Michaelexercise124.html)|
 |Jan. 27| [explore part b](slides_EDA_ptb.html) | [Yuchen Li](1.27-stor320-inclass.html)|
 |Jan. 29| [explore part c](slides_EDA_ptc.html) | [Kiley Supina](January29.html)|
-|Jan. 31| [tidy part a](slides_tidyrel_pta.html)||
+|Jan. 31| [tidy part a](slides_tidyrel_pta.html)|[Sriganesh Gopal](tutorial8.html)|
 
 
 ## Homework
@@ -65,3 +65,4 @@ These link to examples I mention in class, which might help give context for the
 |Jan. 24| [Death row](https://theintercept.com/series/the-condemned/)|
 |Jan. 27| [FRED](https://fred.stlouisfed.org/)|
 |Jan. 29| [Diaspora in the U.S.](https://pudding.cool/2020/01/diaspora/)|
+|Jan. 31| [Brain artery MRA images](https://www.insight-journal.org/midas/community/view/21)|
