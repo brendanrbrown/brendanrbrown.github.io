@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>tidy data and joining, part a</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_tidyrel_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_tidyrel_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_tidyrel_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# tidy data and joining, part a
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- the tidy data concept
+- `separate` columns
+
+**Main reference:** R4DS chapter 12
+
+
+---
+# Tidy data
+
+A 'tidy' dataset is one whose structure lets you answer questions at hand.
+
+### In a tidy dataset (from the textbook)
+
+1. each variable has its own column
+2. each observation has its own row
+3. each value has its own cell
+
+
+![](https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png)
+
+---
+# Common forms of untidyness
+![](https://media.vanityfair.com/photos/5a46643f577ffb294a253505/master/w_2560%2Cc_limit/trouble-with-tribbles-50th-opener.png)
+
+---
+# Common forms of untidyness
+
+### Values as column names
+or columns that do not represent variables
+
+### Multiple rows per observation
+
+### Multiple values per cell
+
+
+---
+# Tidyness is relative to your goals
+
+### Example
+In the death penalty dataset, we discovered 
+
+- rows were not distinct individuals
+- but were distinct cases
+
+If I want to know how many people were sentenced to death in the US in a given year, **is the dataset 'tidy?'**
+
+### But
+
+Often datasets are not tidy for *any* reasonable purposes
+
+---
+# Tidy or not?
+
+## [Federal reserve data, debt growth by sector](https://www.federalreserve.gov/releases/z1/20191212/html/d1.htm)
+
+## starwars dataset from earlier class
+
+
+```r
+select(starwars, name, height, species) %&gt;% slice(1:2)
+```
+
+```
+## # A tibble: 2 x 3
+##   name           height species
+##   &lt;chr&gt;           &lt;int&gt; &lt;chr&gt;  
+## 1 Luke Skywalker    172 Human  
+## 2 C-3PO             167 Droid
+```
+
+
+---
+# Museum of Modern Art
+
+We will investigate tidyness in the Museum of Modern Art (MoMA) database, [available here](https://github.com/MuseumofModernArt/collection) and updated regularly.
+
+*Paul Signac, 1890*
+&lt;img src="https://www.moma.org/media/W1siZiIsIjE1MTUxNSJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEyODB4MTI4MFx1MDAzZSJdXQ.jpg?sha=f23d8c22fd2f4a8a" height="450" /&gt;
+
+---
+# Art collection
+
+
+
+
+```r
+art &lt;- read_csv("https://github.com/MuseumofModernArt/collection/blob/master/Artworks.csv?raw=true")
+str(art)
+```
+
+```
+## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':	139049 obs. of  29 variables:
+##  $ Title             : chr  "Ferdinandsbrücke Project, Vienna, Austria (Elevation, preliminary version)" "City of Music, National Superior Conservatory of Music and Dance, Paris, France, View from interior courtyard" "Villa near Vienna Project, Outside Vienna, Austria, Elevation" "The Manhattan Transcripts Project, New York, New York, Introductory panel to Episode 1: The Park" ...
+##  $ Artist            : chr  "Otto Wagner" "Christian de Portzamparc" "Emil Hoppe" "Bernard Tschumi" ...
+##  $ ConstituentID     : chr  "6210" "7470" "7605" "7056" ...
+##  $ ArtistBio         : chr  "(Austrian, 1841–1918)" "(French, born 1944)" "(Austrian, 1876–1957)" "(French and Swiss, born Switzerland 1944)" ...
+##  $ Nationality       : chr  "(Austrian)" "(French)" "(Austrian)" "()" ...
+##  $ BeginDate         : chr  "(1841)" "(1944)" "(1876)" "(1944)" ...
+##  $ EndDate           : chr  "(1918)" "(0)" "(1957)" "(0)" ...
+##  $ Gender            : chr  "(Male)" "(Male)" "(Male)" "(Male)" ...
+##  $ Date              : chr  "1896" "1987" "1903" "1980" ...
+##  $ Medium            : chr  "Ink and cut-and-pasted painted pages on paper" "Paint and colored pencil on print" "Graphite, pen, color pencil, ink, and gouache on tracing paper" "Photographic reproduction with colored synthetic laminate" ...
+##  $ Dimensions        : chr  "19 1/8 x 66 1/2\" (48.6 x 168.9 cm)" "16 x 11 3/4\" (40.6 x 29.8 cm)" "13 1/2 x 12 1/2\" (34.3 x 31.8 cm)" "20 x 20\" (50.8 x 50.8 cm)" ...
+##  $ CreditLine        : chr  "Fractional and promised gift of Jo Carole and Ronald S. Lauder" "Gift of the architect in honor of Lily Auchincloss" "Gift of Jo Carole and Ronald S. Lauder" "Purchase and partial gift of the architect in honor of Lily Auchincloss" ...
+##  $ AccessionNumber   : chr  "885.1996" "1.1995" "1.1997" "2.1995" ...
+##  $ Classification    : chr  "Architecture" "Architecture" "Architecture" "Architecture" ...
+##  $ Department        : chr  "Architecture &amp; Design" "Architecture &amp; Design" "Architecture &amp; Design" "Architecture &amp; Design" ...
+##  $ DateAcquired      : Date, format: "1996-04-09" "1995-01-17" ...
+##  $ Cataloged         : chr  "Y" "Y" "Y" "Y" ...
+##  $ ObjectID          : num  2 3 4 5 6 7 8 9 10 11 ...
+##  $ URL               : chr  "http://www.moma.org/collection/works/2" "http://www.moma.org/collection/works/3" "http://www.moma.org/collection/works/4" "http://www.moma.org/collection/works/5" ...
+##  $ ThumbnailURL      : chr  "http://www.moma.org/media/W1siZiIsIjU5NDA1Il0sWyJwIiwiY29udmVydCIsIi1yZXNpemUgMzAweDMwMFx1MDAzZSJdXQ.jpg?sha=137b8455b1ec6167" "http://www.moma.org/media/W1siZiIsIjk3Il0sWyJwIiwiY29udmVydCIsIi1yZXNpemUgMzAweDMwMFx1MDAzZSJdXQ.jpg?sha=55b65fa4368fe00a" "http://www.moma.org/media/W1siZiIsIjk4Il0sWyJwIiwiY29udmVydCIsIi1yZXNpemUgMzAweDMwMFx1MDAzZSJdXQ.jpg?sha=fdcfca4db3acac1f" "http://www.moma.org/media/W1siZiIsIjEyNCJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDMwMHgzMDBcdTAwM2UiXV0.jpg?sha=c89b9071486760a5" ...
+##  $ Circumference (cm): logi  NA NA NA NA NA NA ...
+##  $ Depth (cm)        : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ Diameter (cm)     : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ Height (cm)       : num  48.6 40.6 34.3 50.8 38.4 ...
+##  $ Length (cm)       : logi  NA NA NA NA NA NA ...
+##  $ Weight (kg)       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ Width (cm)        : num  168.9 29.8 31.8 50.8 19.1 ...
+##  $ Seat Height (cm)  : logi  NA NA NA NA NA NA ...
+##  $ Duration (sec.)   : logi  NA NA NA NA NA NA ...
+##  - attr(*, "problems")=Classes 'tbl_df', 'tbl' and 'data.frame':	3481 obs. of  5 variables:
+##   ..$ row     : int  1002 1003 1004 1005 1007 1008 1011 1041 1042 1045 ...
+##   ..$ col     : chr  "Length (cm)" "Length (cm)" "Length (cm)" "Length (cm)" ...
+##   ..$ expected: chr  "1/0/T/F/TRUE/FALSE" "1/0/T/F/TRUE/FALSE" "1/0/T/F/TRUE/FALSE" "1/0/T/F/TRUE/FALSE" ...
+##   ..$ actual  : chr  "17.8" "19.0" "18.1" "17.78" ...
+##   ..$ file    : chr  "'https://github.com/MuseumofModernArt/collection/blob/master/Artworks.csv?raw=true'" "'https://github.com/MuseumofModernArt/collection/blob/master/Artworks.csv?raw=true'" "'https://github.com/MuseumofModernArt/collection/blob/master/Artworks.csv?raw=true'" "'https://github.com/MuseumofModernArt/collection/blob/master/Artworks.csv?raw=true'" ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   Title = col_character(),
+##   ..   Artist = col_character(),
+##   ..   ConstituentID = col_character(),
+##   ..   ArtistBio = col_character(),
+##   ..   Nationality = col_character(),
+##   ..   BeginDate = col_character(),
+##   ..   EndDate = col_character(),
+##   ..   Gender = col_character(),
+##   ..   Date = col_character(),
+##   ..   Medium = col_character(),
+##   ..   Dimensions = col_character(),
+##   ..   CreditLine = col_character(),
+##   ..   AccessionNumber = col_character(),
+##   ..   Classification = col_character(),
+##   ..   Department = col_character(),
+##   ..   DateAcquired = col_date(format = ""),
+##   ..   Cataloged = col_character(),
+##   ..   ObjectID = col_double(),
+##   ..   URL = col_character(),
+##   ..   ThumbnailURL = col_character(),
+##   ..   `Circumference (cm)` = col_logical(),
+##   ..   `Depth (cm)` = col_double(),
+##   ..   `Diameter (cm)` = col_double(),
+##   ..   `Height (cm)` = col_double(),
+##   ..   `Length (cm)` = col_logical(),
+##   ..   `Weight (kg)` = col_double(),
+##   ..   `Width (cm)` = col_double(),
+##   ..   `Seat Height (cm)` = col_logical(),
+##   ..   `Duration (sec.)` = col_logical()
+##   .. )
+```
+
+
+---
+# Overview
+
+- 139,049 objects in the MoMA collection
+- by 15,813 artists
+- **Poor documentation**
+- But most variables are self-explanatory
+- `ConstituentID` is a unique artist identifier
+- `ObjectID` is a unique artwork identifier
+
+---
+# After some messing around
+I see this
+
+
+```r
+select(art, ConstituentID, ObjectID, Title) %&gt;% slice(110:115)
+```
+
+```
+## # A tibble: 6 x 3
+##   ConstituentID   ObjectID Title                                                
+##   &lt;chr&gt;              &lt;dbl&gt; &lt;chr&gt;                                                
+## 1 27                   150 Woodland Crematorium, Woodland Cemetery, Stockholm, …
+## 2 8102, 6703, 43…      151 Palais de la Découverte Project, Paris, France (Elev…
+## 3 8102, 6703, 43…      152 Palais de la Découverte Project, Paris, France (Long…
+## 4 8102, 4312, 67…      153 Palais de la Découverte Project, Paris, France (Aeri…
+## 5 8102, 6703, 43…      154 Palais de la Découverte Project, Paris, France (Plan…
+## 6 2702                 163 Gymnasium-Bridge, project, New York City, New York, …
+```
+
+### Which rule of tidyness does this violate?
+
+---
+# *Wangechi Mutu, 2003*
+&lt;img src="http://www.moma.org/media/W1siZiIsIjExMDIzOSJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDIwMDB4MjAwMFx1MDAzZSJdXQ.jpg?sha=b058626179a4e9b9" height="550" /&gt;
+
+
+
+---
+# `separate` those artists!
+
+`separate` does the opposite of `unite`, from a previous lecture.
+
+### Syntax
+
+```
+separate(data_frame, col = column_to_separate, 
+          sep = separating_character, into = c("newcol1", "newcol2", ...))
+```
+
+### Example
+
+```r
+test &lt;- tibble(x = c(1, 2, 3, 4), 
+               y = c("a,banana", "x,yellow,zumblezay", "f", "g,hook"))
+test
+```
+
+```
+## # A tibble: 4 x 2
+##       x y                 
+##   &lt;dbl&gt; &lt;chr&gt;             
+## 1     1 a,banana          
+## 2     2 x,yellow,zumblezay
+## 3     3 f                 
+## 4     4 g,hook
+```
+
+
+---
+
+
+```r
+separate(test, y, into = c("letter", "word", "nonsense"), sep = ",")
+```
+
+```
+## # A tibble: 4 x 4
+##       x letter word   nonsense 
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;    
+## 1     1 a      banana &lt;NA&gt;     
+## 2     2 x      yellow zumblezay
+## 3     3 f      &lt;NA&gt;   &lt;NA&gt;     
+## 4     4 g      hook   &lt;NA&gt;
+```
+
+
+separates until it can't anymore
+
+creates number of columns specified
+
+cells with fewer than the max have values filled with `NA`
+
+---
+
+### If you specified too few columns it drops the remaining separated values
+
+```r
+separate(test, y, into = c("letter", "other_words"), sep = ",")
+```
+
+```
+## # A tibble: 4 x 3
+##       x letter other_words
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;      
+## 1     1 a      banana     
+## 2     2 x      yellow     
+## 3     3 f      &lt;NA&gt;       
+## 4     4 g      hook
+```
+
+**Where did the zumblezay go?**
+
+---
+# Now you try! (*Raymond Savignac, 1954*)
+
+&lt;img src="http://www.moma.org/media/W1siZiIsIjIxMTYyOSJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDIwMDB4MjAwMFx1MDAzZSJdXQ.jpg?sha=acb8594b5d2130b4" height="550" /&gt;
+
+
+---
+# Tutorial
+Create an html file that does the following
+
+- **load** the MoMA artwork dataset using the link above
+- **separate** the `ConstituentID` column into two columns
+  - `firstID`
+  - `secondID`
+giving the first and second entries in `ConstituentID` and dropping the rest.
+- review the code above, which uses `slice`, to **display** that your fix worked on the problematic rows shown in the example. You should display columns `firstID`, `secondID` and `ObjectID`
+
+---
+# Two columns: first and second artist
+
+For expediency, we 
+
+- assume artists are listed in order, from 'primary' downward
+- forget about any artists beyond primary and secondary
+
+### Remember
+These types of decisions to help class go more smoothly, in reality, should be considered more carefully.
+
+
+
+argument `convert = TRUE` will convert those IDs to integer class
+
+---
+# Solution should give this
+
+```
+## # A tibble: 6 x 3
+##   firstID secondID ObjectID
+##     &lt;int&gt;    &lt;int&gt;    &lt;dbl&gt;
+## 1      27       NA      150
+## 2    8102     6703      151
+## 3    8102     6703      152
+## 4    8102     4312      153
+## 5    8102     6703      154
+## 6    2702       NA      163
+```
+
+---
+# More tidyness checks
+
+We should have one observation per `ObjectID`,
+
+
+```r
+nrow(art) - n_distinct(art$ObjectID)
+```
+
+```
+## [1] 0
+```
+
+Great!
+
+Also, no cases where `firstID == secondID`,
+
+
+```r
+filter(art, firstID == secondID) %&gt;% nrow
+```
+
+```
+## [1] 30
+```
+
+
+```
+:(
+```
+
+---
+
+
+```r
+filter(art, firstID == secondID) %&gt;% select(ObjectID, firstID, secondID, DateAcquired, Title) %&gt;% head
+```
+
+```
+## # A tibble: 6 x 5
+##   ObjectID firstID secondID DateAcquired Title                                  
+##      &lt;dbl&gt;   &lt;int&gt;    &lt;int&gt; &lt;date&gt;       &lt;chr&gt;                                  
+## 1    13590   12074    12074 1977-05-03   Plate (page 7) from CHETYRE FONETICHES…
+## 2    13592   12074    12074 1977-05-03   Plate (page 11) from CHETYRE FONETICHE…
+## 3    13593   12074    12074 1977-05-03   Plate (page 15) from CHETYRE FONETICHE…
+## 4    13594   12074    12074 1977-05-03   Plate (page 19) from CHETYRE FONETICHE…
+## 5    13595   12074    12074 1977-05-03   Plate (page 23) from CHETYRE FONETICHE…
+## 6    13596   12074    12074 1977-05-03   Tailpiece (page 27) from CHETYRE FONET…
+```
+
+
+**Crude fix** is just to replace the duplicate information with `NA`, since it clearly makes no sense. We might have lost our true secondary artist id in these cases.
+
+
+```r
+art &lt;- mutate(art, secondID = ifelse(firstID==secondID, NA, secondID))
+```
+
+
+---
+# Now you try! (*Raymond Savignac, 1954*)
+
+&lt;img src="http://www.moma.org/media/W1siZiIsIjE3NDQwMSJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDIwMDB4MjAwMFx1MDAzZSJdXQ.jpg?sha=6634d574982730eb" height="550" /&gt;
+
+
+---
+# Tutorial
+Add the following to your html file
+
+- **briefly investigate** the artwork dataset using the tools we have seen so far in class
+- **show your code** used to do so
+- **identify at least one genuine improvement** to the dataset, to make it more 'tidy'
+- **recommend a fix** in one or two sentences. You do not need to implement the fix
+
+An example of an acceptable type of answer: "There are multiple values in XXX column. We should use `separate` to split the values into YY, ZZ, QQ columns using the separator _".
+
+Not an acceptable answer: "The variable XX is bad and doesn't make sense. We should fix it by making it numeric. Maybe we could use `separate`?"
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
