@@ -44,6 +44,21 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 13 | [hw 1](hw1.Rmd) | Jan. 22|
 |Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
 
+## Semester-long project
+
+The project is divided into four pieces
+
+- Proposal: Due March 2, 2:30 pm
+- Data exploration and cleaning report: Due April 8, 2:30 pm
+- Final report: Due April 24, 5:00 pm
+- Final presentation: Last day of classes and university-designated final exam time
+
+You will be randomly assigned to a group, typically of four people. **Assignments are posted on Sakai** under Resources. Each student has a distinct role in the group, which groups choose for themselves.
+
+These slides contain instructions on role, grading criteria, and deliverables: [Semester project]()
+
+They will be updated with details for each project piece as its due date nears.
+
 ## Resources
 
 Our textbook for programming is [R4DS](https://r4ds.had.co.nz/), and for modeling is [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/).
@@ -66,3 +81,4 @@ These link to examples I mention in class, which might help give context for the
 |Jan. 27| [FRED](https://fred.stlouisfed.org/)|
 |Jan. 29| [Diaspora in the U.S.](https://pudding.cool/2020/01/diaspora/)|
 |Jan. 31| [Brain artery MRA images](https://www.insight-journal.org/midas/community/view/21)|
+|Feb. 3| [Bob Ross](https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/)|
