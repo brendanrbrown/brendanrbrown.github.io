@@ -45,6 +45,9 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
 
 ## Semester-long project
+These slides contain instructions on role, grading criteria, and deliverables: [Semester project](slides_project.html)
+
+They will be updated with details for each project piece as its due date nears.
 
 The project is divided into four pieces
 
@@ -55,9 +58,8 @@ The project is divided into four pieces
 
 You will be randomly assigned to a group, typically of four people. **Assignments are posted on Sakai** under Resources. Each student has a distinct role in the group, which groups choose for themselves.
 
-These slides contain instructions on role, grading criteria, and deliverables: [Semester project]()
 
-They will be updated with details for each project piece as its due date nears.
+
 
 ## Resources
 
