@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>tidy data and joining, part b</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_tidyrel_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_tidyrel_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_tidyrel_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# tidy data and joining, part b
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- key types
+- `inner_join`
+- `left_join` and `right_join`
+
+**Main reference:** R4DS chapter 13
+
+
+---
+# Recap: Tidy data
+
+A 'tidy' dataset is one whose structure lets you answer questions at hand.
+
+### In a tidy dataset (from the textbook)
+
+1. each variable has its own column
+2. each observation has its own row
+3. each value has its own cell
+
+
+![](https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png)
+
+---
+# Recap: Tidyness is relative to your goals
+
+### Example
+In the death penalty dataset, we discovered 
+
+- rows were not distinct individuals
+- but were distinct cases
+
+If I want to know how many people were sentenced to death in the US in a given year, **is the dataset 'tidy?'**
+
+### But
+
+Often datasets are not tidy for *any* reasonable purposes
+
+---
+# Museum of Modern Art data
+
+We will investigate tidyness in the Museum of Modern Art (MoMA) database, [available here](https://github.com/MuseumofModernArt/collection).
+
+### Last time
+
+
+
+```r
+art &lt;- read_csv("https://github.com/MuseumofModernArt/collection/blob/master/Artworks.csv?raw=true")%&gt;%
+  separate(ConstituentID, into = c("firstID", "secondID"), sep = ",", convert = TRUE)
+```
+
+### This time
+
+```r
+artists &lt;- read_csv("https://github.com/MuseumofModernArt/collection/blob/master/Artists.csv?raw=true")
+```
+
+---
+
+#### Artist dataset doesn't have much, but resolves some issues in the art data
+
+#### e.g. the `Gender`, `Nationality` are better formatted
+
+
+```r
+str(artists)
+```
+
+```
+## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':	15783 obs. of  9 variables:
+##  $ ConstituentID: num  1 2 3 4 5 6 7 9 10 11 ...
+##  $ DisplayName  : chr  "Robert Arneson" "Doroteo Arnaiz" "Bill Arnold" "Charles Arnoldi" ...
+##  $ ArtistBio    : chr  "American, 1930–1992" "Spanish, born 1936" "American, born 1941" "American, born 1946" ...
+##  $ Nationality  : chr  "American" "Spanish" "American" "American" ...
+##  $ Gender       : chr  "Male" "Male" "Male" "Male" ...
+##  $ BeginDate    : num  1930 1936 1941 1946 1941 ...
+##  $ EndDate      : num  1992 0 0 0 0 ...
+##  $ Wiki QID     : chr  NA NA NA "Q1063584" ...
+##  $ ULAN         : num  NA NA NA 5e+08 NA ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   ConstituentID = col_double(),
+##   ..   DisplayName = col_character(),
+##   ..   ArtistBio = col_character(),
+##   ..   Nationality = col_character(),
+##   ..   Gender = col_character(),
+##   ..   BeginDate = col_double(),
+##   ..   EndDate = col_double(),
+##   ..   `Wiki QID` = col_character(),
+##   ..   ULAN = col_double()
+##   .. )
+```
+
+
+---
+# Goal: Joining
+
+### Join the artist data to the art data
+
+### Answer some questions with our new dataset, e.g.
+
+#### Proportions of artwork by artist nationality?
+
+#### Frequent collaborations between artists?
+
+#### Artists with most diverse portfolios at MoMA?
+
+---
+# *John Singer Sargent, 1909*
+&lt;img src="http://www.moma.org/media/W1siZiIsIjM3NDc1MyJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDIwMDB4MjAwMFx1MDAzZSJdXQ.jpg?sha=6455fa1a54a9236a" height="550" /&gt;
+
+
+---
+# Keys
+
+### Key to joining two data frames is... keys
+
+&gt;Key: A variable or set of variables that **uniquely identify** an observation.
+
+### But wait: What is an observation?
+
+&gt;One row per observation
+&gt; --- Tidy person
+
+### Now we are thinking of multiple datasets
+
+An observation in one might not be in another
+
+Keys identify observations in one dataset to corresponding information in another---where it need the unit of analysis might be different
+
+### Technical distinctions
+
+**Primary keys** uniquely identify observations in their own data frames
+
+**Foreign keys** identify the observation from the original frame but within a different frame
+
+
+---
+# Now you try! (*Raymond Savignac, 1949*)
+
+&lt;img src="http://www.moma.org/media/W1siZiIsIjMzMTMiXSxbInAiLCJjb252ZXJ0IiwiLXJlc2l6ZSAyMDAweDIwMDBcdTAwM2UiXV0.jpg?sha=e6b41c4a5ef2dbd9" height="550" /&gt;
+
+
+---
+# Tutorial
+Create an html file that does the following
+
+- **load** the MoMA `artist` dataset using the link above
+- **load** the `art` dataset and run the cleaning code
+- **specify** which variable in the `artist` dataset is the primary key?
+- **verify** that the key uniquely identifies each observation in that dataset
+
+---
+# Inner joins
+
+![](https://d33wubrfki0l68.cloudfront.net/108c0749d084c03103f8e1e8276c20e06357b124/5f113/diagrams/join-setup.png)&lt;!-- --&gt;
+
+We will join them by the key, given in colored blocks
+
+
+![](https://d33wubrfki0l68.cloudfront.net/3abea0b730526c3f053a3838953c35a0ccbe8980/7f29b/diagrams/join-inner.png)&lt;!-- --&gt;
+
+
+
+---
+### Syntax
+
+```
+inner_join(df1, df2, by = "key_var_name")
+```
+- only observations matched in both are returned
+- all variables kept
+
+
+### Dummy example
+
+
+```r
+d1 &lt;- tibble(role = c("captain", "engineer", "emissary"), uniform = c("red", "yellow", "purple"))
+d2 &lt;- tibble(role = c("doctor", "captain", "emissary"), ship = c("voyager", "voyager", "defiant"))
+```
+
+
+```r
+inner_join(d1, d2, by = "role")
+```
+
+```
+## # A tibble: 2 x 3
+##   role     uniform ship   
+##   &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;  
+## 1 captain  red     voyager
+## 2 emissary purple  defiant
+```
+
+
+---
+
+#### Non-uniqueness of keys will be transferred in inner joins
+
+
+```r
+d1 &lt;- tibble(role = c("captain", "captain", "engineer", "emissary"), uniform = c("very_red", "red", "yellow", "purple"))
+```
+
+
+```r
+inner_join(d1, d2, by = "role")
+```
+
+```
+## # A tibble: 3 x 3
+##   role     uniform  ship   
+##   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;  
+## 1 captain  very_red voyager
+## 2 captain  red      voyager
+## 3 emissary purple   defiant
+```
+
+#### But which captain do I listen to?
+
+---
+#### If the key variable names differ, specify the equivalence
+
+```
+inner_join(df1, df2, key = c("key_name_df1" = "key_name_df2"))
+```
+
+
+```r
+d2 &lt;- tibble(character = c("doctor", "captain", "emissary", "emissary"), ship = c("voyager", "voyager", "defiant", "very_defiant"))
+```
+
+
+```r
+inner_join(d1, d2, by = c("role" = "character"))
+```
+
+```
+## # A tibble: 4 x 3
+##   role     uniform  ship        
+##   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;       
+## 1 captain  very_red voyager     
+## 2 captain  red      voyager     
+## 3 emissary purple   defiant     
+## 4 emissary purple   very_defiant
+```
+
+Beware: The key was not unique in either dataset. What does it even mean to match them?
+
+---
+# Outer joins
+
+&lt;img src="https://d33wubrfki0l68.cloudfront.net/9c12ca9e12ed26a7c5d2aa08e36d2ac4fb593f1e/79980/diagrams/join-outer.png" height="550" /&gt;
+
+---
+
+
+```r
+left_join(d1, d2, by = c("role" = "character"))
+```
+
+```
+## # A tibble: 5 x 3
+##   role     uniform  ship        
+##   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;       
+## 1 captain  very_red voyager     
+## 2 captain  red      voyager     
+## 3 engineer yellow   &lt;NA&gt;        
+## 4 emissary purple   defiant     
+## 5 emissary purple   very_defiant
+```
+
+
+```r
+right_join(d1, d2, by = c("role" = "character"))
+```
+
+```
+## # A tibble: 5 x 3
+##   role     uniform  ship        
+##   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;       
+## 1 doctor   &lt;NA&gt;     voyager     
+## 2 captain  very_red voyager     
+## 3 captain  red      voyager     
+## 4 emissary purple   defiant     
+## 5 emissary purple   very_defiant
+```
+
+
+---
+# Now you try! (*Herbert Matter, 1935*)
+
+&lt;img src="https://www.moma.org/media/W1siZiIsIjIxMDQ3OCJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDUxMng1MTJcdTAwM2UiXV0.jpg?sha=681f1b7a8d9510e0" height="550" /&gt;
+
+
+---
+# Tutorial
+Add the following to your html file
+
+- **inner join** the `artist` and `art` datasets by `ConstituentID` and `firstID`
+- **inner join** the datasets by `ConstituentID` and `secondID`, and comment on the difference
+- **outer join** the datasets so the result retains all art objects. It is part of the exercise to determine which one to use. 
+- **display** a data frame giving the five *primary* artist nationalities with the most representation at the MoMA.
+
+For the final question, you will need to use an appropriate join, along with skills from past lectures. 
+
+**Note:** Look at the outer join pictures and note columns appearing in both have new names.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
