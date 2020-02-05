@@ -70,6 +70,9 @@ A good way to find datasets is to look for data science projects, e.g. [at the P
 - [US Census](https://www.census.gov/data/data-tools.html)
 - [Data.gov](https://www.data.gov/)
 - [Harvard dataverse](https://dataverse.harvard.edu/)
+- [ProPublica](https://www.propublica.org/datastore/)
+- [WaPo opioid data](https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/)
+- [FiveThirtyEight](https://data.fivethirtyeight.com/)
 
 
 
