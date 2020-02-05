@@ -33,6 +33,8 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 27| [explore part b](slides_EDA_ptb.html) | [Yuchen Li](1.27-stor320-inclass.html)|
 |Jan. 29| [explore part c](slides_EDA_ptc.html) | [Kiley Supina](January29.html)|
 |Jan. 31| [tidy part a](slides_tidyrel_pta.html)|[Sriganesh Gopal](tutorial8.html)|
+|Feb. 3| Semester project intro||
+|Feb. 5| [tidy part b](slides_tidyrel_ptb.html)||
 
 
 ## Homework
