@@ -35,6 +35,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 31| [tidy part a](slides_tidyrel_pta.html)|[Sriganesh Gopal](tutorial8.html)|
 |Feb. 3| Semester project intro||
 |Feb. 5| [tidy part b](slides_tidyrel_ptb.html)|[Grant McGrew](Feb_5_tutorial.html)|
+|Feb. 7| [tidy part c](slides_tidyrel_ptc.html)||
 
 
 ## Homework
