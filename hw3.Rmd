@@ -1,0 +1,95 @@
+---
+title: 'Homework 3'
+subtitle: 'Due: Feb. 14, 2:30 pm'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+
+## Instructions
+Answer each of the questions given below. Do so in a markdown file with html output.
+
+**Submit only the HTML file.** 
+
+Remember to `knit` often and use the techniques we discussed in class to handle code chunks with errors you cannot fix. Homework submitted in a format other than the html output from your document will not be accepted.
+
+## Dataset
+We will continue exploring the Federal Reserve's Financial Accounts of the U.S. dataset, first seen in class.
+
+See this helpful [description of the flow of funds statements](https://www.federalreserve.gov/pubs/bulletin/2001/0701lead.pdf) (former title for this dataset). This is for background information only, e.g. on what constitutes a 'level' vs. a 'transaction.'
+
+In particular, we will investigate consumer credit in the U.S. as given in this dataset. The **explosion in American consumer credit** is one of the major socioeconomic trends of the late 20th and early 21st centuries, and we get a little glimpse into this phenomenon here.
+
+## Scoring
+All questions worth the same amount, as with HW 1.
+
+
+# Q1
+Load the following two datasets
+
+- Consumer Credit Transactions: https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/f222.csv
+- Consumer Credit Levels: https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/l222.csv
+
+Transactions record net value 'changing hands.' Levels record the total amount. 
+
+For example: Say I owe you 10 dollars. In 2020 Q1 I pay back 3. Then the transaction amount is 3 dollars, and the level is 7.
+
+
+# Q2 
+The column names are ugly. Worse, they have different names for the same categories.
+
+For example, both FA153166000 and FL153166000 refer to "Households and nonprofit organizations; consumer credit; liability", the former giving transactions and the latter levels.
+
+- Using the following links for reference on names, change the column names in each of the datasets to something short and useful. See the class example for guidance.
+
+- Remove the duplicate column for "Households and nonprofit organizations; consumer credit; liability" in each dataset.
+
+**Your column names should match in both datasets**
+
+Link for [transactions data](https://www.federalreserve.gov/releases/z1/20191212/html/f222.htm)
+Link for [levels data](https://www.federalreserve.gov/releases/z1/20191212/html/l222.htm)
+
+# Q3
+This data is untidy: Column names are actually values of a categorical variable.
+
+- Use a pivot function to correct the problem, as we did in class.
+- Do this for each dataset
+- Call your new categorical variable `series`
+- In the transactions dataset, call your new values variable `transaction`
+- In the levels dataset, call the new values variable `level`
+
+**See the class example for reference.**
+
+# Q4
+We want to join these two datasets, so we can analyze levels and transactions together.
+
+State which variable or variables can serve as key(s) for joining.
+
+# Q5 
+Join the two datasets using an appropriate join function and key, saving it as a new data frame.
+
+Show your result by displaying the first few rows.
+
+# Q6
+Our dataset still is untidy: `date` includes two types of values.
+
+Separate the `date` variable into two columns: `year` and `quarter`.
+
+Be sure to use the `convert = TRUE` option.
+
+# Q7
+Convert `ND` values to `NA` and convert the `transaction` and `level` variables to numeric type if necessary.
+
+# Q8
+Choose four of the `series` categories of interest to you.
+
+- Make two plots to demonstrate some aspect of this dataset you find interesting. The most obvious thing to do is to plot a value by year, for a given quarter. But you should do what you want.
+- Make one table of summary statistics for your chosen categories.
+- Write two sentences describing what the output above shows. Two sentences for the entire Q8, not two per plot and summary.
