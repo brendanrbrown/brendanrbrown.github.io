@@ -12,7 +12,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# tidy data and joining, part c
+# strings manipulation, part a: matching
 
 ---
 
@@ -2021,6 +2021,12 @@ beauty &lt;- mutate(beauty, person = str_replace_all(person, codes) %&gt;% str_r
 ---
 ![](http://img.lum.dolimg.com/v1/images/gallery_beautyandthebeast_15_6c38d594.jpeg?region=0%2C0%2C1580%2C880)
 ---
+#### I saved the output so you could just load it like any csv
+
+```r
+beauty &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/beauty.csv")
+```
+
 
 
 ```r
@@ -2145,7 +2151,7 @@ Sometimes they say `She's our guest` and lots of things that rhyme with `guest`.
 # Tutorial part 2
 Add the following to you html file,
 
-1. **Copy and paste** the cleaning code above that creates the `beauty` data frame for the script.
+1. **Read** the `beauty` data frame for the script.
 2. **Count** the number of times `Gaston` is mentioned *in total* throughout the movie.
 3. **Display** a data frame that gives the number of times `Gaston` is mentioned *by each person*, removing rows for people who never say `Gaston`
     </textarea>
