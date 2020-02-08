@@ -219,7 +219,7 @@ pivot_longer(debt, -date, names_to = "sector", values_to = "billions") %&gt;%
 Careful with the `select`-like syntax. This doesn't work
 
 ```r
-pivot_longer(debt, -debt, -financial, names_to = "sector", values_to = "billions")
+pivot_longer(debt, -date, -financial, names_to = "sector", values_to = "billions")
 ```
 
 But this does. Notice all variables not pivoted are kept.
