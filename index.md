@@ -36,7 +36,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 3| Semester project intro||
 |Feb. 5| [tidy part b](slides_tidyrel_ptb.html)|[Grant McGrew](Feb_5_tutorial.html)|
 |Feb. 7| [tidy part c](slides_tidyrel_ptc.html)|[Tongyu Zhao](2.7-Tongyu-Zhao.html)|
-|Feb. 10|[strings part a](slides_strings_pta.html)||
+|Feb. 10|[strings part a](slides_strings_pta.html)|[Bellete Lu](tutorial_strings_part_a.html)|
 
 
 ## Homework
