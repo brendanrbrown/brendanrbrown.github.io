@@ -36,6 +36,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 3| Semester project intro||
 |Feb. 5| [tidy part b](slides_tidyrel_ptb.html)|[Grant McGrew](Feb_5_tutorial.html)|
 |Feb. 7| [tidy part c](slides_tidyrel_ptc.html)|[Tongyu Zhao](2.7-Tongyu-Zhao.html)|
+|Feb. 10|[strings part a](slides_strings_pta.html)||
 
 
 ## Homework
@@ -104,3 +105,4 @@ These link to examples I mention in class, which might help give context for the
 |Jan. 29| [Diaspora in the U.S.](https://pudding.cool/2020/01/diaspora/)|
 |Jan. 31| [Brain artery MRA images](https://www.insight-journal.org/midas/community/view/21)|
 |Feb. 3| [Bob Ross](https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/)|
+|Feb. 10|[Hip hop vocabulary](https://pudding.cool/projects/vocabulary/index.html)|
