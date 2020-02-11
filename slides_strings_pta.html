@@ -2015,7 +2015,10 @@ beauty &lt;- tibble(person = str_extract_all(beauty, "[0-9]{3}&gt;")[[1]],
                      line = str_extract_all(beauty, "[A-z[:punct:][:space:]]+(?![0-9]{3}&gt;)")[[1]])
 names(codes) &lt;- codes_list
 beauty &lt;- mutate(beauty, person = str_replace_all(person, codes) %&gt;% str_replace_all(":", ""),
-                 line = str_trim(line, side = "both") %&gt;% str_replace_all(";+", " ") %&gt;% str_trim)
+                 line = str_replace_all(line, ";+", ";") %&gt;%
+                   # If sentence already ends, then no need for ;. Else keep 
+                   str_replace_all("([\\.!?]+);", " \\1") %&gt;%
+                   str_trim)
 ```
 
 ---
@@ -2037,12 +2040,12 @@ filter(beauty, person == "LUMIERE") %&gt;% head
 ## # A tibble: 6 x 2
 ##   person  line                                                                  
 ##   &lt;chr&gt;   &lt;chr&gt;                                                                 
-## 1 LUMIERE Old fellow must have lost his way in the woods.                       
-## 2 LUMIERE Oh Cogsworth, have a heart.                                           
+## 1 LUMIERE Old fellow must have lost his way in the;woods.                       
+## 2 LUMIERE . Oh Cogsworth, have a heart.                                         
 ## 3 LUMIERE Of course, monsieur, you are welcome here.                            
 ## 4 LUMIERE Over here!                                                            
-## 5 LUMIERE Allo!                                                                 
-## 6 LUMIERE Oh, you are soaked to the bone, monsieur.  Come, warm yourself by the…
+## 5 LUMIERE . Allo!                                                               
+## 6 LUMIERE Oh, you are soaked to the bone, monsieur.  Come, warm yourself by;the…
 ```
 
 ---
@@ -2133,11 +2136,11 @@ filter(beauty, grepl("be our guest", line, ignore.case = T))
 ## # A tibble: 5 x 2
 ##   person  line                                                                  
 ##   &lt;chr&gt;   &lt;chr&gt;                                                                 
-## 1 LUMIERE "Ma chere, mademoiselle.  It is with deepest pleasure and greatest pr…
-## 2 ALL     "Come on and lift your glass, You've won your own free pass To be our…
-## 3 ALL     "Be our guest, be our guest, be our guest!"                           
-## 4 ALL     "She's our guest! Be our guest! Be our guest! Our command is your req…
-## 5 ALL     "Course, by course One by one 'Til you shout \"Enough, I'm done!\" Th…
+## 1 LUMIERE "Ma chere, mademoiselle.  It is with deepest pleasure and;greatest pr…
+## 2 ALL     "Come on and lift your glass,. You've won your own free pass. To be o…
+## 3 ALL     "Be our guest, be our guest, be our guest!;"                          
+## 4 ALL     "She's our guest!. Be our guest! Be our guest!. Our command is your r…
+## 5 ALL     ". Course, by course. One by one;'Til you shout \"Enough, I'm done!\"…
 ```
 
 

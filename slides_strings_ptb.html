@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>strings manipulation, part b: intro regular expressions</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_strings_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_strings_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_strings_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# strings manipulation, part b: intro regular expressions
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- basics of regular expressions
+
+**Main reference:** R4DS ch 14.3
+
+**Resources:**
+
+- [strings cheatsheet](https://github.com/rstudio/cheatsheets/raw/master/strings.pdf)
+- [regexone interactive tutorial](https://regexone.com/)
+
+
+---
+# Dataset
+.center[![](http://img.lum.dolimg.com/v1/images/gallery_beautyandthebeast_03_81aeab2e.jpeg?region=0%2C0%2C1580%2C880)]
+
+
+---
+# Beauty of strings
+
+- So much **interesting data** is in text format
+- Essential for **data cleaning** when all else fails
+- Maximum **flexibility** for manipulating information in structured or unstructured formats
+- Regular expressions, the core 'language' of string manipulation, is **widely used** across programming languages
+
+
+#### This might be tough for some of you, but it is absolutely necessary to learn
+
+---
+# Magic of regular expressions
+.center[![](http://img.lum.dolimg.com/v1/images/gallery_beautyandthebeast_05_707210b9.jpeg?region=0%2C0%2C1580%2C880)]
+
+---
+# Regular expressions
+
+## What is that?
+
+#### First conceived in the 50s as an attempt to make computer-readable language
+
+#### Used throughout computer science, in many programming languages
+
+#### [Wikipedia entry](https://en.wikipedia.org/wiki/Regular_expression) has a bunch of interesting info about what they are, how they came about
+
+
+## If you're new to regular expressions, expect to try, fail, try, fail etc.
+
+## Helpful interactive tutorial: [regexone.com](https://regexone.com/)
+
+---
+# Basics: Reference slides
+
+#### Regular expressions allows you to *create patterns* for matching, using `grep`, `grepl` etc.
+
+#### Write these things in the `pattern` argument of the functions we've seen
+See the textbook or the cheatsheet linked above for explanation of the difference between the actual regular expression and what you put into R
+
+## Get to know the basic types of patterns
+Most are also on the cheatsheet linked above
+
+#### Exact pattern
+`"thingIwrote"` matches `"thingIwrote"` exactly
+
+#### Anything in a specified collection of characters
+
+- `"[!?]"` matches `!` or `?`
+- `"[aqi!]"` matches `a`, `q`, `i` or `!`
+
+---
+
+#### Any letter or number
+- `"[a-z]"` or `"[[:lower:]]"` matches any lower case letter
+- `"[A-Z]"` or `"[[:upper:]]"` matches any upper case letter
+- `"[A-z]"` or `"[[:alpha:]]"` matches any upper or lower case letter
+- `"[0-9]"` or `"[[:digit:]]"` or `"\\d"` matches any number
+- `"[[:alnum:]]"` matches any alpha-numeric character
+
+#### Example
+
+
+```r
+dummy &lt;- c("ninetynine", "99!", "NINENINE", "Ninety9?")
+
+grep("[A-z]", dummy, value = TRUE)
+```
+
+```
+## [1] "ninetynine" "NINENINE"   "Ninety9?"
+```
+
+```r
+grep("[[:alnum:]]", dummy, value = TRUE)
+```
+
+```
+## [1] "ninetynine" "99!"        "NINENINE"   "Ninety9?"
+```
+
+---
+# Multiple patterns
+
+#### Building blocks go next to each other
+
+- `"e[!?]"` matches `e` followed by `!` or `?`
+- `"[a-z][0-9]"` matches any lower-case letter *followed by* any digit
+- `"[[:alnum:]][!?]"` matches ... *followed by* ...
+
+
+
+```r
+dummy
+```
+
+```
+## [1] "ninetynine" "99!"        "NINENINE"   "Ninety9?"
+```
+
+```r
+grep("e[!?]", dummy, value = TRUE)
+```
+
+```
+## character(0)
+```
+
+```r
+grep("[a-z][0-9]", dummy, value = TRUE)
+```
+
+```
+## [1] "Ninety9?"
+```
+
+```r
+grep("[[:alnum:]][!?]", dummy, value = TRUE)
+```
+
+```
+## [1] "99!"      "Ninety9?"
+```
+
+
+---
+# Now you try!
+
+&lt;img src="https://img.buzzfeed.com/buzzfeed-static/static/2017-03/17/9/asset/buzzfeed-prod-fastlane-02/anigif_sub-buzz-12282-1489758451-10.gif" height="550" /&gt;
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Read** the `beauty` dataset from last time, at https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/beauty.csv
+2. **Write** a regular expression that matches a letter (capital or lower case) followed by `!` or `?`, and test it on the dummy string `c("yippee", "YIPEE!", "Yipee?", "?", "yipe6!")`
+3. **Count** the *number of times in total* your regular expression from Q2 appears in the movie lines from `beauty`
+
+
+
+---
+
+#### Whitespace, punctuation
+- `"\\s"` or `"[[:space:]]"` matches any whitespace
+- `"\\t"` matches any tab character
+- `"\\n"` matches a line break
+- `"\\."` matches a period
+- `"[[:blank:]]"` matches space and tab
+- `"[[:punct:]]"` matches all punctuation
+
+#### Wildcard
+`"."` matches everything but a line break
+
+
+---
+# More examples
+
+
+```r
+dummy &lt;- c("BE ... OUR ... GUEST!", "Be...Our...Guest!", "beourguest", "8 teacups put service to the test")
+```
+
+#### Does the string contain 'guest'?
+
+```r
+grep("guest", dummy, value = TRUE)
+```
+
+```
+## [1] "beourguest"
+```
+
+#### Does it contain whitespace?
+
+```r
+grep("\\s", dummy, value = TRUE)
+```
+
+```
+## [1] "BE ... OUR ... GUEST!"             "8 teacups put service to the test"
+```
+
+#### Punctuation?
+
+```r
+grep("[[:punct:]]", dummy, value = TRUE)
+```
+
+```
+## [1] "BE ... OUR ... GUEST!" "Be...Our...Guest!"
+```
+
+---
+# Quantifiers
+
+For more complex patterns, we might specify how many times a string can match
+
+
+#### We want to match any upper or lowercase letter some number of times
+
+- `"[A-z]"` matches once
+- `"[A-z]?"` zero or one time
+- `"[A-z]*"` zero or more
+- `"[A-z]+"` at least once
+- `"[A-z]{2}"` exactly twice
+- `"[A-z]{4,}"` at least four times
+- `"[A-z]{4,6}"` between 4 and 6 times
+
+
+#### Why care?
+
+Suppose we want a specific pattern: Letters followed possibly by spaces, then by ellipses (three dots)
+
+
+---
+This gives too many results: Remember `"."` is the wildcard matching anything
+
+```r
+grep("[A-z].+", dummy, value = TRUE)
+```
+
+```
+## [1] "BE ... OUR ... GUEST!"             "Be...Our...Guest!"                
+## [3] "beourguest"                        "8 teacups put service to the test"
+```
+
+
+
+This is too restrictive: We *required* a space between words and ellipses
+
+```r
+grep("[A-z]\\s\\.{3}", dummy, value = TRUE)
+```
+
+```
+## [1] "BE ... OUR ... GUEST!"
+```
+
+This is what we want
+
+```r
+grep("[A-z]\\s*\\.{3}", dummy, value = TRUE)
+```
+
+```
+## [1] "BE ... OUR ... GUEST!" "Be...Our...Guest!"
+```
+
+#### Who can translate that regular expression into English?
+
+---
+# Now you try!
+
+&lt;img src="https://img.buzzfeed.com/buzzfeed-static/static/2017-03/16/13/asset/buzzfeed-prod-fastlane-03/sub-buzz-25899-1489687077-4.jpg?downsize=800:*&amp;output-format=auto&amp;output-quality=auto" height="550" /&gt;
+
+---
+# Tutorial
+**I will walk you through this part.**
+
+We know Gaston sings a song about himself, in which there is lots of shouting.
+
+How many *sentences containing* the pattern `Gaston` end with `!`? And who says them?
+
+1. Write a regular expression matching any sentence containing the word `Gaston` and ending in `!`
+2. Count *by person* the number of times this pattern appears in the dataset
+
+---
+# Q1
+
+```r
+turd &lt;- c("What about that Gaston?  He's a handsome fellow!", "Who does she think she is?", "That girl has tangled with the wrong man.",  "No one says 'no' to Gaston!", "Gaston, you've got to pull yourself together!")
+```
+
+#### According to the instruction, which strings should match in `turd`?
+
+#### Tell me what's wrong here
+
+Regular expression is `"Gaston"`
+
+```r
+grep("Gaston", turd, value = T)
+```
+
+```
+## [1] "What about that Gaston?  He's a handsome fellow!"
+## [2] "No one says 'no' to Gaston!"                     
+## [3] "Gaston, you've got to pull yourself together!"
+```
+
+#### And what's wrong here
+Regular expression is `"Gaston.!"` Remember `.` is the wildcard.
+
+```r
+grep("Gaston.!", turd, value = T)
+```
+
+```
+## character(0)
+```
+
+---
+
+#### So close. Why do we still not have it?
+Regular expression is `"Gaston.*!"` Remember `.*` says match the wildcard zero or more times
+
+```r
+grep("Gaston.*!", turd, value = T)
+```
+
+```
+## [1] "What about that Gaston?  He's a handsome fellow!"
+## [2] "No one says 'no' to Gaston!"                     
+## [3] "Gaston, you've got to pull yourself together!"
+```
+
+--
+#### Yay
+
+
+```r
+grep("Gaston[[:alpha:][:space:],;']*!", turd, value = T)
+```
+
+```
+## [1] "No one says 'no' to Gaston!"                  
+## [2] "Gaston, you've got to pull yourself together!"
+```
+
+
+#### Who can tell me literally what the regular expression means, and why it does what we want?
+
+---
+
+###Q2
+
+
+```r
+beauty &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/beauty.csv")
+
+group_by(beauty, person) %&gt;%
+  summarize(exclaim = str_count(line, "Gaston[[:alpha:][:space:],;']*!") %&gt;% sum) %&gt;%
+  filter(exclaim &gt; 0)
+```
+
+```
+## # A tibble: 6 x 2
+##   person      exclaim
+##   &lt;chr&gt;         &lt;int&gt;
+## 1 ALL               3
+## 2 BELLE             1
+## 3 GASTON            1
+## 4 LEFOU             3
+## 5 MOB               1
+## 6 OLD CRONIES       1
+```
+
+---
+
+```r
+filter(beauty, grepl("Gaston[[:alpha:][:space:],;']*!", line))
+```
+
+```
+## # A tibble: 10 x 2
+##    person      line                                                             
+##    &lt;chr&gt;       &lt;chr&gt;                                                            
+##  1 LEFOU       Wow! You didn't miss a shot, Gaston!  You're the;greatest hunter…
+##  2 GASTON      Who does she think she is?  That girl has tangled with the wrong…
+##  3 OLD CRONIES My, what a guy that Gaston!;                                     
+##  4 LEFOU       Gaston is the best and the rest is all drips!;                   
+##  5 LEFOU       In a spitting match, nobody spits like Gaston!                   
+##  6 ALL         Ten points for Gaston!;                                          
+##  7 ALL         My what a guy! Gaston!!!!!!!;                                    
+##  8 ALL         So his marriage we soon'll be celebrating!. My what a guy, Gasto…
+##  9 MOB         We're counting on Gaston to lead the way!. Through a mist, to a …
+## 10 BELLE       Gaston, don't!;
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
