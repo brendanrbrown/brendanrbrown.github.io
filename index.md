@@ -107,3 +107,4 @@ These link to examples I mention in class, which might help give context for the
 |Jan. 31| [Brain artery MRA images](https://www.insight-journal.org/midas/community/view/21)|
 |Feb. 3| [Bob Ross](https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/)|
 |Feb. 10|[Hip hop vocabulary](https://pudding.cool/projects/vocabulary/index.html)|
+|Feb. 14| [Errors in Iowa caucuses](https://www.washingtonpost.com/politics/2020/02/10/iowa-democratic-party-responds-ongoing-errors-caucus-results-with-shrug/?arc404=true#click=https://t.co/sfBhMwFIVq)|
