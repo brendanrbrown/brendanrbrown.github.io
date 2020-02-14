@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>strings manipulation, part c: a bit more</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_strings_ptc_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_strings_ptc_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_strings_ptc_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# strings manipulation, part c: a bit more
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- searching from front, back
+- matching one or the other pattern
+- replacing patterns with `sub`, `gsub` and `str_replace`
+- `str_extract`
+- `str_split`
+
+**Main reference:** R4DS ch 14.3
+
+**Resources:**
+
+- `?regex` help file
+- [strings cheatsheet](https://github.com/rstudio/cheatsheets/raw/master/strings.pdf)
+- [regexone interactive tutorial](https://regexone.com/)
+- [stringi package](https://cran.r-project.org/web/packages/stringi/stringi.pdf) for `R` has many string manipulation tools, though the `tidyverse` functions tend to use them in the background anyway
+
+
+```r
+library(tidyverse)
+```
+
+---
+# Why more regex?
+.center[![](http://img.lum.dolimg.com/v1/images/gallery_beautyandthebeast_01_4fa65432.jpeg?region=0%2C0%2C1580%2C880)]
+
+
+---
+#### Need to learn a few more tricks
+
+#### The tutorial can't cover all of them, but the homework will cover more
+
+#### Next time we will use what we learned to answer questions about the data
+
+#### Hang in there
+
+
+---
+# Or, and searching from left, right
+
+`^` before your pattern **searches from the left** of the string
+
+`$` at the end of your pattern **searches from the right** of the string
+
+`"pattern1|pattern2"` matches `pattern1` **or** `pattern2` 
+
+#### Examples
+
+
+```r
+dummy &lt;- c("Oh why", "Oh why oh", "Why oh why, Bob, why?")
+```
+
+
+```r
+grep("^[A-z]", dummy, value = T)
+```
+
+```
+## [1] "Oh why"                "Oh why oh"             "Why oh why, Bob, why?"
+```
+
+```r
+grep("[A-z]$", dummy, value = T)
+```
+
+```
+## [1] "Oh why"    "Oh why oh"
+```
+
+
+```r
+grep("oh why oh|why oh why", dummy, value = T, ignore.case = T)
+```
+
+```
+## [1] "Oh why oh"             "Why oh why, Bob, why?"
+```
+
+
+---
+
+```r
+grep("^Oh", dummy, value = T, ignore.case = T)
+```
+
+```
+## [1] "Oh why"    "Oh why oh"
+```
+
+#### Who can translate this regular expression?
+
+Remember `?` when outside `[]` is the option to match zero or once
+
+```r
+grep("why[?]?$", dummy, value = T)
+```
+
+```
+## [1] "Oh why"                "Why oh why, Bob, why?"
+```
+
+Think of the pattern being read from **right to left** when using `$`
+
+
+---
+# Replacing patterns
+
+Useful in data cleaning to replace a certain *bad* pattern with another.
+
+### Example: `DOB` from death penalty data
+
+A sample looked like this
+
+
+```r
+dob &lt;- c("1952", "1949", NA, "04/10/1970", "7/11/1969")
+```
+
+
+#### Nothing we can do about missing months and dates, or the `NA`
+
+#### Best we can do is to extract the year for the full dates
+
+#### To put it in common format for analysis
+
+---
+# `sub` and `gsub`
+
+Base `R` functions to replace a matched pattern with a string
+
+- `sub` replaces the **first** occurence of the pattern
+- `gsub` replaces **all** occurences of the pattern
+
+### Syntax
+
+```
+sub(pattern_to_match, replacement_string, vector)
+gsub(pattern_to_match, replacement_string, vector)
+```
+
+Can use `ignore.case` argument here as in `grep` function.
+
+---
+# `str_replace`
+
+These functions work similarly to the ones above, so I won't demonstrate more.
+
+The difference is you can have multiple pattern-replacement pairs. See `?str_replace` for details.
+
+### Syntax
+
+Replaces the first match
+
+```
+str_replace(vector, pattern, replacement)
+```
+
+Replaces all matches
+
+
+```
+str_replace_all(vector, pattern, replacement)
+```
+---
+**Goal:** Remove the month and day pieces of `dob` entries, in other words 
+
+- search for patterns of the form `xx/xx/` for some number `x`
+- replace with the empty string `""`
+
+#### What is the problem here?
+
+
+```r
+dob
+```
+
+```
+## [1] "1952"       "1949"       NA           "04/10/1970" "7/11/1969"
+```
+
+```r
+gsub("[0-9/]{3}[0-9/]{3}", "", dob)
+```
+
+```
+## [1] "1952" "1949" NA     "1970" "969"
+```
+
+#### And here?
+
+```r
+gsub("[0-9]{2}/[0-9]{2}/", "", dob)
+```
+
+```
+## [1] "1952"      "1949"      NA          "1970"      "7/11/1969"
+```
+
+---
+Easy enough to fix
+
+
+```r
+gsub("[0-9]{1,2}/[0-9]{1,2}/", "", dob)
+```
+
+```
+## [1] "1952" "1949" NA     "1970" "1969"
+```
+
+same as
+
+
+```r
+str_replace(dob, "[0-9]{1,2}/[0-9]{1,2}/", "")
+```
+
+```
+## [1] "1952" "1949" NA     "1970" "1969"
+```
+
+Actually, we could do this in several different ways.
+
+---
+# String extraction
+
+Suppose we want to save *only* the matched patterns in our strings. A good tool is `str_extract` from the tidyverse.
+
+### Syntax
+Extracts the **first match** in each entry of the vector, **returning a vector of the matches**
+```
+str_extract(vector, pattern)
+```
+
+Extracts **all matches** in each entry of the vector, **returning a list** with the vector of matches for each entry
+
+```
+str_extract_all(vector, pattern)
+```
+
+### Note
+We have not yet seen list objects in detail, so I will stick to `str_extract` for now.
+
+---
+# Examples
+
+#### Failure to match returns `NA`
+
+
+```r
+dob
+```
+
+```
+## [1] "1952"       "1949"       NA           "04/10/1970" "7/11/1969"
+```
+
+```r
+str_extract(dob, "9$")
+```
+
+```
+## [1] NA  "9" NA  NA  "9"
+```
+
+
+#### `NA` itself is not a string and matches nothing!
+
+
+```r
+str_extract(dob, "NA")
+```
+
+```
+## [1] NA NA NA NA NA
+```
+
+
+#### Could have done the previous problem with this
+
+
+```r
+str_extract(dob, "[0-9]{4}$")
+```
+
+```
+## [1] "1952" "1949" NA     "1970" "1969"
+```
+
+---
+# Splitting strings
+
+This is useful if we want to, for example, break up a string with several sentences into a vector with one sentence per element.
+
+### Syntax
+```
+str_split(vector, pattern)
+```
+
+The option `n = x` sets a maximum number of pieces for the output to `x`. The default is unlimited.
+
+### A vector of output for each cell
+Since we are splitting each string in the vector, we will have a vector of the split pieces for *each* cell in the vector input.
+
+The default is to return a **list** of the splits.
+
+Option `simplify = TRUE` returns a matrix instead.
+
+---
+
+**Goal:** Split each line into individual sentences.
+
+```r
+dummy &lt;- c("There will be music.  Romantic candlelight, provided myself, and when the time is right, you'll confess your love.", 
+           "So you want me to throw her father in the asylum unless she agrees to marry you?   Oh, that is despicable.  I love it!")
+```
+
+#### Looking at one cell first: What's wrong?
+
+```r
+str_split(dummy[1], "[[:punct:]]")
+```
+
+```
+## [[1]]
+## [1] "There will be music"         "  Romantic candlelight"     
+## [3] " provided myself"            " and when the time is right"
+## [5] " you"                        "ll confess your love"       
+## [7] ""
+```
+
+---
+OK but awkward dangling empty split
+
+```r
+str_split(dummy, "[\\.?!]")
+```
+
+```
+## [[1]]
+## [1] "There will be music"                                                                          
+## [2] "  Romantic candlelight, provided myself, and when the time is right, you'll confess your love"
+## [3] ""                                                                                             
+## 
+## [[2]]
+## [1] "So you want me to throw her father in the asylum unless she agrees to marry you"
+## [2] "   Oh, that is despicable"                                                      
+## [3] "  I love it"                                                                    
+## [4] ""
+```
+
+---
+#### Better to use matching modifier functions in many cases
+
+from the `tidyverse`. For more see `?modifiers`
+
+Subtle difference in how `boundary` works gets rid of the danglers.
+
+```r
+str_split(dummy, boundary("sentence"))
+```
+
+```
+## [[1]]
+## [1] "There will be music.  "                                                                      
+## [2] "Romantic candlelight, provided myself, and when the time is right, you'll confess your love."
+## 
+## [[2]]
+## [1] "So you want me to throw her father in the asylum unless she agrees to marry you?   "
+## [2] "Oh, that is despicable.  "                                                          
+## [3] "I love it!"
+```
+
+---
+#### Could have split it into words as well
+
+
+```r
+str_split(dummy, boundary("word"))
+```
+
+```
+## [[1]]
+##  [1] "There"       "will"        "be"          "music"       "Romantic"   
+##  [6] "candlelight" "provided"    "myself"      "and"         "when"       
+## [11] "the"         "time"        "is"          "right"       "you'll"     
+## [16] "confess"     "your"        "love"       
+## 
+## [[2]]
+##  [1] "So"         "you"        "want"       "me"         "to"        
+##  [6] "throw"      "her"        "father"     "in"         "the"       
+## [11] "asylum"     "unless"     "she"        "agrees"     "to"        
+## [16] "marry"      "you"        "Oh"         "that"       "is"        
+## [21] "despicable" "I"          "love"       "it"
+```
+
+---
+# Now you try!
+
+&lt;img src="https://media2.giphy.com/media/l4EpeUDjSNmDYtJXa/giphy.gif?cid=790b7611c4279939810fb694444fb27f2a0bc5c7826e3c11&amp;rid=giphy.gif" height="550" /&gt;
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Read** the `beauty` dataset from last time, at https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/beauty.csv
+2. **Create** a new object called `narrator` with just the first row of the data frame, the narrator's opening lines.
+3. **Replace** all of those semicolons in `narrator` with a single space, i.e. replace `;` with ` `
+4. **Split** the result from 3. into its different sentences, and **display the result**
+
+
+
+
+---
+.center[![](https://m.media-amazon.com/images/M/MV5BZGEwZTcyNDUtOTVlNS00NjRmLWFkMDAtMWFkYWIxYWU1YmQ5XkEyXkFqcGdeQXVyMjMzMDI4MjQ@._V1_SX1777_CR0,0,1777,999_AL_.jpg)]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
