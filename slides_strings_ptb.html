@@ -356,9 +356,10 @@ grep("Gaston.*!", turd, value = T)
 --
 #### Yay
 
+We will consider `;` to mark the end of a sentence, so it is not in our box `[]` in the expression
 
 ```r
-grep("Gaston[[:alpha:][:space:],;']*!", turd, value = T)
+grep("Gaston[[:alpha:][:space:],':]*!", turd, value = T)
 ```
 
 ```
@@ -378,7 +379,7 @@ grep("Gaston[[:alpha:][:space:],;']*!", turd, value = T)
 beauty &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/beauty.csv")
 
 group_by(beauty, person) %&gt;%
-  summarize(exclaim = str_count(line, "Gaston[[:alpha:][:space:],;']*!") %&gt;% sum) %&gt;%
+  summarize(exclaim = str_count(line, "Gaston[[:alpha:][:space:],':]*!") %&gt;% sum) %&gt;%
   filter(exclaim &gt; 0)
 ```
 
@@ -397,7 +398,7 @@ group_by(beauty, person) %&gt;%
 ---
 
 ```r
-filter(beauty, grepl("Gaston[[:alpha:][:space:],;']*!", line))
+filter(beauty, grepl("Gaston[[:alpha:][:space:],':]*!", line))
 ```
 
 ```
@@ -406,14 +407,14 @@ filter(beauty, grepl("Gaston[[:alpha:][:space:],;']*!", line))
 ##    &lt;chr&gt;       &lt;chr&gt;                                                            
 ##  1 LEFOU       Wow! You didn't miss a shot, Gaston!  You're the;greatest hunter…
 ##  2 GASTON      Who does she think she is?  That girl has tangled with the wrong…
-##  3 OLD CRONIES My, what a guy that Gaston!;                                     
-##  4 LEFOU       Gaston is the best and the rest is all drips!;                   
+##  3 OLD CRONIES My, what a guy that Gaston!                                      
+##  4 LEFOU       Gaston is the best and the rest is all drips!                    
 ##  5 LEFOU       In a spitting match, nobody spits like Gaston!                   
-##  6 ALL         Ten points for Gaston!;                                          
-##  7 ALL         My what a guy! Gaston!!!!!!!;                                    
-##  8 ALL         So his marriage we soon'll be celebrating!. My what a guy, Gasto…
-##  9 MOB         We're counting on Gaston to lead the way!. Through a mist, to a …
-## 10 BELLE       Gaston, don't!;
+##  6 ALL         Ten points for Gaston!                                           
+##  7 ALL         My what a guy! Gaston!!!!!!!                                     
+##  8 ALL         So his marriage we soon'll be celebrating! My what a guy, Gaston…
+##  9 MOB         We're counting on Gaston to lead the way! Through a mist, to a w…
+## 10 BELLE       Gaston, don't!
 ```
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
