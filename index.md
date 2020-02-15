@@ -110,3 +110,4 @@ These link to examples I mention in class, which might help give context for the
 |Feb. 3| [Bob Ross](https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/)|
 |Feb. 10|[Hip hop vocabulary](https://pudding.cool/projects/vocabulary/index.html)|
 |Feb. 14| [Errors in Iowa caucuses](https://www.washingtonpost.com/politics/2020/02/10/iowa-democratic-party-responds-ongoing-errors-caucus-results-with-shrug/?arc404=true#click=https://t.co/sfBhMwFIVq)|
+|Feb. 17|[Trump tweets, regex and list columns](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets)|
