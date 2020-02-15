@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>strings manipulation, part d: analyzing text</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_strings_ptd_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_strings_ptd_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_strings_ptd_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# strings manipulation, part d: analyzing text
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- `str_c` to concatenate strings
+- turn new string powers into graphs
+- first look at lists and list columns in a data frame
+- `map` functions for lists
+
+**Main reference:** R4DS chapter 14
+
+**Resources:**
+
+
+- `?regex` help file
+- [strings cheatsheet](https://github.com/rstudio/cheatsheets/raw/master/strings.pdf)
+- [Jenny Bryan's text analysis example](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets)
+- [apply functions cheat sheet](https://github.com/rstudio/cheatsheets/raw/master/purrr.pdf)
+
+
+```r
+library(tidyverse)
+```
+
+---
+# And here we are...
+.center[![](https://img.buzzfeed.com/buzzfeed-static/static/2017-03/16/14/asset/buzzfeed-prod-fastlane-02/sub-buzz-31017-1489688309-12.jpg?downsize=800:*&amp;output-format=auto&amp;output-quality=auto)]
+
+---
+## This is a transition lecture
+
+where we 
+
+#### use many tools learned to date
+
+#### to learn something about the `beauty` dataset
+
+#### and take a peek at a few new techniques from days to come
+
+## Another demo of these methods
+
+See [Jenny Bryan's text analysis example](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets), using list columns and other things we'll see today.
+
+[Jenny Bryan](https://jennybryan.org/) is a former UBC professor, is now at RStudio, and has lots of good R learning material.
+
+---
+# Question
+
+Inspired by the [rapper vocab analysis](https://pudding.cool/projects/vocabulary/index.html) we saw, I'm interested in exploring one idea for the `beauty` script data.
+
+#### How rich are the characters' vocabularies?
+
+## Plan
+
+1. Clean up data if needed
+2. Create a data frame which one row per `person` and a `lines` variable with all of that person's lines smashed together
+3. Break up each line into words
+4. Generate statistics from the words, e.g. number of unique words per word spoken
+
+---
+# Remember: Already did some cleaning
+
+```r
+beauty &lt;- read_lines('http://www.fpx.de/fp/Disney/Scripts/BeautyAndTheBeast.txt', skip = 6) %&gt;% 
+  str_trim(side = "both") %&gt;% paste(collapse = ";") %&gt;% str_replace_all(c(" \\(ex. COGSWORTH\\):" = ":", " \\(esp. LUMIERE\\):" = ":"))
+# little annoying or statement for MRS. POTTS. Can't rearrage the previous statement without getting more
+codes &lt;- unique(str_extract_all(beauty, "[A-Z]+[\\s0-9[:punct:]]*:|MRS. POTTS:|OLD CRONIES:")[[1]])
+codes_list &lt;- paste0(seq(from = 100, to = 100 + length(codes) - 1), "&gt;")
+names(codes_list) &lt;- codes
+beauty &lt;- str_replace_all(beauty, codes_list) %&gt;% 
+  str_replace("&lt;/pre&gt;", "") %&gt;%
+  # first removing the directions between two brackets
+  str_replace_all("(\\(){1}[A-Za-z0-9\\s,.;:'!?]*(\\)){1}", "") %&gt;%
+  # now getting the dangling brackets with open ends at the end of the line or dangling brackets
+  str_replace_all("(\\(){1}[A-Za-z0-9\\s,.;:'!?]*(\\))*", "")
+beauty &lt;- tibble(person = str_extract_all(beauty, "[0-9]{3}&gt;")[[1]],
+                     line = str_extract_all(beauty, "[A-z[:punct:][:space:]]+(?![0-9]{3}&gt;)")[[1]])
+names(codes) &lt;- codes_list
+beauty &lt;- mutate(beauty, person = str_replace_all(person, codes) %&gt;% str_replace_all(":", ""),
+                 line = str_replace_all(line, ";+", ";") %&gt;%
+                   # If sentence already ends, then no need for ;. Else keep 
+                   str_replace_all("([\\.!?]+);", "\\1 ") %&gt;%
+                   str_trim)
+```
+
+---
+# Concatenating and collapsing strings
+
+### Syntax
+
+Combine (aka concatenate) two (or more) character vectors element-by-element like this
+
+```
+str_c(vector1, vector2, ..., sep = "thing to separate elements from different vectors")
+```
+
+To collapse a character vector into one long string
+
+```
+str_c(vector1, collapse = "thing to separate elements")
+```
+
+To combine multiple vectors then collapse the result into one long string
+
+```
+str_c(vector1, vector2, ..., 
+sep = "thing to separate elements from different vectors",
+collapse = "thing to separate elements after combining")
+```
+
+---
+
+## Examples
+
+
+```r
+baker &lt;- c("Good morning, Belle!", "Where are you off to?", "That's nice...Marie, the baguettes! Hurry up!!")
+crony &lt;- c("Is it a big beast?", "Crazy old Maurice.  He's always good for a laugh!")
+```
+
+#### Vectors should be the same length
+Else the shorter one just repeats
+
+```r
+str_c(baker, crony, sep = "; ")
+```
+
+```
+## [1] "Good morning, Belle!; Is it a big beast?"                                
+## [2] "Where are you off to?; Crazy old Maurice.  He's always good for a laugh!"
+## [3] "That's nice...Marie, the baguettes! Hurry up!!; Is it a big beast?"
+```
+
+---
+
+```r
+str_c(baker, collapse = " ")
+```
+
+```
+## [1] "Good morning, Belle! Where are you off to? That's nice...Marie, the baguettes! Hurry up!!"
+```
+
+
+
+```r
+str_c(baker, crony, sep = " ", collapse = " ")
+```
+
+```
+## [1] "Good morning, Belle! Is it a big beast? Where are you off to? Crazy old Maurice.  He's always good for a laugh! That's nice...Marie, the baguettes! Hurry up!! Is it a big beast?"
+```
+
+---
+# Now you try!
+
+&lt;img src="https://m.media-amazon.com/images/M/MV5BZDYwMzNjNTEtMWNhMy00MTVjLTllYjMtOGNjZDAzYzcyYTgxXkEyXkFqcGdeQXVyNzgxMzc3OTc@._V1_SX1777_CR0,0,1777,999_AL_.jpg" height="550" /&gt;
+
+---
+# Tutorial
+
+You will do the last bit of cleaning and reshaping, using tools learned to date.
+
+Create an html file that does the following
+
+1. **Read** the `beauty` dataset from https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/beauty.csv
+2. **Replace all** semicolons `;` in the `line` variable with a **space**, writing over the original line variable
+3. **Change** all values in the `person` variable to lower case
+3. **Create a data frame with one row per `person`** by collapsing all lines for that person into a single vector
+
+**Leave a space between different lines when collapsing.**
+
+The new data frame should have two columns, one called `person` and another called `lines`
+
+*HINT:* Start like this
+
+```
+group_by(beauty, person) %&gt;% summarize(lines = ...)
+```
+
+---
+### Result should look like this
+
+
+```
+## # A tibble: 6 x 2
+##   person lines                                                                  
+##   &lt;chr&gt;  &lt;chr&gt;                                                                  
+## 1 all    "She's nothing like the rest of us Yes different from the rest of us i…
+## 2 arque  "I don't usually leave the asylum in the middle of the night, but they…
+## 3 baker  "Good morning, Belle! Where are you off to? That's nice...Marie, the b…
+## 4 barber "Cause her head's up on some cloud"                                    
+## 5 beast  "There's a stranger here. Who are you!  What are you doing here? You a…
+## 6 belle  "Little town, it's a quiet village Every day, like the one before Litt…
+```
+
+
+---
+# Lists and list columns
+
+We want to **analyze the words for each character**, e.g. unique words, number of words, maybe word length, etc.
+
+Remember from last class, we can split a string into its words
+
+
+```r
+str_split(baker[1], boundary("word"))
+```
+
+```
+## [[1]]
+## [1] "Good"    "morning" "Belle"
+```
+
+#### When we do this for each element in a vector, we get a list
+
+
+```r
+str_split(baker, boundary("word"))
+```
+
+```
+## [[1]]
+## [1] "Good"    "morning" "Belle"  
+## 
+## [[2]]
+## [1] "Where" "are"   "you"   "off"   "to"   
+## 
+## [[3]]
+## [1] "That's"    "nice"      "Marie"     "the"       "baguettes" "Hurry"    
+## [7] "up"
+```
+
+---
+# Lists: First look
+
+List objects are arguably the most important type of object in `R` for our purposes, after vectors and data frames.
+
+They are **common to many programming languages**, e.g. Python
+
+- **Like a vector** but
+- each element does not have to be of the same type
+- and most often, **elements of lists are vectors or data frames themselves**
+- in fact, the elements **can be anything including another list**!
+
+
+```r
+test &lt;- str_split(baker, boundary("word"))
+class(test)
+```
+
+```
+## [1] "list"
+```
+
+
+---
+## Indexing
+
+Access the `n`th element using `[[n]]`, for example 
+
+```r
+test[[2]]
+```
+
+```
+## [1] "Where" "are"   "you"   "off"   "to"
+```
+
+Second element is a character vector
+
+```r
+class(test[[2]])
+```
+
+```
+## [1] "character"
+```
+
+---
+## Naming
+Can name elements with the `names` function, like `colnames` for data frames
+
+
+```r
+names(test) &lt;- c("start", "middle", "end")
+```
+
+then you can access an element like you would a column in a data frame
+
+
+```r
+test$middle
+```
+
+```
+## [1] "Where" "are"   "you"   "off"   "to"
+```
+
+
+---
+# List columns: first look
+
+We can actually make a column in a data frame such that each 'cell' is an element of a list that is itself a list! This is called a **list column**.
+
+- stretches the **tidy data** concept
+- but very useful in some cases
+- **can be handled like other columns** in `mutate`, `select`
+- but we need to be aware that many functions do not work the same for lists as for column vectors
+- we'll need **special functions** that work well for lists
+
+#### This will give a sneak peek at some of the more advanced programming techniques we will see later in the semester.
+
+
+---
+# Example
+
+Let's split up each person's lines into their individual words
+
+
+```r
+beauty &lt;- mutate(beauty, words = str_split(lines, boundary("word")))
+```
+
+#### Notice the `words` column type is `list`
+
+```r
+select(beauty, person, words) %&gt;% head(n = 3)
+```
+
+```
+## # A tibble: 3 x 2
+##   person words      
+##   &lt;chr&gt;  &lt;list&gt;     
+## 1 all    &lt;chr [242]&gt;
+## 2 arque  &lt;chr [66]&gt; 
+## 3 baker  &lt;chr [15]&gt;
+```
+
+#### Treat it as a 'vector' in the data frame. But notice this is a list!
+
+
+```r
+filter(beauty, person == "barber")$words
+```
+
+```
+## [[1]]
+## [1] "Cause"  "her"    "head's" "up"     "on"     "some"   "cloud"
+```
+
+---
+# `map` first look
+
+In `mutate`, we apply a function to each element of a vector. 
+
+For example, this would apply the sin function to each element of the vector `x` in a data frame `df`, creating a new column called `new_var`
+
+```
+mutate(df, new_var = sin(x))
+```
+
+#### How do we apply a function to each element of a list column?
+
+This applies `my_function` to each element of `my_list` and returns a list of the output
+```
+map(my_list, my_function)
+```
+
+---
+# Example
+
+
+```r
+test
+```
+
+```
+## $start
+## [1] "Good"    "morning" "Belle"  
+## 
+## $middle
+## [1] "Where" "are"   "you"   "off"   "to"   
+## 
+## $end
+## [1] "That's"    "nice"      "Marie"     "the"       "baguettes" "Hurry"    
+## [7] "up"
+```
+
+
+```r
+map(test, tolower)
+```
+
+```
+## $start
+## [1] "good"    "morning" "belle"  
+## 
+## $middle
+## [1] "where" "are"   "you"   "off"   "to"   
+## 
+## $end
+## [1] "that's"    "nice"      "marie"     "the"       "baguettes" "hurry"    
+## [7] "up"
+```
+
+---
+`map` returns a list regardless of whether you used a window or aggregation function
+
+
+```r
+map(test, length)
+```
+
+```
+## $start
+## [1] 3
+## 
+## $middle
+## [1] 5
+## 
+## $end
+## [1] 7
+```
+
+---
+## Convert the output to a vector
+
+`unlist` can do this
+
+
+```r
+map(test, length) %&gt;% unlist
+```
+
+```
+##  start middle    end 
+##      3      5      7
+```
+
+or use the shortcut `map_int`, which in addition converts the output to integer if necessary
+
+
+```r
+map_int(test, length)
+```
+
+```
+##  start middle    end 
+##      3      5      7
+```
+
+See also `map_lgl` (logical), `map_dbl` (double) etc. Go to `?map` for all types
+
+
+---
+# Um... where are my plots?
+.center[![](https://img.buzzfeed.com/buzzfeed-static/static/2017-03/16/14/asset/buzzfeed-prod-fastlane-01/anigif_sub-buzz-18155-1489690101-22.gif)]
+
+---
+# Creating plottable variables
+
+Creating variables with values for each person,
+
+- word lengths (this is another list vector!)
+- mean word length
+- number of words spoken
+- number of alphabetic characters in `lines`
+- number of unique words spoken
+
+
+
+```r
+beauty &lt;- mutate(beauty, 
+                 lenwords = map(words, ~ str_count(., "[A-z]")),
+                 mlenwords = map_dbl(lenwords, mean),
+                 numwords = map_int(words, length),
+                 numchar = map_int(lenwords, sum),
+                 uwords = map_int(words, n_distinct),
+                 pwords = uwords/numwords)
+```
+
+---
+Just checking
+
+```r
+test &lt;- filter(beauty, person == "barber") %&gt;% select(lenwords, words, mlenwords)
+test$words[[1]]
+```
+
+```
+## [1] "Cause"  "her"    "head's" "up"     "on"     "some"   "cloud"
+```
+
+```r
+test$lenwords[[1]]
+```
+
+```
+## [1] 5 3 5 2 2 4 5
+```
+
+```r
+test$mlenwords
+```
+
+```
+## [1] 3.714286
+```
+
+---
+# Summary stats
+
+
+
+```r
+summarize_at(beauty, vars(numwords, numchar), 
+             .funs = list(mean = mean, sd = sd))
+```
+
+```
+## # A tibble: 1 x 4
+##   numwords_mean numchar_mean numwords_sd numchar_sd
+##           &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
+## 1          125.         490.        267.      1038.
+```
+
+
+---
+# Unique words per total words
+
+
+```r
+filter(beauty, numwords &gt; 200) %&gt;%
+  ggplot(aes(x = person, y = pwords, fill = numwords)) + geom_bar(stat = "identity") + theme_bw() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+&lt;img src="slides_strings_ptd_files/figure-html/unnamed-chunk-27-1.png" height="400" /&gt;
+
+---
+### What patterns do you see?
+
+
+### Any issues with this plot?
+
+### What would you do to fix it?
+
+---
+# Easier to see it like this
+
+
+```r
+ggplot(beauty, aes(x = numwords, y = pwords)) + 
+  geom_line(color = "#8c2d04", lwd = 2) + theme_bw() +
+  geom_smooth(method = "lm", color = "#238b45", se = FALSE)
+```
+
+&lt;img src="slides_strings_ptd_files/figure-html/unnamed-chunk-28-1.png" height="400" /&gt;
+
+---
+# Average word length
+
+```r
+filter(beauty, numwords &gt; 200) %&gt;%
+  ggplot(aes(x = person, y = mlenwords, fill = numwords)) + geom_bar(stat = "identity") + theme_bw() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+&lt;img src="slides_strings_ptd_files/figure-html/unnamed-chunk-29-1.png" height="400" /&gt;
+---
+# Groups of characters who talk good?
+
+![](slides_strings_ptd_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+
+---
+# K means clusters: word length
+
+![](slides_strings_ptd_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
