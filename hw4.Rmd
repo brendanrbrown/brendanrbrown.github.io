@@ -1,0 +1,135 @@
+---
+title: 'Homework 4'
+subtitle: 'Due: Feb. 26, 2:30 pm'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+
+## Instructions
+Answer each of the questions given below. Do so in a markdown file with html output.
+
+**Submit only the HTML file.** 
+
+Remember to `knit` often and use the techniques we discussed in class to handle code chunks with errors you cannot fix. Homework submitted in a format other than the html output from your document will not be accepted.
+
+## Dataset
+We will explore the book *Dubliners*, by James Joyce, a classic collection of short stories.
+
+This and many other books are available for free, in several formats, at [gutenberg.org.](https://www.gutenberg.org/)
+
+## Scoring
+All questions worth the same amount, as with HW 1 and 3.
+
+
+## Resources
+
+- lectures
+- regexone.com
+- [tidyverse regex tutorial](https://stringr.tidyverse.org/articles/regular-expressions.html)
+- [strings cheatsheet](https://github.com/rstudio/cheatsheets/raw/master/strings.pdf)
+- R4DS ch 14
+
+# Q1
+Load the full text of *Dubliners* from the link https://www.gutenberg.org/files/2814/2814-0.txt.
+
+**You must exclude all material preceding the title of the first story, 'The Sisters'.** You may do this any way you like, e.g. with `skip` or some other method. The first line of actual text in the dataset should be `THE SISTERS`.
+
+Display the first few lines of the dataset.
+
+# Q2
+Remove the end material from the dataset. That means, remove all lines including and after `End of the Project Gutenberg EBook of Dubliners, by James Joyce`. Overwrite your original data object.
+
+You may do this by any method you like. However, you might find it efficient to use `grep` or `str_which`.
+
+Display the **last few lines** of the new dataset.
+
+# Q3
+Make the following changes, displayed for your convenience in vector form using `current_string = change_to`
+
+```{r, eval = F}
+c("DEATH OF A LADY AT SYDNEY PARADE" = "Death of a Lady at Sidney Parade",
+                      "MUNICIPAL ELECTIONS" = "Municipal Elections", "ROYAL EXCHANGE WARD" = "Royal Exchange Ward",
+                      "THE DEATH OF PARNELL" = "The Death of Parnell")
+```
+
+We are doing this because the story titles are written in all caps, and therefore make for a reasonably nice way to split stories. But the strings above are *not* story titles so mess things up.
+
+# Q4: A painful case
+There are two occurances of the string `A PAINFUL CASE`: The first is a story title, the second part of the story text.
+
+The second occurs right after the phrase `Death of a Lady at Sidney Parade`. 
+
+Change the second `A PAINFUL CASE` to `A Painful Case` using any means you like. It probably is easiest just to find the string using `grep` and the instruction in the previous paragraph, then to change it manually.
+
+# Q5
+
+**My strong suggestion is to do this question and Q6 together.**
+
+Collapse all lines of the book into a single long string, using an appropriate separating character. What 'appropriate' means will depend on how you approach Q6, and there is no absolute correct answer. However, there are clearly inappropriate separators, which you should discover for yourself. For example, a single white space is not appropriate.
+
+# Q6
+
+Create a data frame with the following structure
+
+- one row per story in *Dubliners*, so 15 rows
+- two columns: one called `title` giving the story title, the other called `story` giving the story text (without any story titles)
+
+**Display** the first few rows of your data frame.
+
+*HINT:* My suggestion is to use a separating character in Q5 that will allow you to identify story titles by the fact that they are in all capital letters. Use that to write a regular expression that matches only story titles. Extract the story titles with it. Then, separate the single long string of book text from Q5 using that same regular expression.
+
+# Q7
+**Prove** that your `story` variable contains no story titles. You must use `grep`, `str_extract` or some other string manipulation function. Do not simply print the entire vector.
+
+Display the result.
+
+# Q8
+Create a new variable in your data frame called `words`. 
+
+- Each 'cell' of the variable should be the list of words used in the story text. `words` therefore will be a list column. 
+- Write over your original data frame object with these changes.
+
+**Display** the first few rows of your data frame.
+
+# Q9
+First, convert all values of the `words` list-column to lower case.
+
+Then, create the following new variables in your dataset
+
+- `lenwords` a **list column** giving the lengths of each word in a story. The words lengths should **count only the alphabetic characters**. For example `don't` has word length 4, not 5.
+- `uniquewords` a **list column** giving the vector of unique words (not the number of unique words but the actual unique words)
+- `uniquelenwords` a **list column** giving the lengths of each **unique** word
+
+*Hint:* You will need to use the `map` function shown in the strings part d lecture
+
+# Q10
+Create the following new variables in your dataset
+
+- `numwords` giving the total number of words in a story (should be an integer type column vector)
+- `numuniquewords` giving the total number of unique words in a story (should be an integer type column vector)
+- `meanlenwords` giving the mean word lengths for each story
+- `meanuniquelenwords` giving the mean **unique word** lengths for each story
+
+*Hint:* Look at how `map_int` and `map_dbl` are used in the lecture strings part d.
+
+Display the first few rows of these new columns (no actual text will be shown, which is fine).
+
+# Q11
+Make a scatterplot (point plot) of `numwords` by `meanlenwords`. 
+
+Write one or two sentences commenting on what the graph shows.
+
+# Q12
+Make a scatterplot of `numuniquewords` by `meanuniquelenwords`. 
+
+Write two to three sentences commenting on what the graph shows, and comparing it to the plot from Q11.
+
+Specifically, you should make an argument for why this plot differs from the one in Q11.
