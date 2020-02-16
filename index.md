@@ -38,8 +38,8 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 7| [tidy part c](slides_tidyrel_ptc.html)|[Tongyu Zhao](2.7-Tongyu-Zhao.html)|
 |Feb. 10|[strings part a](slides_strings_pta.html)|[Bellete Lu](tutorial_strings_part_a.html)|
 |Feb. 12|[strings part b](slides_strings_ptb.html)|[Jack Glandt](tutorial-strings-part-b.html)|
-|Feb. 14|[strings part c](slides_strings_ptc.html)||
-
+|Feb. 14|[strings part c](slides_strings_ptc.html)|[Bellete Lu](string-part-c.html)|
+|Feb. 17|[strings part d](slides_strings_ptd.html)||
 
 ## Homework
 
@@ -50,6 +50,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 13 | [hw 1](hw1.Rmd) | Jan. 22|
 |Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
 |Feb. 7 | [hw 3](hw3.Rmd) | Feb. 14|
+|Feb. 17| [hw 4](hw4.Rmd)| Feb. 26|
 
 ## Semester-long project
 These slides contain instructions on role, grading criteria, and deliverables: [Semester project](slides_project.html)
