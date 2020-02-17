@@ -39,7 +39,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 10|[strings part a](slides_strings_pta.html)|[Bellete Lu](tutorial_strings_part_a.html)|
 |Feb. 12|[strings part b](slides_strings_ptb.html)|[Jack Glandt](tutorial-strings-part-b.html)|
 |Feb. 14|[strings part c](slides_strings_ptc.html)|[Bellete Lu](string-part-c.html)|
-|Feb. 17|[strings part d](slides_strings_ptd.html)||
+|Feb. 17|[strings part d](slides_strings_ptd.html)|[Josh McCorquodale](2_17-Lecture (2).html)|
 
 ## Homework
 
