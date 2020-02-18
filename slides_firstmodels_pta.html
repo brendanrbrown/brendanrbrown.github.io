@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>first models, part a: sampling</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_firstmodels_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_firstmodels_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_firstmodels_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# first models, part a: sampling
+
+---
+
+
+
+
+# What you will learn
+
+- `set.seed`
+- sample from a vector
+- sample from a probability distribution
+- density plots, histograms
+
+**Main reference:** 
+  
+**Resources:**
+
+
+```r
+library(tidyverse)
+```
+
+
+---
+# Background
+  
+  Since STOR 155 is a requirement, I won't go over
+
+- randomness, random variables
+- independence
+- expectations, means, variances etc.
+- distributions in general
+- important distributions, e.g. uniform, normal, exponential, binomial, geometric ...
+- central limit theorem, law of large numbers
+
+### If these are not familiar to you
+Come talk to me after class if you need help with resources to remind yourself what's going on.
+
+---
+# Why we sample
+
+## Simulation
+
+- Monte carlo algorithms esp. in Bayesian models (e.g. MCMC, HMC)
+- Tree-fitting methods (e.g. Random Forest)
+- Dynamical systems with 'noise'
+
+## Model fitting
+
+- Cross validation
+- Parameter tuning
+
+We **try to re-create what predicting on new data is like** by sampling a subset of the data to model, and another subset to test on.
+
+---
+#(Pseudo) random numbers
+  ![](https://imgs.xkcd.com/comics/ayn_random.png)
+
+*xkcd.com*
+
+---
+# Computers and randomness
+  
+  Pseudorandom number generators (pseudoRNGs) algorithmically generate samples that have good statistical properties, e.g. different samples are 'independent', probability of a 'heads' in coin toss is 0.5.
+
+I won't go into details, but check out this post on [pcg-random.org](http://www.pcg-random.org/rng-basics.html) for a thoughtful discussion
+
+![](https://imgs.xkcd.com/comics/random_number.png)
+
+---
+# Pseudo RNG in `R`
+
+There are many pseudoRNG algorithms.
+
+## Which one does `R` use?
+See what `R` does by typing in the console `?Random`. The default algorithm is called `Mersenne-Twister`. According to [this ranking](http://www.pcg-random.org/), written by folks promoting a better RNG, the `Mersenne-Twister` is just OK.
+
+## Purpose
+We want our RNG to give results that
+
+- are reproducible
+- behave we expect random numbers to behave, e.g. different draws are **independent**
+
+---
+# `set.seed`
+The seed of an RNG is a number that initializes the RNG algorithm. This will be specific to a particular RNG sequence.
+
+
+Set the seed before drawing random numbers to make it reproducible. If you don't, `R` chooses one based on your computer's info. See `?Random`.
+
+```r
+set.seed(1305)
+```
+
+### seeds do
+- allow the next sampling operation you do after `set.seed` to be reproducible if you give it the same seed
+- 'sampling operation' could be a whole bunch of sampling in a function
+
+### seeds do not do
+- make the results of different sampling operations the same
+- see this this [stackexchange post](https://stats.stackexchange.com/questions/120371/why-doesnt-runif-generate-the-same-result-every-time).
+
+---
+
+#### Without seed
+
+```r
+runif(3)
+```
+
+```
+## [1] 0.6398492 0.5431420 0.5386989
+```
+
+```r
+runif(3)
+```
+
+```
+## [1] 0.1629936 0.7262785 0.5283092
+```
+
+
+#### With seed
+
+```r
+set.seed(1305)
+runif(3)
+```
+
+```
+## [1] 0.6398492 0.5431420 0.5386989
+```
+
+```r
+set.seed(1305)
+runif(3)
+```
+
+```
+## [1] 0.6398492 0.5431420 0.5386989
+```
+
+
+---
+# Sampling from a vector
+
+The `sample` function chooses elements in a vector randomly.
+
+### Syntax
+To sample `n` elements from `vector` **without replacement**
+
+```
+sample(vector, size = n)
+```
+
+To sample with replacement
+```
+sample(vector, size = n, replace = FALSE)
+```
+
+### Example
+
+
+```r
+x &lt;- c("Lucky", "tutorial", "names", "drawn", "like", "this?")
+sample(x, 3)
+```
+
+```
+## [1] "tutorial" "Lucky"    "names"
+```
+
+---
+# Sampling from distributions
+We have built-in functions to sample from standard probability distributions
+
+### Syntax
+
+To sample `\(n\)` values from the Uniform `\([a,b]\)` distribution
+```
+runif(n, min = a, max = b)
+```
+
+Other common options with their respective parameters, each time sampling `n` values
+
+- Normal: `rnorm(n, mean = m, sd = s)`
+- Binomial: `rbinom(n, size = N, prob = p)`
+- Poisson: `rpois(n, lambda = m)`
+
+For more, see `?Distributions`
+
+### Remember
+The pseudoRNG is trying to ensure each random number drawn is **independent**, in a statistical sense, of the others.
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Set the seed** of your RNG
+2. **Sample** three sequences of random numbers of length `\(n = 10,000\)` from the Uniform `\([-1, 1]\)` distribution, calling them `x`, `y`, `z`
+3. **Plot** `x` by `y` in a scatterplot.
+
+
+
+
+---
+# Looking at samples
+
+We have two friends: Histogram and density.
+
+### Histogram
+
+- Great for seeing which bins the data fall in
+- Simple and intuitive
+- But **sensitive to bin size**
+
+### Density
+
+- A smoothed estimate of a density curve, as you would see for a probability distribution
+- Less clear what the estimate actually is
+- Not always applicable, e.g. for discrete distributions
+- For technicalities on how this is computed, see `?density`
+
+---
+# Example: Geometric
+
+
+```r
+d &lt;- tibble(x = rgeom(10000, .5), y = rpois(10000, 2))
+ggplot(d, aes(x)) + geom_histogram(fill = "red", alpha = .75) + theme_bw() + 
+  ggtitle("Geometric(1/4)")
+```
+
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-7-1.png" height="400" /&gt;
+
+---
+# Changing binwidth
+In `geom_histogram` use the `binwidth` option. I am doing a dumb thing here, since bins should be size one.
+
+```r
+ggplot(d, aes(x)) + geom_histogram(fill = "red", alpha = .75, binwidth = 4) + theme_bw() + 
+  ggtitle("Geometric(1/2)")
+```
+
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-8-1.png" height="400" /&gt;
+
+---
+# Example: Poisson vs geometric
+
+
+```r
+ggplot(d, aes(x)) + geom_histogram(fill = "red", alpha = .75) + theme_bw() + 
+  geom_histogram(aes(x = y), fill = "thistle3", alpha = .75) + ggtitle("Geometric(1/2) v. Poisson(2)")
+```
+
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-9-1.png" height="400" /&gt;
+
+---
+# Example: Exponential
+
+```r
+d$z &lt;- rexp(10000, 1)
+
+ggplot(d, aes(z)) + geom_density(fill = "steelblue4", aes = .75) + theme_bw() +
+  ggtitle("Exponential(1)")
+```
+
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-10-1.png" height="400" /&gt;
+
+---
+# Normalized to one
+Use `stat(scaled)`, a helper function, in place of your y value here.
+
+```r
+ggplot(d, aes(z, y = stat(scaled))) + geom_density(fill = "steelblue4", aes = .75) + theme_bw() +
+  ggtitle("Exponential(1)")
+```
+
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-11-1.png" height="400" /&gt;
+
+---
+# Exponential v. geometric
+
+
+```r
+ggplot(d) + geom_density(aes(z, y = stat(scaled)), fill = "steelblue4", aes = .75) + 
+  theme_bw() + geom_histogram(aes(x, y = stat(density)), fill = "red", alpha = .75) +
+  ggtitle("Exponential(1) v. Geometric(1/2)")
+```
+
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-12-1.png" height="400" /&gt;
+
+---
+# Tutorial
+**March Madness is coming, and everyone wants to know: How much air is in a basketball?**
+
+We will do this by estimating the volume of a ball of radius one in three dimensions, using simulation.
+
+1. **Plot** a density plot for your variable `\(x\)`
+1. Using the random draws `x, y, z` from above, **calculate** the proportion observations such that `\(x^2 + y^2 + z^2 &lt; 1\)`
+2. **Multiply** that proportion by 8, the total volume of the cube `\([-1, 1]\)` in 3d. The result is the your estimate of the volume of a ball.
+3. **Compare** your result from 4 to the true value, which is
+
+```r
+pi^(3/2)/gamma(3/2 + 1)
+```
+
+```
+## [1] 4.18879
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
