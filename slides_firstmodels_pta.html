@@ -287,28 +287,19 @@ ggplot(d, aes(z)) + geom_density(fill = "steelblue4", aes = .75) + theme_bw() +
 
 &lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-10-1.png" height="400" /&gt;
 
----
-# Normalized to one
-Use `stat(scaled)`, a helper function, in place of your y value here.
 
-```r
-ggplot(d, aes(z, y = stat(scaled))) + geom_density(fill = "steelblue4", aes = .75) + theme_bw() +
-  ggtitle("Exponential(1)")
-```
-
-&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-11-1.png" height="400" /&gt;
 
 ---
 # Exponential v. geometric
 
 
 ```r
-ggplot(d) + geom_density(aes(z, y = stat(scaled)), fill = "steelblue4", aes = .75) + 
+ggplot(d) + geom_density(aes(z), fill = "steelblue4", aes = .75) + 
   theme_bw() + geom_histogram(aes(x, y = stat(density)), fill = "red", alpha = .75) +
   ggtitle("Exponential(1) v. Geometric(1/2)")
 ```
 
-&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-12-1.png" height="400" /&gt;
+&lt;img src="slides_firstmodels_pta_files/figure-html/unnamed-chunk-11-1.png" height="400" /&gt;
 
 ---
 # Tutorial
