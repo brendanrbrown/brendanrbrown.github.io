@@ -41,6 +41,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 14|[strings part c](slides_strings_ptc.html)|[Bellete Lu](string-part-c.html)|
 |Feb. 17|[strings part d](slides_strings_ptd.html)|[Josh McCorquodale](2_17-Lecture.html)|
 |Feb. 19|[first models, part a](slides_firstmodels_pta.html)|[Akshatha Bharadwaj](Tutorial-15.html)|
+|Feb. 21|[first models, part b](slides_firstmodels_ptb.html)||
 
 ## Homework
 
