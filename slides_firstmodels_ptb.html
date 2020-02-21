@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>first models, part b: concepts</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_firstmodels_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# first models, part b: concepts
+
+---
+
+
+
+
+# What you will learn
+
+- Core concepts of modeling
+
+
+**Main reference:** ISLR ch 2, R4DS section 4
+
+---
+# Why we model
+
+Modeling is at the heart of data science. At best it helps us to learn about the world. At worst it leads us to shame and ruin.
+
+### Reveal hidden structure in the data
+One step beyond exploratory summaries and graphs.
+
+
+- Grouping: Which observations are related to which others?
+- Covariation: Which variables are related to which others?
+
+### Predict new outcomes based on past data
+
+- Point estimate: If I know information `\(X\)` today, what is my prediction for outcome `\(Y\)`?
+- Risk: What are the best and worst-case scenarios if my prediction about `\(Y\)` is wrong?
+
+---
+# A typical cop-out
+
+&gt; "All models are wrong but some are useful."
+&gt;
+
+&gt; Famous quotation from some famous guy
+
+### Translation: "It's wrong anyway so whatever, I'm gettin' paid"
+
+### I say: No. You can do better.
+
+You must do better. Do the best you can. Maybe millions of dollars depend on it. Maybe lives depend on it. Maybe civilization as we know it depends on it. 
+
+### Get it right, as best you can.
+
+---
+# Notable good and bad examples
+
+Modeling is hard. Don't mess up.
+
+### [Predicting criminality based on your face](https://callingbullshit.org/case_studies/case_study_criminal_machine_learning.html)
+
+### [Clinton win in 2016](https://fivethirtyeight.com/features/why-fivethirtyeight-gave-trump-a-better-chance-than-almost-anyone-else/)
+
+### [Deepwater Horizon spill so much worse than previously thought](https://www.washingtonpost.com/climate-environment/2020/02/12/toxic-reach-deepwater-horizons-oil-spill-was-much-larger-deadlier-than-previous-estimates-new-study-says/)
+
+
+### [Global warming forecasts pretty good (bad=good?)](https://climate.nasa.gov/news/2943/study-confirms-climate-models-are-getting-future-warming-projections-right/)
+
+---
+# Before you model
+
+ask yourself
+
+### Prediction or inference/exploration?
+
+### Supervised or unsupervised?
+
+### Outcome type? e.g. regression vs. classification
+
+### Method suits the data? Data suits the goals?
+
+
+---
+# Prediction vs. inference/exploration
+
+### Prediction
+
+Have `\(X_i\)` a `\(p\)`-dimensional vector of variables related to `\(Y_i\)` outcomes for `\(i = 1 \ldots n\)` observations. 
+
+If I give you `\(X_{n+1}\)` variable values, what is your prediciton for `\(Y_{n+1}\)`? 
+
+### Inference/exploration
+
+What is the relationship between the variables in data `\(X\)`? 
+
+What is the relationship between variables `\(X\)` and an outcome `\(Y\)`?
+
+What is the relationship between `\(n\)` observations giving data `\(X_i\)`, `\(i = 1\ldots n\)`?
+
+### It's about the goals, not the methods
+
+e.g. a linear regression can be used for prediction or inference
+
+
+---
+# Supervised vs. unsupervised
+
+### Supervised learning
+
+`\(X_i\)` data and `\(Y_i\)` outcomes known for each `\(i = 1\ldots n\)`
+
+I **know what `\(Y_i\)` should be** for the observations I have, since I have those values
+
+How well is my model estimating the outcomes `\(Y_i\)`?
+
+e.g. `\(X_i\)` are student characteristics, `\(Y_i\)` are the universities they attended
+
+### Unsupervised learning
+
+`\(X_i, i = 1\ldots n\)` data is all I have
+
+we **do not have `\(Y_i\)` 'outcomes'**
+
+e.g. trying to group `\(X_i\)` into groups of related observations, without already having group labels
+
+---
+# Examples
+
+### Supervised: Linear regression
+for `\(Y_i, X_i, \beta \in \mathbb{R}\)`, and `\(\epsilon_i \sim Normal(0, \sigma^2)\)`
+
+`$$Y_i =\beta_0 \beta_1 X_i + \epsilon_i$$`
+
+Our estimate of `\(Y_i\)` is `\(\hat{\beta_0} + \hat{\beta_1} X_i\)`, where `\(\hat{\beta_1} = \frac{\sum (Y_i - \bar{Y})(X_i - \bar{X_i})}{\sum (X_i - \bar{X})^2}\)`, `\(\hat{\beta_0} = \bar{Y} - \hat{\beta_1}\bar{X}\)`
+
+This is STOR 155 review.
+
+### Unsupervised: K-means clustering
+`\(X_i\)`, `\(i = 1 \ldots n\)` data vectors of length `\(p\)` each, for example `\(X_{11}, X_{1,2} \ldots X_{1p}\)` are the `\(p\)` variable values for the first observation. 
+
+Split data into `\(K\)` groups `\(C_1 \ldots C_K\)` such that we **minimize within-clustering variation**, meaning
+
+`$$\text{argmin}_{C_1 \ldots C_K} \sum_{k = 1}^K \frac{1}{|C_k|}\sum_{i, u \in C_k} \sum_{j = 1}^p(X_{ij} - X_{uj})^2$$`
+where `\(|C_k|\)` is the number of observations in group `\(k\)`.  
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+Create an html that answers the following questions in at most two sentences. Your answers should be clear, complete sentences.
+
+
+1. Suppose I want to figure out which genetic traits cause breast cancer. Is this a prediction or an inference problem?
+
+2. Scientists are attempting to build the 'tree of life', that is a phylogenetic tree giving evolutionary lineages for each of the current species known. Is this a supervised or unsupervised learning problem?
+
+
+---
+# Regression vs. classification
+
+## Would you ...
+
+- play golf in a swimming pool? 
+- eat soup with a knife? 
+- tap dance with a tiger?
+
+## You would not. 
+
+## So why are you trying to predict a categorical outcome with linear regression?
+
+
+---
+# Don't be this guy
+&lt;img src="https://www.gadgetreview.com/wp-content/uploads/2014/03/swimming-golf.jpg" height="500" /&gt;
+
+---
+# :(
+&lt;img src="https://news.poolandspa.com/wp-content/uploads/2018/10/rm-art-pic-2-100518-8.jpg" height="500" /&gt;
+
+
+---
+# Example
+
+Orange juice purchases in `OJ` dataset of `ISLR` package associated with book.
+
+`Purchase` is either `CH` for Citrus Hill or `MM` for Minute Maid brands of orange juice. 1070 observations.
+
+Recode as `CH = 1`, `MM = 0`. Linear regression with `PriceDiff`, price difference, as the only predictor.
+
+
+```r
+library(ISLR)
+library(tidyverse)
+d &lt;- mutate(OJ, Purchase = ifelse(Purchase == "CH", 1, 0))
+m &lt;- lm(Purchase ~ PriceDiff, data = d)
+coef(m)
+```
+
+```
+## (Intercept)   PriceDiff 
+##   0.5378972   0.4941303
+```
+
+It worked! But it does not make any sense...
+
+---
+# :( :( :( :( :(
+
+
+```r
+ggplot(d, aes(x = PriceDiff, y = Purchase)) + geom_point() +
+  theme_minimal() + geom_smooth(method = "lm", size = 2, color ="seagreen4", se = FALSE)
+```
+
+&lt;img src="slides_firstmodels_ptb_files/figure-html/unnamed-chunk-4-1.png" height="450" /&gt;
+
+
+---
+# Regression models
+
+Focus on the type of outcome: a number or a category? Regression models numerical outcomes.
+
+## What for
+
+- outcomes can take continuous values, e.g. any value in `\([0, 1]\)`
+- but usually should allow any real number, e.g. linear regression
+
+## A list 
+See details in ISLR
+
+- Linear regression models
+- Variants of linear models: Ridge, LASSO
+- Polynomial regression
+- Regression trees
+- Support vector machines (SVM) for regression
+
+**Not to be confused with 'regression' models that predict categorical outcomes**, e.g. generalized linear models
+---
+# Classification
+
+Important: I lump in here outcomes that are **discrete** numbers
+
+## What for
+
+- Unordered categorical outcomes, e.g. type of orange juice purchased
+- Ordered categorical outcomes, e.g. risk categories for people charged with a crime and pending bail hearing
+- Discrete numerican outcomes, e.g. number of visitors to a store
+
+## A list 
+
+- Generalized linear models, e.g. logistic, Poisson, Probit regressions
+- K-nearest neighbors
+- Linear discriminant analysis
+- Classificaiton trees
+- SVM for classification
+- Clustering algorithms
+
+
+---
+# Method suits the data?
+
+Data suits the goals?
+
+No universal principles, but some pointers
+
+- format your data appropriately for the method: e.g. center variables by subtracting the mean? 
+- linear, generalized linear and related methods require your matrix of data `\(X\)` to be **non-singular**
+- mainly, this means no columns or rows that are almost constant
+- variables `\(p &gt;&gt; n\)` observations? Try dimension reduction (we'll do this later)
+- know your data before you model, meaning do lots of exploratory analysis first
+- plot, evaluate model outputs to be sure they make sense
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+---
+# Tutorial
+
+Add the following to your html file
+
+Using whatever experience or resources come first to mind: Describe one 'real-life' application in which classification might be useful, and one in which regression might be useful. Describe the response, as well as the predictors. Be sure to specify whether the goal of each application inference or prediction? Explain your answer in a few sentences.
+
+Do not use one of the examples from this lecture. But you can use an example from your group project.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
