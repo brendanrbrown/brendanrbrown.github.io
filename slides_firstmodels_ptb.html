@@ -136,7 +136,7 @@ e.g. trying to group `\(X_i\)` into groups of related observations, without alre
 ### Supervised: Linear regression
 for `\(Y_i, X_i, \beta \in \mathbb{R}\)`, and `\(\epsilon_i \sim Normal(0, \sigma^2)\)`
 
-`$$Y_i =\beta_0 \beta_1 X_i + \epsilon_i$$`
+`$$Y_i =\beta_0 + \beta_1 X_i + \epsilon_i$$`
 
 Our estimate of `\(Y_i\)` is `\(\hat{\beta_0} + \hat{\beta_1} X_i\)`, where `\(\hat{\beta_1} = \frac{\sum (Y_i - \bar{Y})(X_i - \bar{X_i})}{\sum (X_i - \bar{X})^2}\)`, `\(\hat{\beta_0} = \bar{Y} - \hat{\beta_1}\bar{X}\)`
 
