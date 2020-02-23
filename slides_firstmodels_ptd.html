@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>first models, part d: more k means</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_firstmodels_ptd_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptd_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptd_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# first models, part d: more k means
+
+---
+
+
+
+
+# What you will learn
+
+- tweaking `\(K\)`-means to have more appropriate distances
+- `pam` for more flexible `\(K\)`-means (mediods) algorithm
+- `dist` function in base `R` and `proxy` package
+- `distinct` to remove duplicate data frame rows
+
+
+**Main reference:** ISLR ch 10, *[Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/https://web.stanford.edu/~hastie/ElemStatLearn/)* ch 14.3
+
+---
+# Review: K-means clustering
+
+We will have a dataset `\(X\)`, **a matrix `\(n\)` rows and `\(p\)` columns.**  Each row will be written `\(X_i\)`. This is the set of `\(p\)` variable values for observation `\(i\)`.
+### Key idea
+For now, we **assume the variables are all numeric type.**
+- `\(X_i\)` represents the `\(i\)`th observation's position in `\(p\)`-dimensional space
+- observations are **similar if they are close**  together in this space
+
+### Goal
+Are there groups of of observations that are similar to each other, based on the variables we have?
+
+---
+# Review: K-means program
+
+`\(X_i\)`, `\(i = 1 \ldots n\)` data vectors of length `\(p\)` each, for example `\(X_{11}, X_{1,2} \ldots X_{1p}\)` are the `\(p\)` variable values for the first observation. 
+
+Split data into `\(K\)` groups `\(C_1 \ldots C_K\)` such that we **minimize within-clustering variation**, meaning
+
+`$$\text{argmin}_{C_1 \ldots C_K} \sum_{k = 1}^K \frac{1}{|C_k|}\sum_{i, u \in C_k} \sum_{j = 1}^p(X_{ij} - X_{uj})^2$$`
+
+## Output
+Optimization above assigns each observation `\(i\)` to a single cluster `\(C_k\)`. In other words, the `\(i\)`th observation belongs to group `\(k\)`, for some `\(k = 1 \ldots K\)`, and only that group.
+
+Result is a vector length `\(n\)` with values in `\(\{1 \ldots K \}\)` giving cluster assignments for each observation.
+
+
+---
+# Today: Tweaking k means
+
+With minor modifications we can do a fair bit more with this idea.
+
+## What if squared distance is not desirable?
+If the **data 'live' in a space where squared distance does not make sense**, we might get better results by changing our notion of distance between observations.
+
+We might also want a **distance that penalizes big differences less severely** than the squared distance does. This will reduce the effect of outliers on the cluster assignments, for example.
+
+## Later: How do I choose K?
+
+There is no 'correct' number of clusters in an unsupervised learning problem. But are there ways we can **evaluate what a good number of clusters is?**
+
+---
+# Tweaking the distance
+
+Reformulate the `\(K\)` means problem slightly, sometimes called `\(K\)` mediods. Define a distance between the variable values of two observations by some function `\(d\)`
+
+$$\text{distance between } X_i, X_j = d(X_i, X_j) $$
+1. **Fix `\(K \ge 1\)`** number of clusters
+2. **Initialize:** Randomly assign a group `\(k\)`, from `\(k = 1 \ldots K\)`, to each observation.
+3. **Repeat until cluster assignments do not change**:
+
+3a. For each cluster `\(C_k\)` compute the **cluster medioid**, `\(\hat{X}_k\)`, the point minimizing the distance to all other points in `\(C_k\)` `$$\hat{X}_k = \text{argmin}_{X_i, i \in C_k} \sum_{j\in C_k} d(X_i, X_j)$$`
+
+3b. Assign observation `\(i\)` to the cluster `\(k\)` minimizing the distance between `\(X_i\)` and `\(\hat{X}_k\)`, in other words
+`$$\text{argmin}_{k = 1 \ldots K} d(X_i, \hat{X}_k)$$`
+
+---
+A difference here is that the 'center' of the cluster, `\(\hat{X}_k\)` must be one of the points. This is because if the data are not 'living' in typical `\(p\)` dimensional space, the 'average' position might not make sense. 
+
+For example, if the `\(X_i\)` contain binary information, then a cluster center at `\(0.5\)` makes no sense.
+
+## Output
+
+Again the result is a vector length `\(n\)` with values in `\(\{1 \ldots K \}\)` giving cluster assignments for each observation.
+
+---
+
+## Common distances for certain types of information
+
+- **Categorical, unordered:** `\(d(X_i, X_j) =\)` the number of elements observations `\(i,j\)` do not have in common
+- **Categorical, ordered:** `\(d\)` is the squared or other quantitative distance after ordering categories from low to high and scaling. If there are `\(T\)` categories then the category in `\(t\)` place, from low to high, is converted to numeric type by `\(\frac{t - 1/2}{T}\)`
+- **Curved spaces:** a 'geodesic' distance representing the shortest path between two points, e.g. on a sphere
+- **Blended information:** distances `\(d\)` can apply different types of distances to different variables, weight their contributions differently, and add up the total
+
+---
+## Distances to reduce effect of big differences
+
+There are many options. A popular one is the **Manhattan distance**, or the sum of the absolute differences in each coordinate.
+
+For example, if we have two variables of numeric type, write `\(X_i = (X_{i1}, X_{i2})\)` and `\(X_j = (X_{j1}, X_{j2})\)`. The Manhattan distance is 
+
+`$$d(X_i, X_j) = |X_{i1} - X_{j1}| + |X_{i2} - X_{j2}|$$`
+
+---
+# Implementation: `pam`
+`pam` is a function in the [`cluster` package.](https://cran.r-project.org/web/packages/cluster/cluster.pdf)
+
+It has a couple of built-in distance functions, with which it can work similar to `kmeans`.
+
+But we are interested in supplying our own distance function `\(d\)`.
+
+### Syntax and procedure
+
+1. Compute `\(Dmat\)`, a matrix with all pairwise distances in your data, meaning `\(d(X_i, X_j)\)` for `\(i, j = 1 \ldots n\)`
+2. To run the `\(K\)` mediods clustering algorithm,
+
+```
+pam(Dmat, K, diss = TRUE)
+```
+
+---
+# Programming first look
+We have not yet done the programming section. But we need to learn just one basic thing before we can continue.
+
+## Define your own function in `R`
+
+Some dummy syntax for a function with two arguments, `arg1` and `arg2` and returning a data frame
+
+```
+fun_name &lt;- function(arg1, arg1){
+
+  x &lt;- do_something(arg1)
+  y &lt;- something_else(arg2)
+
+  return(data.frame(x, y))
+}
+```
+
+---
+# Example
+
+Let's write a function for the manhattan distance between two vectors `\(x, y\)`. It will take two arguments and return a single number.
+
+
+```r
+manhattan &lt;- function(x, y){
+  return(sum(abs(x-y)))
+}
+```
+
+For example
+
+
+```r
+x &lt;- c(1, 0, 2)
+y &lt;- c(0, 1, 0)
+manhattan(x, y)
+```
+
+```
+## [1] 4
+```
+
+
+---
+# Last time: A smaller BISON
+
+
+&lt;img src="http://www.defenders.org/sites/default/files/magazine-spring-2016-bison-jim-shane.jpg" height="200" /&gt;
+
+### What patterns can we find in the location and time data?
+I created a smaller version of the old `bison` dataset for Orange County. Remember, these are human-recorded observations of species in the county from 1700 to 2015.
+
+- remove observations with missing `eventDate`. These were the observation dates.
+- `dtime`: a new variable giving the number of days between `eventDate` and Feb. 22, 2020
+- kept only `latitude`, `longitude` and `dtime`
+
+This dataset is on [GitHub](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv).
+
+---
+# End result
+![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+---
+# Code used
+
+```r
+library(tidyverse)
+bison &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv')
+
+bison2 &lt;- mutate(bison, longitude = scale(longitude)[,1], 
+                 latitude = scale(latitude)[,1], dtime = scale(dtime)[,1])
+
+K &lt;- 4
+
+set.seed(1305)
+m &lt;- kmeans(data.matrix(bison2), centers = K)
+
+cent &lt;- as_tibble(m$centers) %&gt;% mutate(cluster = factor(1:K))
+
+bison2 &lt;- mutate(bison2, cluster = factor(m$cluster))
+
+ggplot(bison2, aes(x = latitude, y = longitude, color = cluster)) + geom_point(size = 3, alpha = .7) +
+  theme_bw() + scale_color_brewer(type = "qual", palette = "Set1") +
+  geom_point(data = cent, size = 6, shape = 13)
+```
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Load** the `bison` dataset from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv)
+2. **Scale** each variable as in the code from last class, above.
+
+If you are following along: Note that in my work below, I do not scale the `latitude` and `longitude` variables like this.
+
+This tutorial section is in preparation for what you will do later.
+
+---
+# The world is not flat
+  
+### We looked at squared differences in latitude/longitude
+Coordinates of Hanes Hall in `longitude, latitude`
+
+```r
+hanes &lt;- c(-79.051417, 35.910710)
+hillsborough &lt;- c(-79.099102, 36.072250)
+
+sqrt(sum((hillsborough-hanes)^2))
+```
+
+```
+## [1] 0.1684311
+```
+
+
+### But latitude and longitude are in degrees, so what does this calculation mean? 
+
+[NASA's Earth surface distance calculator](http://nssdc.gsfc.nasa.gov/special/MileageGuide.jsp) says these two points are **11.5 miles apart.**
+
+### Perhaps we should be looking at the spatial information in terms of actual Earth-surface distances!
+
+---
+# Haversine formula
+
+.center[![](https://m.media-amazon.com/images/M/MV5BMjAwMjkwMjk2Ml5BMl5BanBnXkFtZTcwNjc5MzMzMw@@._V1_SX1500_CR0,0,1500,999_AL_.jpg)]
+
+---
+
+### Distance on the surface of a sphere
+The [haversine formula](https://en.wikipedia.org/wiki/Haversine_formula) is an **old nautical tool** to calculate distances along the surface of a sphere---a good approximation to distances along the surface of the almost-spherical earth.
+
+
+```r
+haversine &lt;- function(lat1, lat2, long1, long2){
+  # function written for transparency in matching with haversine formula
+  # coordinates must be in radians
+  h &lt;- sin(.5 * (lat2 - lat1)) ^ 2 + cos(lat1) * cos(lat2) * (sin(.5 * (long2 - long1)) ^ 2)
+  # earth diameter taken from http://imagine.gsfc.nasa.gov/features/cosmic/earth_info.html
+  # in miles
+  r &lt;- (12756 / 2) * 0.621371
+  return(2 * r * asin(sqrt(h)))
+}
+```
+
+---
+# Haversine (great circle) distance
+
+&lt;img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Illustration_of_great-circle_distance.svg/1024px-Illustration_of_great-circle_distance.svg.png" height="500" /&gt;
+
+
+---
+
+### Good approximation over short distances
+
+First convert everything to radians by multiplying latitude and longitude by `\(\pi/180\)`.
+
+```r
+hanes &lt;- pi*hanes/180
+hillsborough &lt;- pi*hillsborough/180
+
+haversine(lat1 = hanes[2], lat2 = hillsborough[2], long1 = hanes[1], long2 = hillsborough[1])
+```
+
+```
+## [1] 11.48787
+```
+
+### Even over longer distances
+Distance to Nuuk, capital of Greenland
+
+
+```r
+haversine(lat1 = hanes[2], lat2 = pi * 64.182179 / 180, long1 = hanes[1], long2 = pi * -51.688468 / 180)
+```
+
+```
+## [1] 2263.769
+```
+
+**Answer from NASA:** 2274.5 miles.
+
+---
+# A new distance for `bison`
+
+We will
+
+- compute the distance between two observations using `latitude`, `longitude` and the `haversine` function
+- compute `manhattan` distance for `dtime`, to reduce the effect of very old observations
+- add the two together to make an overall distance function
+
+Here the vector `x` contains the information from one row of `bison`, in other words `x = c(latitude_in_rad, longitude_in_rad, dtime)`
+
+```r
+d &lt;- function(x, y){
+  haversine(x[1], y[1], x[2], y[2]) + abs(x[3]-y[3])
+}
+```
+
+---
+# Computing a distance matrix
+For the `\(K\)` mediods algorithm, need **a matrix of all the distances between any two rows**. 
+
+base `R` function `dist` can do this for a number of distance functions `\(d\)`. 
+
+`proxy` package has a version of the `dist` function that allows you use your **own distance function.**
+
+### Syntax for BOTH base `R` and `proxy` dist functions
+Here `data` can be a matrix or data frame. If using your own `distance_function`, do this
+```
+dist(data, method = distance_function)
+```
+To use a pre-coded distance function, e.g. the manhattan distance, do this
+```
+dist(data, method = "manhattan")
+```
+---
+# Warning
+
+### Base R `dist` and `kmeans` functions are very fast 
+
+### Computational time can get much worse using non-standard functions
+
+For example in the `bison` dataset, we need to compute on the order of `\(63259^2 =\)` about **4 billion distances**. 
+
+This will be infeasible without great care for optimizing your code.
+
+---
+# An expedient
+
+It turns out the `bison` data have many points with *exactly* the same `latitude`, `longitude` and `dtime`.
+
+Worth looking in to from a data quality perspective. But for the `\(K\)`-mediods model, all of those points will effectively act as one point.
+
+### Preparing `bison` for distance calculation
+Removing 'duplicate' rows in `bison` to avoid computational issues. You can do this with `distinct` in the `tidyverse`. See `?distinct` for details.
+
+Converting coordinates to radians for `haversine`, and scaling `dtime`.
+
+```r
+bison &lt;- distinct(bison) %&gt;% 
+  mutate(latitude = pi*latitude/180, longitude = pi*longitude/180,
+                dtime = scale(dtime)[,1])
+
+dim(bison)
+```
+
+```
+## [1] 4024    3
+```
+
+---
+# Computing distance matrix
+`proxy::` before the function name tells `R` we want to use the `dist` function from the proxy package, rather than base `R`.
+
+This might still take a little while.
+
+```r
+library(proxy)
+
+Dmat &lt;- proxy::dist(bison, method = d)
+```
+
+
+
+---
+# `bison` `\(K\)`-mediods
+
+
+```r
+library(cluster)
+
+K &lt;- 4
+
+set.seed(1305)
+m &lt;- pam(Dmat, k = K, diss = TRUE)
+bison &lt;- mutate(bison, cluster = factor(m$cluster))
+group_by(bison, cluster) %&gt;% 
+  summarise(n = n(), latitude = mean(latitude),
+            longitude = mean(longitude),
+            dtime = mean(dtime))
+```
+
+```
+## # A tibble: 4 x 5
+##   cluster     n latitude longitude  dtime
+##   &lt;fct&gt;   &lt;int&gt;    &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+## 1 1        1865    0.627     -1.38 -0.348
+## 2 2        1206    0.630     -1.38  0.731
+## 3 3         705    0.628     -1.38 -0.161
+## 4 4         248    0.631     -1.38 -0.479
+```
+
+
+---
+# 2d visuals
+![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+
+---
+# Code for 2d visuals
+
+```r
+# Convert back to degrees for plotting
+bison &lt;- mutate(bison, latitude = 180*latitude/pi,  longitude = 180*longitude/pi)
+
+ggplot(bison, aes(x = latitude, y = longitude, color = cluster)) + geom_point(size = 3, alpha = .7) +
+  theme_bw() + scale_color_brewer(type = "qual", palette = "Set1")
+```
+
+---
+# Clusters with haversine dist
+![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+
+---
+# Clusters with squared dist (last time)
+
+![](https://brendanrbrown.github.io/slides_firstmodels_ptc_files/figure-html/unnamed-chunk-11-1.png)
+
+---
+# Code for map
+
+```r
+nc &lt;- map_data("county", region = "north carolina") %&gt;% rename(longitude = long, latitude = lat)
+
+ggplot(nc, aes(longitude, latitude)) + geom_polygon(fill = "white", color = "thistle4", aes(group = group)) + 
+  coord_map(xlim = c(-79.5, -78.9), ylim = c(35.75, 36.25)) +
+  geom_point(data = bison, aes(color = cluster), alpha = .5) + scale_color_brewer(type = "qual", palette = "Set1")
+```
+
+
+---
+# Now you try!
+.center[![](https://m.media-amazon.com/images/M/MV5BNzYxNDFlZWQtZTMzYi00OTI2LTk1OTEtNjE4OWE4ZWZhNmFiXkEyXkFqcGdeQXVyNjUxMjc1OTM@._V1_SX1777_CR0,0,1777,755_AL_.jpg)]
+
+
+---
+# Tutorial
+Add the following to your html file
+
+In this tutorial section, you will run the `\(K\)` mediods algorithm using the **Manhattan distance** for all variables.
+
+1. **Remove** non-distinct rows from `bison` using the `distinct` function as above.
+2. Using the `stats::dist` function, **compute** the distance matrix for `bison` using the **Manhattan distance**. See the `dist` syntax slide above.
+3. **Run** the `\(K\)`-mediods algorithm with `\(K=4\)` using the `pam` function and your distance matrix from question 2.
+4. Create a **summary or plot** (your choice) of your results similar to the ones produced above.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
