@@ -42,7 +42,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 17|[strings part d](slides_strings_ptd.html)|[Josh McCorquodale](2_17-Lecture.html)|
 |Feb. 19|[first models, part a](slides_firstmodels_pta.html)|[Akshatha Bharadwaj](Tutorial-15.html)|
 |Feb. 21|[first models, part b](slides_firstmodels_ptb.html)|[Gabby Ruehle](320_Tutorial_2-21.html)|
-|Feb. 24|[first models, part c](slides_firstmodels_ptc.html)||
+|Feb. 24|[first models, part c](slides_firstmodels_ptc.html)|[Trevor Stephens](STORFeb24.html)|
 
 ## Homework
 
