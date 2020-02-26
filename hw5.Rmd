@@ -1,0 +1,100 @@
+---
+title: "Homework 5"
+subtitle: "due March 4"
+author: ""
+date: ""
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(cluster)
+```
+
+
+## Instructions
+Answer each of the questions given below. Do so in a markdown file with html output.
+
+**Submit only the HTML file.** 
+
+Remember to `knit` often and use the techniques we discussed in class to handle code chunks with errors you cannot fix. Homework submitted in a format other than the html output from your document will not be accepted.
+
+## Scoring
+All questions worth the same amount.
+
+## Overview
+In this homework, we practice sampling and at the same time explore some properties of the $K$-means algorithm.
+
+## Note
+Since these algorithms have a randomized starting point, your results might vary somewhat substantially from one attempt to another. To avoid such problems, *set the seed before each k-means or k-mediods calculation.*
+
+This will avoid situations in which you describe your output based on one run, only to have the plots look different after you knit.
+
+
+# Q1
+Generate a data frame with two columns: `x` and `y`.
+
+`x` and `y` should be two different draws of 1000 **Normal(0, 1)** random variables.
+
+Display the first few rows of the data frame.
+
+# Q2
+Run the $K$ means algorithm with $K=2$ on your data from Q1.
+
+Make a scatter plot of the data, with different colors marking different clusters assigned from $K$-means.
+
+Write two or three sentences to
+
+- explain what the plot shows
+- answer the question: Does this result make sense given what we know about the data? If so, why? If not, why not?
+
+# Q3
+Generate a second data frame with the same column names, `x` and `y`.
+
+In this case, `x` and `y` should be two different draws of 1000 **Normal(5, 2)** random variables.
+
+Bind the rows of this new data frame to your old one, e.g. using `bind_rows`.
+
+# Q4
+Run the $K$-means algorithm on the final dataset from Q3, with $K = 2$.
+
+Make a scatter plot of the data, with different colors marking different clusters assigned from $K$-means.
+
+Write two or three sentences to
+
+- explain what the plot shows
+- answer the question: Does this result make sense given what we know about the data? If so, why? If not, why not?
+
+# Q5
+Add 200 rows to your resulting data frame from Q3, such that `x = 15` and `y=15` for each of these new rows.
+
+Run the $K$-means algorithm on this data, with $K = 2$.
+
+Make a scatter plot of the data, with different colors marking different clusters assigned from $K$-means.
+
+Write two or three sentences to
+
+- explain what the plot shows
+- answer the question: Does this result make sense given what we know about the data? If so, why? If not, why not?
+
+# Q6
+Create a distance matrix from your data frame used in Q5 using the `dist` function, computing distances with the `maximmum` distance. This is a built-in option in the `dist` function.
+
+Save the distance matrix as a new object.
+
+# Q7
+Run the $K$-**mediods** algorithm using the `pam` function in the `cluster` package, and your distance matrix from Q6.
+
+Make a scatter plot of the data, with different colors marking different clusters assigned from $K$-means.
+
+Write two or three sentences to
+
+- compare this result to the one in Q5
+- explain the differences, if any. Your explanation should have something to do with the different distances used.
+
+
+
