@@ -30,6 +30,19 @@ class: center, middle, inverse, title-slide
 **Main reference:** ISLR ch 10, *[Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/)* ch 14.3
 
 ---
+# Comment
+
+### Lecture will have a slightly different structure
+
+### Lots of new material to cover
+
+### I will demo it all at once
+
+### Tutorial is at the end only, and I will leave ample time
+
+### Important to stick with me for this first part
+
+---
 # Review: K-means clustering
 
 We will have a dataset `\(X\)`, **a matrix `\(n\)` rows and `\(p\)` columns.**  Each row will be written `\(X_i\)`. This is the set of `\(p\)` variable values for observation `\(i\)`.
@@ -39,7 +52,7 @@ For now, we **assume the variables are all numeric type.**
 - observations are **similar if they are close**  together in this space
 
 ### Goal
-Are there groups of of observations that are similar to each other, based on the variables we have?
+Are there groups of observations that are similar to each other, based on the variables we have?
 
 ---
 # Review: K-means program
@@ -98,6 +111,7 @@ Again the result is a vector length `\(n\)` with values in `\(\{1 \ldots K \}\)`
 
 ## Common distances for certain types of information
 
+- **Strings:** various [edit distances](https://en.wikipedia.org/wiki/Edit_distance)
 - **Categorical, unordered:** `\(d(X_i, X_j) =\)` the number of elements observations `\(i,j\)` do not have in common
 - **Categorical, ordered:** `\(d\)` is the squared or other quantitative distance after ordering categories from low to high and scaling. If there are `\(T\)` categories then the category in `\(t\)` place, from low to high, is converted to numeric type by `\(\frac{t - 1/2}{T}\)`
 - **Curved spaces:** a 'geodesic' distance representing the shortest path between two points, e.g. on a sphere
@@ -112,6 +126,7 @@ For example, if we have two variables of numeric type, write `\(X_i = (X_{i1}, X
 
 `$$d(X_i, X_j) = |X_{i1} - X_{j1}| + |X_{i2} - X_{j2}|$$`
 
+Another is the **maximum distance**, given by `$$d(X_i, X_j) = \max_k |X_{ik} - X_{jk}|$$`
 ---
 # Implementation: `pam`
 `pam` is a function in the [`cluster` package.](https://cran.r-project.org/web/packages/cluster/cluster.pdf)
@@ -130,50 +145,6 @@ pam(Dmat, K, diss = TRUE)
 ```
 
 ---
-# Programming first look
-We have not yet done the programming section. But we need to learn just one basic thing before we can continue.
-
-## Define your own function in `R`
-
-Some dummy syntax for a function with two arguments, `arg1` and `arg2` and returning a data frame
-
-```
-fun_name &lt;- function(arg1, arg1){
-
-  x &lt;- do_something(arg1)
-  y &lt;- something_else(arg2)
-
-  return(data.frame(x, y))
-}
-```
-
----
-# Example
-
-Let's write a function for the manhattan distance between two vectors `\(x, y\)`. It will take two arguments and return a single number.
-
-
-```r
-manhattan &lt;- function(x, y){
-  return(sum(abs(x-y)))
-}
-```
-
-For example
-
-
-```r
-x &lt;- c(1, 0, 2)
-y &lt;- c(0, 1, 0)
-manhattan(x, y)
-```
-
-```
-## [1] 4
-```
-
-
----
 # Last time: A smaller BISON
 
 
@@ -190,47 +161,30 @@ This dataset is on [GitHub](https://raw.githubusercontent.com/brendanrbrown/bren
 
 ---
 # End result
-![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
 
 ---
 # Code used
 
 ```r
 library(tidyverse)
-bison &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv')
-
-bison2 &lt;- mutate(bison, longitude = scale(longitude)[,1], 
-                 latitude = scale(latitude)[,1], dtime = scale(dtime)[,1])
+bison &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv') %&gt;% 
+  scale
 
 K &lt;- 4
 
 set.seed(1305)
-m &lt;- kmeans(data.matrix(bison2), centers = K)
+m &lt;- kmeans(bison, centers = K)
 
 cent &lt;- as_tibble(m$centers) %&gt;% mutate(cluster = factor(1:K))
 
-bison2 &lt;- mutate(bison2, cluster = factor(m$cluster))
+# ggplot works with data frames
+bison &lt;- as_tibble(bison) %&gt;% mutate(cluster = factor(m$cluster))
 
-ggplot(bison2, aes(x = latitude, y = longitude, color = cluster)) + geom_point(size = 3, alpha = .7) +
+ggplot(bison, aes(x = latitude, y = longitude, color = cluster)) + geom_point(size = 3, alpha = .7) +
   theme_bw() + scale_color_brewer(type = "qual", palette = "Set1") +
   geom_point(data = cent, size = 6, shape = 13)
 ```
-
----
-# Now you try!
-.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
-
-
----
-# Tutorial
-Create an html file that does the following
-
-1. **Load** the `bison` dataset from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv)
-2. **Scale** each variable as in the code from last class, above.
-
-If you are following along: Note that in my work below, I do not scale the `latitude` and `longitude` variables like this.
-
-This tutorial section is in preparation for what you will do later.
 
 ---
 # The world is not flat
@@ -266,6 +220,7 @@ sqrt(sum((hillsborough-hanes)^2))
 ### Distance on the surface of a sphere
 The [haversine formula](https://en.wikipedia.org/wiki/Haversine_formula) is an **old nautical tool** to calculate distances along the surface of a sphere---a good approximation to distances along the surface of the almost-spherical earth.
 
+#### We have not yet seen how to write your own function. Don't worry about it for now.
 
 ```r
 haversine &lt;- function(lat1, lat2, long1, long2){
@@ -317,6 +272,24 @@ haversine(lat1 = hanes[2], lat2 = pi * 64.182179 / 180, long1 = hanes[1], long2 
 **Answer from NASA:** 2274.5 miles.
 
 ---
+# Mapping in `R`
+
+### Packages
+
+- [`sf`](https://cran.r-project.org/web/packages/sf/index.html)
+- [`sp`](https://cran.r-project.org/web/packages/sp/index.html)
+- `ggplot2` part of the `tidyverse` has basic options
+- many more
+
+### `st_distance`
+The `sf` package includes a function for great circle distance, `st_distance`.
+
+Input is an object of special format. Useful if you are already doing mapping tasks.
+
+See this blog post for examples of [calculating spatial distances in R](https://www.r-bloggers.com/three-ways-to-calculate-distances-in-r/)
+
+
+---
 # A new distance for `bison`
 
 We will
@@ -342,7 +315,7 @@ base `R` function `dist` can do this for a number of distance functions `\(d\)`.
 `proxy` package has a version of the `dist` function that allows you use your **own distance function.**
 
 ### Syntax for BOTH base `R` and `proxy` dist functions
-Here `data` can be a matrix or data frame. If using your own `distance_function`, do this
+Here `data` can be a matrix or data frame. If using your own distance function, called `distance_function` in the placeholder below, do this
 ```
 dist(data, method = distance_function)
 ```
@@ -374,7 +347,8 @@ Removing 'duplicate' rows in `bison` to avoid computational issues. You can do t
 Converting coordinates to radians for `haversine`, and scaling `dtime`.
 
 ```r
-bison &lt;- distinct(bison) %&gt;% 
+bison &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv') %&gt;%
+  distinct %&gt;% 
   mutate(latitude = pi*latitude/180, longitude = pi*longitude/180,
                 dtime = scale(dtime)[,1])
 
@@ -430,7 +404,7 @@ group_by(bison, cluster) %&gt;%
 
 ---
 # 2d visuals
-![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
 
 ---
 # Code for 2d visuals
@@ -445,7 +419,7 @@ ggplot(bison, aes(x = latitude, y = longitude, color = cluster)) + geom_point(si
 
 ---
 # Clusters with haversine dist
-![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+![](slides_firstmodels_ptd_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
 
 ---
 # Clusters with squared dist (last time)
@@ -471,14 +445,16 @@ ggplot(nc, aes(longitude, latitude)) + geom_polygon(fill = "white", color = "thi
 
 ---
 # Tutorial
-Add the following to your html file
+Create an html file that does the following:
 
 In this tutorial section, you will run the `\(K\)` mediods algorithm using the **Manhattan distance** for all variables.
 
-1. **Remove** non-distinct rows from `bison` using the `distinct` function as above.
-2. Using the `stats::dist` function, **compute** the distance matrix for `bison` using the **Manhattan distance**. See the `dist` syntax slide above.
-3. **Run** the `\(K\)`-mediods algorithm with `\(K=4\)` using the `pam` function and your distance matrix from question 2.
-4. Create a **summary or plot** (your choice) of your results similar to the ones produced above.
+1. **Load** the `bison` dataset from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/smallbison.csv)
+2. **Remove** non-distinct rows from `bison` using the `distinct` function as above.
+3. **Scale** each variable as in the code from last class. See the tutorial answers from last time for help.
+4. Using the `stats::dist` function, **compute** the distance matrix for `bison` using the **Manhattan distance** for all variables. See the `dist` syntax slide above.
+5. **Run** the `\(K\)`-mediods algorithm with `\(K=4\)` using the `pam` function and your distance matrix from question 2. You will need to run `library(cluster)` first.
+6. Create a **summary or scatterplot** (your choice) of your results similar to the ones produced above.
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
