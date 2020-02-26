@@ -54,6 +54,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
 |Feb. 7 | [hw 3](hw3.Rmd) | Feb. 14|
 |Feb. 17| [hw 4](hw4.Rmd)| Feb. 26|
+|Feb. 26| [hw 5](hw5.Rmd)| March 4|
 
 ## Semester-long project
 These slides contain instructions on role, grading criteria, and deliverables: [Semester project](slides_project.html)
