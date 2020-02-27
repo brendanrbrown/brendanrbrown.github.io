@@ -1,11 +1,3 @@
----
-title: "Homework 5"
-subtitle: "due March 4"
-author: ""
-date: ""
----
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -87,9 +79,9 @@ Create a distance matrix from your data frame used in Q5 using the `dist` functi
 Save the distance matrix as a new object.
 
 # Q7
-Run the $K$-**mediods** algorithm using the `pam` function in the `cluster` package, and your distance matrix from Q6.
+Run the $K$-**mediods** algorithm using the `pam` function in the `cluster` package using $K=2$, and your distance matrix from Q6.
 
-Make a scatter plot of the data, with different colors marking different clusters assigned from $K$-means.
+Make a scatter plot of the data, with different colors marking different clusters.
 
 Write two or three sentences to
 
