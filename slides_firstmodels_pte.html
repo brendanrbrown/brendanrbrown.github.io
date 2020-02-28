@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>first models, part e: PCA</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_firstmodels_pte_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_firstmodels_pte_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_firstmodels_pte_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# first models, part e: PCA
+
+---
+
+
+
+
+# What you will learn
+
+- concept of principal component analysis
+- `prcomp`
+- interpretation of PC directions and relative variable importance (loadings)
+
+
+**Main reference:** ISLR ch 10.2, *[Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/)* ch 3.4, 14.5
+
+**Resources**
+
+- [visual demonstration of PCA](http://setosa.io/ev/principal-component-analysis/)
+
+---
+# Unsupervised models for exploration
+
+### Review: Setup
+`\(X_i\)` a `\(p\)`-dimensional vector of variable values for observation `\(i = 1 \ldots n\)`.
+
+Looking for interesting patterns
+
+- **between observations** , e.g. groups of similar observations
+- **between variables**, e.g. correlations between two variables across all observations
+
+### So far: `\(K\)`-means (mediod) clustering
+These helped us to understand relationships between observations.
+
+### Today: Principal component analysis
+
+---
+# Principal component analysis
+
+### Setup
+`\(X\)` an `\(n\times p\)` matrix is a collection of `\(n\)` **points (one per observation) living in standard `\(p\)`-dimensional (Euclidean) space**. `\(X\)` contains **numeric** information.
+
+#### Since the data are points in Euclidean space, we can ask how much variability there is in any given direction.
+
+### Can be used to
+
+- evaluate which **variables contribute most to variation** in the data
+- create a **low-dimensional representation** of the data that retains its 'most important' information
+
+meaning a matrix `\(\tilde{X}\)` with fewer columns but that is 'almost' `\(X\)`
+
+### Very flexible method
+---
+### Goal for today
+Find out **which variables have the biggest influence** on variation in the dataset.
+
+To do this, we will
+
+- find **a few 'directions'** in `\(p\)`-dimensional space that explain most variation in `\(X\)`
+- calculate the **influence each variable has in those directions**
+- variables with large positive or negative influence are ones that explain a lot of the variation
+
+Might be confusing at first. Can play with this [simple demo](http://setosa.io/ev/principal-component-analysis/).
+---
+# High-dimensional space
+High-dimensional space is difficult to understand, i.e. `\(p\)` is large so we have lots of variables. **PCA helps us** look at a few directions of important variability, rather than all `\(p\)`
+
+A simple example to show you that **high-dimensional space is weird**
+
+&lt;img src="slides_firstmodels_pte_files/figure-html/unnamed-chunk-1-1.png" width="600" height="350" /&gt;
+
+---
+# Basketball in 10 dimensions?
+
+![](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpinoyathletics.info%2Fwp-content%2Fuploads%2F2014%2F02%2Fhandball.jpg&amp;f=1&amp;nofb=1)
+
+---
+# Basketball in 20 dimensions?
+
+&lt;img src="https://www.pgatour.com/content/pgatour/long-form/2017/08/08/michael-jordan-golf-origin-story/_jcr_content/articleBodyCenterParsys/image.img.jpg/1502394042514.jpg" height="550" /&gt;
+
+---
+# Background: Linear algebra
+
+### Orthogonal vectors
+Two `\(p\)`-dimensional vectors `\(V\)`, `\(U\)` are orthogonal if $$\sum_{i=1}^p V_i U_i = 0, \quad \quad \text{meaning: they point in perpendicular directions} $$
+
+if this is confusing, replace 'orthogonal' with 'uncorrelated'
+### Orthonormal set of vectors
+Vectors `\(V^1 \ldots V^q\)` are orthonormal if they are **orthogonal (perpendicular) to each other and normalized to length one**,
+
+`$$\sum_{i=1}^p V_{i}^k V_{i}^j = 0 \quad \text{for } k\neq j, \quad \quad \sum_{i=1}^p (V_{i}^k)^2 = 1 \quad \text{for }k =1 \ldots q$$`
+
+### Example
+The axes in a 3d picture are represented by three vectors forming an orthonormal set.
+
+---
+# Orthogonal vectors
+
+![](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fa%2Fa5%2FOrthogonal_Projection_qtl4.svg%2F1024px-Orthogonal_Projection_qtl4.svg.png&amp;f=1&amp;nofb=1)
+
+---
+# First principal component (PC)
+
+`\(X^1, X^2 \ldots X^p\)` are the `\(n\)`-dimensional columns of the dataset `\(X\)` giving the variable values for each of our `\(n\)` observations.
+
+e.g. `\(X^1\)` is the annual income for each of `\(n\)` people
+
+### Optimization problem
+Find the `\(p\)`-dimensional vector `\(V^1\)` such that `$$\sum_{j = 1}^p V^1_j X^j \quad \quad \text{has the largest sample variance}$$`
+
+#### Think of this as the direction of maximum variability for our `\(n\)` points
+
+### Terminology: First PC and 'loadings'
+
+`\(V^1_j\)` gives the influence of variable `\(X^j\)` in this direction
+
+`$$V^1_j = \text{'loading' of } j \text{th variable for }1 \text{st principal component (PC)}$$`
+
+
+
+---
+# Additional PCs
+
+Set `\(V^1\)` to be the **first PC**
+
+### Second PC
+Find the vector `\(V^2\)` so that
+
+`$$\sum_{j = 1}^p V^2_j X^j \quad \text{has the largest sample variance of vectors orthog. to } V^1$$`
+
+#### the direction of second-most variability
+
+### Continue this idea
+The `\(k\)`th PC, call it `\(V^k\)` is the direction of `\(k\)`th largest variability, and the largest among vectors orthogonal to `\(V^1 \ldots V^{k-1}\)`.
+
+Linear algebra says we can have at most `\(p\)` PCs for an `\(n \times p\)` matrix `\(X\)`.
+
+For further details, see the textbooks.
+---
+# Dataset
+
+NBA dataset from one of [Gaston Sanchez's](https://www.gastonsanchez.com/) courses at UC Berkeley, here on [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv). These stats are from 2016-17.
+
+### Q: Do a few of the 27 variables describe the data well?
+Games played and minutes are basically constant, so I remove them.
+
+```r
+library(tidyverse)
+bb &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv") %&gt;%
+  select(-games_played, -minutes)
+head(bb, n = 3)
+```
+
+```
+## # A tibble: 3 x 25
+##   team   wins losses win_prop points field_goals field_goals_att…
+##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;
+## 1 Gold…    67     15    0.817   116.        43.1             87.1
+## 2 San …    61     21    0.744   105.        39.3             83.7
+## 3 Hous…    55     27    0.671   115.        40.3             87.2
+## # … with 18 more variables: field_goals_prop &lt;dbl&gt;, points3 &lt;dbl&gt;,
+## #   points3_attempted &lt;dbl&gt;, points3_prop &lt;dbl&gt;, free_throws &lt;dbl&gt;,
+## #   free_throws_att &lt;dbl&gt;, free_throws_prop &lt;dbl&gt;, off_rebounds &lt;dbl&gt;,
+## #   def_rebounds &lt;dbl&gt;, rebounds &lt;dbl&gt;, assists &lt;dbl&gt;, turnovers &lt;dbl&gt;,
+## #   steals &lt;dbl&gt;, blocks &lt;dbl&gt;, block_fga &lt;dbl&gt;, personal_fouls &lt;dbl&gt;,
+## #   personal_fouls_drawn &lt;dbl&gt;, plus_minus &lt;dbl&gt;
+```
+
+
+---
+# Getting PCs in `R`
+
+Use the `prcomp` function from base R! 
+
+Leave out the team names, which just identify the observations.
+
+
+```r
+team &lt;- bb$team
+bb &lt;- select(bb, -team)
+m &lt;- prcomp(bb, scale. = TRUE)
+```
+
+### Scaling, centering
+
+- `prcomp` by default will center each column of `bb`, i.e. subtract the mean. 
+- typically want to scale the data, dividing by sample standard deviation.
+- avoid issues where the direction of maximal variation (first PC) is determined by a variable whose natural scale is just bigger
+- like with `\(K\)`-means
+
+---
+# Matrix of PCs
+PC1 is the first column, PC2 the second etc. 
+
+Names refer to **weight (loading)** each variable gets in the first PC direction.
+
+
+```r
+head(m$rotation[, 1], n = 8)
+```
+
+```
+##                  wins                losses              win_prop 
+##           -0.33891113            0.33891113           -0.33901427 
+##                points           field_goals field_goals_attempted 
+##           -0.28582650           -0.22742498            0.02880587 
+##      field_goals_prop               points3 
+##           -0.30195457           -0.22012478
+```
+
+---
+# Interpreting loadings
+- somewhat abstract
+- **large, positive loadings:** variable has a big effect in the direction of PC1, e.g. losses here
+- **large, negative loadings:** variable has a big effect in the *opposite* or reverse direction of PC1, e.g. wins here
+- **small loadings:** variables that do not have much effect on the data in the direction of maximum variation
+
+### Rough translation
+
+$$\text{large PC1 loading} \Longrightarrow \text{explains lots of variation} $$
+
+### Loadings for additional PCs
+A vector might have a small loading in the PC1 direction but a large one in the PC2 direction. This means it has a big influence on the data's variability in the PC2 direction.
+
+$$\text{large PC2 loading} \Longrightarrow \text{explains lots of variation in PC2 direction} $$
+and so on for PC3, PC4 ...
+
+---
+# Another interpretation
+
+
+## Variables with large PC1 loadings, same sign
+
+are highly **positively correlated** with each other, meaning if one is large the other tends to be large
+
+## Variables with large PC1 loadings, opposite sign
+
+are highly **negatively correlated** with each other
+
+## Variables with the small (positive or negative) PC1 loadings
+
+are **not really correlated** with variables that have large positive or negative loadings
+
+---
+# Basketball in 1 MILLION dimesions?
+.center[![](https://media2.giphy.com/media/aq5y9pmdYB2Ny/200w.webp?cid=790b7611c090319411e0efeae54fd7d9ce58b127c35924b1&amp;rid=200w.webp)]
+
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Load** the NBA dataset from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv).
+2. **Calculate** the PCs for this dataset.
+3. **Plot** the first PC by the second PC, meaning the first PC is the x-variable in your plot and the second is the y-variable.
+4. **Write** two or three lines describing the effects of important variables in these directions, as I did above.
+
+---
+I get something like this. You do not need to plot the variable names as I have.
+&lt;img src="slides_firstmodels_pte_files/figure-html/unnamed-chunk-6-1.png" height="450" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
