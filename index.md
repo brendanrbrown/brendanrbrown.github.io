@@ -44,6 +44,8 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 21|[first models, part b](slides_firstmodels_ptb.html)|[Gabby Ruehle](320_Tutorial_2-21.html)|
 |Feb. 24|[first models, part c](slides_firstmodels_ptc.html)|[Trevor Stephens](STORFeb24.html), [Mark Heymann](Tutorial-2-24.html)|
 |Feb. 26|[first models, part d](slides_firstmodels_ptd.html)|[Zachary Glontz](Class21.html)|
+|Feb. 28|[first models, part e](slides_firstmodels_pte.html)||
+
 
 ## Homework
 
