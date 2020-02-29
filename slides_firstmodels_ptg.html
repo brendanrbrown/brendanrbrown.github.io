@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>first models, part g: more more PCA</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_firstmodels_ptg_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptg_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptg_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# first models, part g: more more PCA
+
+---
+
+
+
+
+# What you will learn
+
+- basics of rasters images in R
+- concepts of low-dimensional approximation using PCA
+- implementing compression with PCA
+
+
+**Main reference:** ISLR ch 10, *[Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/)* ch 14
+
+**Resources**
+- [visual demonstration of PCA](http://setosa.io/ev/principal-component-analysis/)
+
+Doing PCA on images is a popular thing. See more here
+
+- [towarddatascience.com](https://towardsdatascience.com/principal-component-analysis-in-depth-understanding-through-image-visualization-892922f77d9f)
+- [r-bloggers.com](https://www.r-bloggers.com/principal-component-analysis-on-imaging/)
+
+---
+# Review: Principal component analysis
+
+### Setup
+`\(X\)` an `\(n\times p\)` matrix is a collection of `\(n\)` **points (one per observation) living in standard `\(p\)`-dimensional (Euclidean) space**. `\(X\)` contains **numeric** information.
+
+#### Since the data are points in Euclidean space, we can ask how much variability there is in any given direction.
+
+### Can be used to
+
+- evaluate which **variables contribute most to variation** in the data
+- create a **low-dimensional representation** of the data that retains its 'most important' information
+
+meaning a matrix `\(\tilde{X}\)` with fewer columns but that is 'almost' `\(X\)`
+
+### Very flexible method
+
+---
+# Review: PC scores
+
+`\(X_1\)` is the `\(p\)`-dimensional vector of variable values for the first observation. `\(V^1\)` is the first principal component loadings vector, a.k.a. direction of maximal variation.
+
+`$$\text{Projection of first observation onto } V^1 = \sum_{j = 1}^p X_1^j V_j^1$$`
+
+### Projections onto `\(V^k\)`
+
+`$$\text{Projection of } \ell \text{th observation onto } V^k = \sum_{j = 1}^p X_\ell^jV_j^k$$`
+
+or in matrix notation if `\(X\)` is our data matrix and `\(V\)` the matrix whose columns are the PC loading vectors
+
+`$$\text{Projection of } \ell \text{th observation onto } V^k = (X V)_{\ell k}$$`
+
+This is called the **'score'** for the `\(\ell\)`th observation on the `\(k\)`th PC loading vector, meaning the `\(k\)`th most important direction of variation
+
+---
+Here `\(u\)` is our `\(V^1\)`, the direction of maximal variability aka first PC loadings
+&lt;img src="pca_scores.png" width="892" /&gt;
+
+from notes on PCA by [Gavin at Duke](http://people.duke.edu/~hpgavin/).
+
+---
+# Today: Compression
+
+### Problem: Too many dimensions
+'Too many' could mean
+
+- `\(p &gt; n\)` the number of variables is bigger than the number of observations
+- many variables do little to explain variation in the data
+- many variables are highly correlated
+
+### Solution: Low-dimensional representation
+
+- create a **low-dimensional** version of our `\(n\times p\)` matrix `\(X\)`
+- meaning another matrix `\(\tilde{X}\)` that is `\(n \times d\)` with `\(d &lt;&lt; p\)`
+- so that `\(\tilde{X}\)` is as 'close' to `\(X\)` as it can be
+
+---
+# Tame those dimensions
+
+&lt;img src="https://media2.giphy.com/media/aq5y9pmdYB2Ny/200w.webp?cid=790b7611c090319411e0efeae54fd7d9ce58b127c35924b1&amp;rid=200w.webp" height="500" /&gt;
+
+
+---
+# Data
+Jadzia and Worf got married on *Star Trek: Deep Space Nine* and I took a picture.
+
+&lt;img src="slides_firstmodels_ptg_files/figure-html/unnamed-chunk-3-1.png" height="550" /&gt;
+
+
+---
+# Goal
+
+### Create a low-dimensional version of this picture
+
+### Relation to PCA
+
+- images can be stored as matrices of color intensities
+- think of the matrix of intensities as our data matrix `\(X\)`
+- now our **'good' low-dimensional approximation `\(\tilde{X}\)`** is one that is a little fuzzier but still conveys the image
+- dimension reduction is information compression
+
+**By running PCA on an image, we can actually see what PCA's information compression is doing.**
+
+**Principle is the same if we were to do dimension reduction on any other matrix of data.**
+
+### Link to image
+
+Download it from our [github](https://github.com/brendanrbrown/brendanrbrown.github.io/blob/master/wedding.jpg)
+
+---
+# Raster images
+A [raster image](https://en.wikipedia.org/wiki/Raster_graphics) is a **matrix** of red, green, blue (RGB) pixel intensities on a scale in `\([0,1]\)`
+
+&lt;img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Rgb-raster-image.svg/368px-Rgb-raster-image.svg.png" height="500" /&gt;
+
+
+---
+# Raster image basics in R
+
+### Packages
+- `jpeg` package, not a base R package 
+- `grid` package, in base R but must be loaded with `library`
+
+### Rasters
+
+- raster objects are **arrays of three matrices**
+- one for **red intensity**
+- one for **green**
+- one for **blue**
+
+Each matrix cell corresponds to a pixel in the image.
+
+**Read** a jpeg image into a raster array with the `readJPEG` function from the `jpeg` package
+
+```r
+library('jpeg')
+library('grid')
+ds9 &lt;- readJPEG("wedding.jpg")
+```
+
+
+---
+
+### Raster object is an 'array' of matrices
+
+```r
+class(ds9)
+```
+
+```
+## [1] "array"
+```
+
+### An array of three matrices
+
+```r
+dim(ds9)
+```
+
+```
+## [1]  723 1022    3
+```
+
+
+---
+### Indexing
+
+Get the first matrix using the third indexing variable. Otherwise indexing is the same as for matrices and data frames
+
+
+```r
+class(ds9[,, 1])
+```
+
+```
+## [1] "matrix"
+```
+
+```r
+dim(ds9[,, 1])
+```
+
+```
+## [1]  723 1022
+```
+
+**First matrix is red**, `ds9[,, 1]` here
+**Second matrix is green**, `ds9[,, 2]` here
+**Third is blue**, `ds9[,, 3]` here
+
+---
+# Plotting raster images
+Easy as pie. Use the `grid.raster` function from the `grid` package
+
+```r
+grid.raster(ds9)
+```
+
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+
+---
+# Working with red only today
+
+```r
+ds9[,, 2] &lt;- 0 ; ds9[,, 3] &lt;- 0
+grid.raster(ds9)
+```
+
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+# On greyscale
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+
+---
+# FYI: This would be green
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+---
+# PCA on marriage photo
+
+### Red matrix
+Save the red intensity as a matrix so we can do PCA
+
+
+```r
+ds9 &lt;- readJPEG("wedding.jpg")
+redds9 &lt;- ds9[,,1]
+```
+
+### Do PCA
+Exactly as before
+
+
+```r
+m &lt;- prcomp(redds9, scale. = T)
+```
+
+---
+# Low-dimensional representation
+Our raster matrix `\(X\)` has dimension `\(n \times p\)` given by
+
+
+```r
+dim(redds9)
+```
+
+```
+## [1]  723 1022
+```
+
+**That's a lot of columns! Do we need them all?**
+
+
+### Instead of dropping columns
+
+- use matrix of the first `\(d\)` PCA scores vectors
+- and the first `\(d\)` corresponding PC directions `\(V^1 \ldots V^d\)`
+- to create a `\(n \times p\)` matrix that captures the image pretty well **using only these first `\(d\)` PC directions**
+
+---
+### 'Good' approximation
+
+How good is good enough? This is a technical question that we will explore in a later class. But some ideas
+
+- adding more PC directions (meaning a larger `\(d\)` for the approximation) **can only improve our approximation**
+- the smaller the `\(d\)` the better, since we have compressed the matrix more
+- but too small a `\(d\)` might drop too much valuable information from the data
+- goal is to **find the right balance between a small `\(d\)` and retaining enough information**
+
+### Today: Focus on creating approximations for any choice of d
+
+---
+### Background: Rank
+The 'rank' of a matrix is, informally, the number of direction vectors needed to recreate it with linear combinations. We won't cover the details, but ask me if you want to know.
+
+### Goal
+For any given `\(d\)`, we want a matrix `\(\tilde{X}\)` of rank `\(d\)` 
+
+- **minimizing the sum of squared distances**
+- across all columns
+- of the difference matrix `\(\tilde{X} - X\)`
+
+---
+### Connection to PCA
+If `\(V^1 \ldots\)` are the PC direction vectors and `\(X\)` is our data, then the **best** rank `\(d\)` approximation to `\(X\)` is given by the matrix `\(\tilde{X}\)` as follows
+
+`$$\text{ith row jth column element of } \tilde{X} = \tilde{X}_i^j = \sum_{k = 1}^d (XV)_i^k V^k_j$$`
+
+Remember
+
+`$$(XV)_i^k = \text{score for ith observation relative to kth PC direction } V^k$$`
+
+### Summary
+Our best approximation to the data of rank `\(d\)` uses the scores and directions from only the first `\(d\)` PC vectors `\(V^1 \ldots V^d\)`
+
+---
+# Do it in R
+Since linear algebra is not a requirement for the class, I wrote a function to take your PCA output from `prcomp` and create the low-dimensional approximation.
+
+
+```r
+pca_approx &lt;- function(data, pca_loadings, d){
+  
+  pca_loadings &lt;- pca_loadings[, 1:d]
+  
+  out &lt;- (data %*% pca_loadings) %*% t(pca_loadings)
+  
+}
+```
+
+
+---
+# On the marriage picture
+
+To be clear how this should work, let's do it for `\(d = 5\)`
+
+
+```r
+m &lt;- prcomp(redds9, scale. = T)
+redout &lt;- pca_approx(redds9, m$rotation, 5)
+```
+
+This still has the same dimension as the original data. 
+
+```r
+dim(redout)
+```
+
+```
+## [1]  723 1022
+```
+
+### But we have compressed the dataset
+It has only the information from the first `\(d\)` PC directions.
+
+---
+### Un-scale the dataset
+Since our PC directions were based on a centered, scaled version of the data `\(X\)` we can't do this before.
+
+We just need the data to be within `\([0, 1]\)` to plot it as a raster image. The relative intensities will give the image we want.
+
+```r
+redout &lt;- (redout - min(redout)) / max(redout - min(redout))
+```
+
+---
+# Too much info lost!
+
+```r
+grid.raster(as.raster(redout))
+```
+
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
+
+
+---
+# Fix: More PCs, meaning larger d
+
+
+```r
+redout &lt;- pca_approx(redds9, m$rotation, 350)
+redout &lt;- (redout - min(redout)) / max(redout - min(redout))
+grid.raster(as.raster(redout))
+```
+
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-21-1.png)&lt;!-- --&gt;
+
+---
+# Summary and look ahead
+
+### Dimension reduction, ie compression, with PCA
+
+- use only the information from the first `\(d\)` PC directions
+- to create the best dimension `\(d\)` approximation to the data
+- ie minimizing the squared error across all columns
+
+**Note:** Aside from the rescaling step, needed for raster plotting, this whole procedure would work and makes sense for any kind of numerical data matrix `\(X\)`, e.g. the NBA dataset we saw last time.
+
+### Later: How many PC directions is enough?
+
+- want some measure of how much variability in the data we are getting
+- we know the first PC direction captures the most, the 2nd the second most etc
+- when to stop is something we will explore later in the course
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Install** the `jpeg` package if you do not already have it. **Load** the `jpeg` and `grid` packages. The latter comes with base R.
+2. **Download** the [wedding.jpeg](https://github.com/brendanrbrown/brendanrbrown.github.io/blob/master/wedding.jpg) from github.
+3. **Plot** only the blue colored version of the image by zeroing out the red and green elements.
+*Hint: Adapt the code from the 'Working with red today' slide. Remember the first matrix in the raster array is red, the second green, the third blue.*
+4. **Run PCA on the blue** pixel intensities only.
+5. Find the best **100-dimensional** approximation to the blue image data, using the `pca_approx` function above.
+*Don't forget to scale the output of `pca_approx` as I did above*
+6. **Plot** the (greyscale version) of your approximation.
+
+---
+![](slides_firstmodels_ptg_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
