@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>first models, part f: more PCA</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_firstmodels_ptf_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptf_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_firstmodels_ptf_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# first models, part f: more PCA
+
+---
+
+
+
+
+# What you will learn
+
+- concept of PC 'scores'
+- plotting and interpreting PC 'scores'
+- clustering with PC 'scores'
+
+
+**Main reference:** ISLR ch 10.2, *[Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/)* ch 3.4, 14.5
+
+**Resources**
+
+- [visual demonstration of PCA](http://setosa.io/ev/principal-component-analysis/)
+
+---
+# Review: Principal component analysis
+
+### Setup
+`\(X\)` an `\(n\times p\)` matrix is a collection of `\(n\)` **points (one per observation) living in standard `\(p\)`-dimensional (Euclidean) space**. `\(X\)` contains **numeric** information.
+
+#### Since the data are points in Euclidean space, we can ask how much variability there is in any given direction.
+
+### Can be used to
+
+- evaluate which **variables contribute most to variation** in the data
+- create a **low-dimensional representation** of the data that retains its 'most important' information
+
+meaning a matrix `\(\tilde{X}\)` with fewer columns but that is 'almost' `\(X\)`
+
+### Very flexible method
+
+---
+# Review: First principal component (PC)
+
+`\(X^1, X^2 \ldots X^p\)` are the `\(n\)`-dimensional columns of the dataset `\(X\)` giving the variable values for each of our `\(n\)` observations.
+
+e.g. `\(X^1\)` is the annual income for each of `\(n\)` people
+
+### Optimization problem
+Find the `\(p\)`-dimensional vector `\(V^1\)` such that `$$\sum_{j = 1}^p V^1_j X^j \quad \quad \text{has the largest sample variance}$$`
+
+#### Think of this as the direction of maximum variability for our `\(n\)` points
+
+### Terminology: First PC 'loadings'
+
+`\(V^1_j\)` gives the influence of variable `\(X^j\)` in this direction
+
+`$$V^1_j = \text{'loading' of } j \text{th variable for }1 \text{st principal component (PC)}$$`
+
+---
+# Dataset
+
+NBA dataset from one of [Gaston Sanchez's](https://www.gastonsanchez.com/) courses at UC Berkeley, here on [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv). These stats are from 2016-17.
+
+### Q: Do a few of the 27 variables describe the data well?
+Games played and minutes are basically constant, so I remove them.
+
+```r
+library(tidyverse)
+bb &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv") %&gt;%
+  select(-games_played, -minutes)
+head(bb, n = 3)
+```
+
+```
+## # A tibble: 3 x 25
+##   team   wins losses win_prop points field_goals field_goals_att…
+##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;
+## 1 Gold…    67     15    0.817   116.        43.1             87.1
+## 2 San …    61     21    0.744   105.        39.3             83.7
+## 3 Hous…    55     27    0.671   115.        40.3             87.2
+## # … with 18 more variables: field_goals_prop &lt;dbl&gt;, points3 &lt;dbl&gt;,
+## #   points3_attempted &lt;dbl&gt;, points3_prop &lt;dbl&gt;, free_throws &lt;dbl&gt;,
+## #   free_throws_att &lt;dbl&gt;, free_throws_prop &lt;dbl&gt;, off_rebounds &lt;dbl&gt;,
+## #   def_rebounds &lt;dbl&gt;, rebounds &lt;dbl&gt;, assists &lt;dbl&gt;, turnovers &lt;dbl&gt;,
+## #   steals &lt;dbl&gt;, blocks &lt;dbl&gt;, block_fga &lt;dbl&gt;, personal_fouls &lt;dbl&gt;,
+## #   personal_fouls_drawn &lt;dbl&gt;, plus_minus &lt;dbl&gt;
+```
+
+---
+
+
+```r
+m &lt;- select(bb, -team) %&gt;% prcomp(scale. = TRUE)
+ggplot(data.frame(m$rotation), aes(x = PC1, y = PC2, label = rownames(m$rotation))) + 
+  geom_point(colour = "purple3") + geom_label(size = 5) + theme_minimal() + 
+  xlim(-.45, .4) + ylim(-.3, .45) 
+```
+
+&lt;img src="slides_firstmodels_ptf_files/figure-html/unnamed-chunk-2-1.png" height="400" /&gt;
+
+---
+# Review: Intepreting loadings
+
+PC1 'loadings' are the **weights given to variables** in the direction of maximal variation
+
+### Large, positive PC1 loading: `losses`
+**Large effect on variation** in the 'positive' direction of the PC1 loadings vector `\(V^1\)`.
+
+### Large, negative PC1 loading: `plus_minus`, `points3_prop`
+**Large effect on variation** but in the opposite direction of `\(V^1\)`
+
+**i.e. highly negatively correlated with `losses`**
+
+### Small PC1 loadings: `free_throws_prop`
+Not much effect on variation in the `\(V^1\)` direction
+
+and **not very correlated with `losses`, `plus_minus`** or other variables with large PC1 loadings
+
+---
+# What does PCA say about observations?
+
+We can ask
+
+### How do observations compare in the directions where data vary most?
+
+### To do this we will
+
+weight each observation's variable values by the PC loadings
+
+same as 'projecting' observation `\(X_i\)` onto the line given by `\(V^1\)`, first PC loading direction
+
+---
+# Projection of P onto line g
+
+![](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fa%2Fa5%2FOrthogonal_Projection_qtl4.svg%2F1024px-Orthogonal_Projection_qtl4.svg.png&amp;f=1&amp;nofb=1)
+
+
+---
+# Project onto direction of max variability
+
+Here `\(u\)` is our `\(V^1\)`, the direction of maximal variability aka first PC loadings
+&lt;img src="pca_scores.png" width="892" /&gt;
+
+from notes on PCA by [Gavin at Duke](http://people.duke.edu/~hpgavin/).
+
+---
+# Mathematical version
+
+`\(X_1\)` is the `\(p\)`-dimensional vector of variable values for the first observation. `\(V^1\)` is the first principal component loadings vector, a.k.a. direction of maximal variation.
+
+`$$\text{Projection of first observation onto } V^1 = \sum_{j = 1}^p X_1^j V_j^1$$`
+
+### Projections onto `\(V^k\)`
+
+`$$\text{Projection of } \ell \text{th observation onto } V^k = \sum_{j = 1}^p X_\ell^jV_j^k$$`
+
+or in matrix notation if `\(X\)` is our data matrix and `\(V\)` the matrix whose columns are the PC loading vectors
+
+`$$\text{Projection of } \ell \text{th observation onto } V^k = (X V)_{\ell k}$$`
+
+This is called the **'score'** for the `\(\ell\)`th observation on the `\(k\)`th PC loading vector, meaning the `\(k\)`th most important direction of variation
+
+---
+# Do it in `R`
+
+This is easy!
+
+### Output of `prcomp`
+If I do the following, with `data` as a placeholder for my matrix `\(X\)`
+
+```
+m &lt;- prcomp(data, scale. = T)
+```
+
+this gives **matrix of PC loading vectors** seen last class
+
+```
+m$rotation
+```
+
+and this gives the **matrix of projections onto each PC loading vector**
+
+```
+m$x
+```
+
+where `m$x[, 1]` gives the projection of each observation on the direction of maximal variation `\(V^1\)`, `m$[, 2]` gives the projection in the
+direction `\(V^2\)` etc.
+---
+# Plot the scores!
+
+![](slides_firstmodels_ptf_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+---
+# Compare with loadings plot
+
+![](slides_firstmodels_ptf_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+Plot both with `biplot`, but very ugly
+---
+# Interpretation: Right-hand of scores plot
+
+### General
+- observations with large values for variables with large, positive PC1 weight
+- in other words **teams with lots of `losses`**
+- e.g. Suns, Nets, Lakers, Mavericks
+- since **`losses` had the largest positive PC1 weight** by far
+
+### Top right
+In addition, 
+
+- observations with large values positive (negative) for variables with **large positive (negative) PC2 weights**
+- e.g. variables `turnovers`, `block_fga` and teams Nets, Suns
+
+### Bottom right
+- observations with large positive (negative) values for variables with **large negative (positive) PC2 weights**
+- e.g. `points3_prop` and Mavericks
+
+---
+# Suns were bad in 16-17 I guess
+.center[![](sad_sun.jpg)]
+
+
+---
+# Comparing to summary info
+
+### PCA interpretation hard to see just from a summary table
+
+```r
+arrange(bb, desc(losses), desc(points3_prop)) %&gt;% select(team, losses, points3_prop) %&gt;% head(n = 2)
+```
+
+```
+## # A tibble: 2 x 3
+##   team          losses points3_prop
+##   &lt;chr&gt;          &lt;dbl&gt;        &lt;dbl&gt;
+## 1 Brooklyn Nets     62         33.8
+## 2 Phoenix Suns      58         33.2
+```
+
+
+```r
+arrange(bb, desc(points3_prop), desc(losses)) %&gt;% select(team, losses, points3_prop) %&gt;% head(n = 2)
+```
+
+```
+## # A tibble: 2 x 3
+##   team                losses points3_prop
+##   &lt;chr&gt;                &lt;dbl&gt;        &lt;dbl&gt;
+## 1 San Antonio Spurs       21         39.1
+## 2 Cleveland Cavaliers     31         38.4
+```
+
+---
+e.g. Mavericks lost a lot but had higher than average three point shooting among other bad teams
+
+### Averages across data
+
+```r
+summarize(bb, mean(losses), mean(points3_prop))
+```
+
+```
+## # A tibble: 1 x 2
+##   `mean(losses)` `mean(points3_prop)`
+##            &lt;dbl&gt;                &lt;dbl&gt;
+## 1             41                 35.7
+```
+
+### Averages for teams who lost a lot
+
+```r
+filter(bb, losses &gt; 41) %&gt;% summarize(mean(losses), mean(points3_prop))
+```
+
+```
+## # A tibble: 1 x 2
+##   `mean(losses)` `mean(points3_prop)`
+##            &lt;dbl&gt;                &lt;dbl&gt;
+## 1           51.2                 34.7
+```
+
+---
+### Mavericks
+
+```r
+filter(bb, team == "Dallas Mavericks") %&gt;% select(losses, points3_prop)
+```
+
+```
+## # A tibble: 1 x 2
+##   losses points3_prop
+##    &lt;dbl&gt;        &lt;dbl&gt;
+## 1     49         35.5
+```
+
+### Value of PCA: 
+
+- see clearly that **Mavericks were unusual** 
+- because they have high three-point shooting controlling for the fact that they lost alot
+- reflected in the fact that PC2 loading direction (dominated by `points3_prop`) is **orthogonal** to PC1 direction (dominated by `losses`)
+
+---
+# Lagniappe: Clustering PCA 'scores'
+
+
+```r
+m2 &lt;- kmeans(m$x[, c(1,2)], 4)
+
+as_tibble(m$x) %&gt;% mutate(cluster = factor(m2$cluster), team = bb$team) %&gt;%
+  ggplot(aes(PC1, PC2, color = cluster, label = team)) + geom_label(size = 4) +
+  theme_bw() + scale_color_brewer(type = "qual", palette = "Set1") + xlim(-10, 4.5)
+```
+
+&lt;img src="slides_firstmodels_ptf_files/figure-html/unnamed-chunk-11-1.png" height="400" /&gt;
+
+---
+### Q: How should we interpret this?
+
+
+
+---
+# Summary and next steps
+
+### Storing 'important' features
+
+- projections of `\(X_i\)` onto the first several `\(V^1, V^2 \ldots\)` directions of maximal variability
+- stores the 'important' information about `\(X_i\)`
+- and how it differs from the other observations
+
+### Low-dimensional representation
+
+Next time, we will use this idea to 
+
+- create a **low-dimensional** version of our `\(n\times p\)` matrix `\(X\)`
+- meaning another matrix `\(\tilde{X}\)` that is `\(n \times d\)` with `\(d &lt;&lt; p\)`
+- so that `\(\tilde{X}\)` is as 'close' to `\(X\)` as it can be
+
+---
+# Tutorial
+Create an html file that does the following
+
+1. **Load** the NBA dataset from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv).
+2. **Calculate** the PCA for this dataset.
+3. **Plot** the scores vectors relating to the second and third directions of variation, ie the projects of the observations onto `\(V^2\)` and `\(V^3\)`
+
+*Hint: See the 'Do it in `R` slide.*
+
+4. Plot the **loadings** vectors for the second and third directions, ie plot `\(V^2\)` by `\(V^3\)`. 
+
+*Hint: See the slide before 'Review: Intepreting loadings' or solutions to last class's tutorial.*
+
+5. Write two or three sentences explaining what you see, like I did in the 'Interpretation' slide above. You do not need to describe all regions of the plot. Just the conclusions most obvious to you.
+
+---
+If you ran k-means on PC2 and PC3 here's what you would get
+&lt;img src="slides_firstmodels_ptf_files/figure-html/unnamed-chunk-12-1.png" height="500" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
