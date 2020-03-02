@@ -125,7 +125,7 @@ Find the `\(p\)`-dimensional vector `\(V^1\)` such that `$$\sum_{j = 1}^p V^1_j 
 
 #### Think of this as the direction of maximum variability for our `\(n\)` points
 
-### Terminology: First PC and 'loadings'
+### Terminology: First PC 'loadings'
 
 `\(V^1_j\)` gives the influence of variable `\(X^j\)` in this direction
 
@@ -136,7 +136,7 @@ Find the `\(p\)`-dimensional vector `\(V^1\)` such that `$$\sum_{j = 1}^p V^1_j 
 ---
 # Additional PCs
 
-Set `\(V^1\)` to be the **first PC**
+Set `\(V^1\)` to be the **first PC loadings vector**
 
 ### Second PC
 Find the vector `\(V^2\)` so that
@@ -146,9 +146,9 @@ Find the vector `\(V^2\)` so that
 #### the direction of second-most variability
 
 ### Continue this idea
-The `\(k\)`th PC, call it `\(V^k\)` is the direction of `\(k\)`th largest variability, and the largest among vectors orthogonal to `\(V^1 \ldots V^{k-1}\)`.
+The `\(k\)`th PC 'loadings' vector, call it `\(V^k\)` is the direction of `\(k\)`th largest variability, and the largest among vectors orthogonal to `\(V^1 \ldots V^{k-1}\)`.
 
-Linear algebra says we can have at most `\(\min(p, n)\)` PCs for an `\(n \times p\)` matrix `\(X\)`.
+Linear algebra says we can have at most `\(p\)` PCs for an `\(n \times p\)` matrix `\(X\)`.
 
 For further details, see the textbooks.
 ---
@@ -204,8 +204,8 @@ m &lt;- prcomp(bb, scale. = TRUE)
 - like with `\(K\)`-means
 
 ---
-# Matrix of PCs
-PC1 is the first column, PC2 the second etc. 
+# Matrix of PC loadings
+`PC1` is the first column, `PC2` the second etc. 
 
 Names refer to **weight (loading)** each variable gets in the first PC direction.
 
@@ -235,7 +235,7 @@ head(m$rotation[, 1], n = 8)
 $$\text{large PC1 loading} \Longrightarrow \text{explains lots of variation} $$
 
 ### Loadings for additional PCs
-A vector might have a small loading in the PC1 direction but a large one in the PC2 direction. This means it has a big influence on the data's variability in the PC2 direction.
+A variable might have a small loading in the PC1 direction but a large one in the PC2 direction. This means it has a big influence on the data's variability in the PC2 direction.
 
 $$\text{large PC2 loading} \Longrightarrow \text{explains lots of variation in PC2 direction} $$
 and so on for PC3, PC4 ...
@@ -258,7 +258,10 @@ are **not really correlated** with variables that have large positive or negativ
 
 ---
 # Basketball in 1 MILLION dimesions?
-.center[![](https://media2.giphy.com/media/aq5y9pmdYB2Ny/200w.webp?cid=790b7611c090319411e0efeae54fd7d9ce58b127c35924b1&amp;rid=200w.webp)]
+
+&lt;img src="https://media2.giphy.com/media/aq5y9pmdYB2Ny/200w.webp?cid=790b7611c090319411e0efeae54fd7d9ce58b127c35924b1&amp;rid=200w.webp" height="500" /&gt;
+
+
 
 
 ---
@@ -272,7 +275,7 @@ Create an html file that does the following
 
 ---
 I get something like this. You do not need to plot the variable names as I have.
-&lt;img src="slides_firstmodels_pte_files/figure-html/unnamed-chunk-6-1.png" height="450" /&gt;
+&lt;img src="slides_firstmodels_pte_files/figure-html/unnamed-chunk-7-1.png" height="450" /&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
