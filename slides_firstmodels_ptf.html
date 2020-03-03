@@ -195,7 +195,7 @@ and this gives the **matrix of projections onto each PC loading vector**
 m$x
 ```
 
-where `m$x[, 1]` gives the projection of each observation on the direction of maximal variation `\(V^1\)`, `m$[, 2]` gives the projection in the
+where `m$x[, 1]` gives the projection of each observation on the direction of maximal variation `\(V^1\)`, `m$x[, 2]` gives the projection in the
 direction `\(V^2\)` etc.
 ---
 # Plot the scores!
@@ -220,7 +220,7 @@ Plot both with `biplot`, but very ugly
 ### Top right
 In addition, 
 
-- observations with large positive (negative) values for variables with **large positive (negative) PC2 weights**
+- observations with large values positive (negative) for variables with **large positive (negative) PC2 weights**
 - e.g. variables `turnovers`, `block_fga` and teams Nets, Suns
 
 ### Bottom right
@@ -344,7 +344,7 @@ as_tibble(m$x) %&gt;% mutate(cluster = factor(m2$cluster), team = bb$team) %&gt;
 Next time, we will use this idea to 
 
 - create a **low-dimensional** version of our `\(n\times p\)` matrix `\(X\)`
-- meaning another matrix `\(\tilde{X}\)` that is `\(n \times d\)` with `\(d &lt;&lt; p\)`
+- meaning another matrix `\(\tilde{X}\)` that **uses only the information from `\(V^1 \ldots V^d\)`** PC directions, for some `\(d &lt;&lt; p\)`
 - so that `\(\tilde{X}\)` is as 'close' to `\(X\)` as it can be
 
 ---
