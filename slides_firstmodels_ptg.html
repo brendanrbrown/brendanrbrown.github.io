@@ -49,7 +49,7 @@ Doing PCA on images is a popular thing. See more here
 - evaluate which **variables contribute most to variation** in the data
 - create a **low-dimensional representation** of the data that retains its 'most important' information
 
-meaning a matrix `\(\tilde{X}\)` with fewer columns but that is 'almost' `\(X\)`
+meaning a matrix `\(\tilde{X}\)` that **uses only the information from `\(V^1 \ldots V^d\)`** PC directions, for some `\(d &lt;&lt; p\)`
 
 ### Very flexible method
 
@@ -89,7 +89,7 @@ from notes on PCA by [Gavin at Duke](http://people.duke.edu/~hpgavin/).
 ### Solution: Low-dimensional representation
 
 - create a **low-dimensional** version of our `\(n\times p\)` matrix `\(X\)`
-- meaning another matrix `\(\tilde{X}\)` that is `\(n \times d\)` with `\(d &lt;&lt; p\)`
+- meaning another matrix `\(\tilde{X}\)` that **uses only the information from `\(V^1 \ldots V^d\)`** PC directions, for some `\(d &lt;&lt; p\)`
 - so that `\(\tilde{X}\)` is as 'close' to `\(X\)` as it can be
 
 ---
