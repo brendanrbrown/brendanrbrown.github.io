@@ -4,6 +4,11 @@ Welcome to section one of the spring 2020 course.
 
 [These slides describe how the course will change](covid19.html), based on the available guidance from UNC Chapel Hill administrators. I will update them as the situation changes and will notify students via Sakai.
 
+### Disclaimer
+Given the continued lack of clear guidance from the university administration, I reserve the right to change course policies and any other aspect of the syllabus as the situation develops.
+
+I will not do so capriciously and will attempt to balance needs of our students with the demands of academic standards.
+
 ## Who we are
 
 Brendan Brown (instructor) and 
