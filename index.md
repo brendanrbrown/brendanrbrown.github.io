@@ -1,5 +1,9 @@
 Welcome to section one of the spring 2020 course.
 
+## COVID19 update
+
+[These slides describe how the course will change](covid19.html), based on the available guidance from UNC Chapel Hill administrators. I will update them as the situation changes and will notify students via Sakai.
+
 ## Who we are
 
 Brendan Brown (instructor) and 
