@@ -4,6 +4,8 @@ Welcome to section one of the spring 2020 course.
 
 [These slides describe how the course will change](covid19.html), based on the available guidance from UNC Chapel Hill administrators. I will update them as the situation changes and will notify students via Sakai.
 
+Here is a first attempt at [guidelines on how class will work through Zoom](zoom.html), e.g. asking me questions.
+
 ### Disclaimer
 Given the continued lack of clear guidance from the university administration, I reserve the right to change course policies and any other aspect of the syllabus as the situation develops.
 
