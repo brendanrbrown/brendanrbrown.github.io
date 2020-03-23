@@ -42,9 +42,9 @@ Only basic ideas needed to do data science applications we're interested in:
 - if/else statements
 
 ### For those with programming experience
-Much will be familiar, and this section might been easy or boring. But you must become familiar with how R handles common prorgramming tasks.
+Much will be familiar, and this section might be on the easy side. But you must become familiar with how R handles common programming tasks.
 
-I encourage you to glance at the [Advanced R](https://adv-r.hadley.nz) book, in particular the [metaprogramming](https://adv-r.hadley.nz/metaprogramming.html) chapter, to get a sense of the ways R is different from or the same as what you know.
+I encourage you to glance at the [Advanced R](https://adv-r.hadley.nz) book, for example the [metaprogramming](https://adv-r.hadley.nz/metaprogramming.html) chapter, to get a sense of the ways R is different from or the same as what you know.
 ### For those without programming experience
 This might be trickier and will require some extra effort. It's worth it, since these ideas are relevant to many other programming languages.
 
@@ -80,8 +80,7 @@ Roy shows us how to treat babies
 
 - do the same thing many times
 - in a consistent way each time
-- possibly with different inputs
-- e.g. run a model on different datsets
+- possibly with different inputs, e.g. run a model on different datsets
 
 ### Makes sense to the computer
 
@@ -185,11 +184,11 @@ for (k in x){
 ```
 
 ```
-## [1] 0.9842086
-## [1] 0.8440799
-## [1] 0.3340319
-## [1] 0.7798752
-## [1] 0.5211924
+## [1] 0.7440192
+## [1] 0.726507
+## [1] 0.5960488
+## [1] 0.7855672
+## [1] 0.3542846
 ```
 
 Here we iterate over the elements in `x` itself. 
@@ -216,7 +215,7 @@ y
 ```
 
 ```
-## [1] 0.9686666 0.7124709 0.1115773 0.6082053 0.2716415
+## [1] 0.5535645 0.5278125 0.3552741 0.6171158 0.1255176
 ```
 
 Notice how I **iterated over the index of `x`** here rather than its actual values.
@@ -352,19 +351,19 @@ y
 
 ```
 ## [[1]]
-## [1] 0.9686666
+## [1] 0.5535645
 ## 
 ## [[2]]
-## [1] 0.7124709
+## [1] 0.5278125
 ## 
 ## [[3]]
-## [1] 0.1115773
+## [1] 0.3552741
 ## 
 ## [[4]]
-## [1] 0.6082053
+## [1] 0.6171158
 ## 
 ## [[5]]
-## [1] 0.2716415
+## [1] 0.1255176
 ```
 
 ---
