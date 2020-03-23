@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>programming, part a</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_programming_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_programming_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_programming_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# programming, part a
+
+---
+
+
+
+
+# What you will learn
+
+- ideas of programming
+- for loops
+- more on lists
+
+
+**Main reference:** [R4DS section III](https://r4ds.had.co.nz/program-intro.html), chapter 21 on iteration, 20.5 on lists
+
+**Resources**
+
+- [visual example](https://r4ds.had.co.nz/vectors.html#lists-of-condiments) of list indexing from the textbook
+- [Jenny Bryan](https://jennybc.github.io/purrr-tutorial/bk00_vectors-and-lists.html) notes on vectors and lists
+
+---
+# What we'll cover
+Only basic ideas needed to do data science applications we're interested in:
+
+- functions
+- loops and vectorization
+- if/else statements
+
+### For those with programming experience
+Much will be familiar, and this section might been easy or boring. But you must become familiar with how R handles common prorgramming tasks.
+
+I encourage you to glance at the [Advanced R](https://adv-r.hadley.nz) book, in particular the [metaprogramming](https://adv-r.hadley.nz/metaprogramming.html) chapter, to get a sense of the ways R is different from or the same as what you know.
+### For those without programming experience
+This might be trickier and will require some extra effort. It's worth it, since these ideas are relevant to many other programming languages.
+
+---
+# A week-long project
+
+### Can a totally random bracket beat the odds?
+
+- goal: a program that randomly selects an entire bracket
+- learn what we need as we go
+
+
+### More than one solution
+
+- real goal: learn programming tools
+- **we might solve a particular aspect of the problem in more than one way** to demonstrate different programming methods
+
+### Think of another way?
+- you might see more efficient or fun ways to do a random bracket
+- **do it and share!**
+
+---
+# Bracket program is your baby
+
+&lt;img src="https://media0.giphy.com/media/eEMsk7QPlqlwpyOM0i/giphy.gif?cid=790b76110d2d6ab2ebd4aafea80df1d73eb05a7e14e559d6&amp;rid=giphy.gif" height="450" /&gt;
+
+Roy shows us how to treat babies
+
+---
+# Goals when programming
+
+### Repetition and consistency
+
+- do the same thing many times
+- in a consistent way each time
+- possibly with different inputs
+- e.g. run a model on different datsets
+
+### Makes sense to the computer
+
+- correct syntax for the programming language
+- e.g. arguments appropriate for the function called
+- efficient use of computer power
+- and of course: program actually does what you want it to!
+
+### Makes sense to human readers
+
+- people can tell what code does by looking at it
+- spacing, naming, organization all facilitate clarity
+
+**If your code is difficult to read, it's difficult to find and fix mistakes!**
+
+---
+# Steps in programming
+
+### A rough guide
+
+1. Understand the problem
+
+2. Devise program to solve it
+
+  a. what are inputs and outputs?
+  
+  b. what operations convert inputs to desired outputs?
+  
+  c. how will my program be used?
+  
+3. Test on simple cases
+
+4. Find and fix errors
+
+5. Optimize if needed
+
+---
+# A random bracket
+
+### My problem
+
+- I don't really follow basketball
+- but I get peer pressured into making a March madness bracket every year
+- **how can I generate a bracket year after year requiring as little mental effort as possible?**
+
+This is not a predictive model! We don't care about being accurate; we just want a bracket.
+
+### Programming problem
+
+- inputs: tournament team names
+- outputs: complete tournament bracket of results
+- random selection of winners at each step
+- meaning, toss a coin each game to determine who wins
+
+---
+# Core idea of the program
+These should be the basic operations of our program
+
+1. **Input** original tournament state of 64 teams
+
+2. **For each round, do** the following
+
+  a. **Select winners** randomly from the previous round
+  
+  b. **Return results** from the current round
+  
+
+We will ignore the play-in games.
+
+---
+# For loops
+One of the easiest programming tasks to understand: **For each element in a vector or list, do something.**
+
+
+### Example one
+
+```r
+for (i in 1:3){
+  print(i)
+}
+```
+
+```
+## [1] 1
+## [1] 2
+## [1] 3
+```
+
+This says we want to run the operation `print` for each number `i` in the range `1:3`
+
+
+---
+### Example two
+
+```r
+x &lt;- runif(5)
+
+for (k in x){
+  print(k)
+}
+```
+
+```
+## [1] 0.9842086
+## [1] 0.8440799
+## [1] 0.3340319
+## [1] 0.7798752
+## [1] 0.5211924
+```
+
+Here we iterate over the elements in `x` itself. 
+
+Notice that `k` in the `for ()` statement matches `k` in `print()`. It is a placeholder for an arbitrary element in the vector `x`
+
+---
+### Example three: saving output
+
+What if we want to save the output? 
+
+Need to create an empty placeholder object of the correct size and type for your output.
+
+#### Squaring the vector `x` using a for loop
+
+```r
+y &lt;- vector(mode = "double", length = length(x))
+
+for (i in 1:length(x)){
+  y[i] &lt;- x[i]^2
+}
+
+y
+```
+
+```
+## [1] 0.9686666 0.7124709 0.1115773 0.6082053 0.2716415
+```
+
+Notice how I **iterated over the index of `x`** here rather than its actual values.
+
+---
+# Recap
+
+### Three components of a for loop
+
+1. Output initialization
+2. Looping sequence
+3. Body
+
+### Generic syntax
+`out`, `N` and `body` are all placeholders. See examples above
+
+```
+out &lt;- ...        # output initialization
+
+for (j in ...){   # looping sequence defined
+  ...             # body
+}
+
+```
+
+---
+# More on lists
+
+### So far
+
+- create a list with `x &lt;- list(thing1, thing2, ...)`
+- create a named list with `x &lt;- list(name1 = thing1, name2 = thing2, ...)`
+- grab the `n`th element of a list with `x[[n]]`
+- grab the element named `name1` with `x$name1`
+
+
+### Qualities of lists
+
+- flexible structure
+- elements can be anything, unlike in a vector object
+- similar objects exists in other programming languages
+
+---
+# More-complicated lists
+
+```r
+x1 &lt;- list(c(1, 2), c(3, 4))
+x2 &lt;- list(list(1, 2), list(3, 4))
+x3 &lt;- list(1, list(2, list(3)))
+```
+
+
+&lt;img src="https://d33wubrfki0l68.cloudfront.net/5ba72e78f2df8568c1be82236659558b0e06904c/04521/diagrams/lists-structure.png" height="350" /&gt;
+
+---
+### Index subsets of lists with `[]`
+Returns a list
+
+```r
+x1[1]
+```
+
+```
+## [[1]]
+## [1] 1 2
+```
+
+
+```r
+x1[1:2]
+```
+
+```
+## [[1]]
+## [1] 1 2
+## 
+## [[2]]
+## [1] 3 4
+```
+
+---
+
+### Indexing at multiple levels
+`[[]]` returns an element of the list, in whatever type it has, e.g. a vector.
+
+
+```r
+x1[[1]]
+```
+
+```
+## [1] 1 2
+```
+
+Just keep adding indices with appropriate indexing for the subsequent levels
+
+
+```r
+x1[[1]][1]
+```
+
+```
+## [1] 1
+```
+
+
+```r
+x3[[2]][[2]]
+```
+
+```
+## [[1]]
+## [1] 3
+```
+
+
+---
+### Example four: loop with lists
+
+The only difference is in using `[[]]` instead of `[]` needed to index a list instead of a vector
+
+
+```r
+x &lt;- as.list(x)
+y &lt;- vector(mode = "list", length = 5)
+
+for (j in 1:length(x)){
+  y[[j]] &lt;- x[[j]]^2
+}
+
+y
+```
+
+```
+## [[1]]
+## [1] 0.9686666
+## 
+## [[2]]
+## [1] 0.7124709
+## 
+## [[3]]
+## [1] 0.1115773
+## 
+## [[4]]
+## [1] 0.6082053
+## 
+## [[5]]
+## [1] 0.2716415
+```
+
+---
+# Tourney picker
+
+### Picking winners from matchups
+
+A key element of our program will be picking one winner from each matchup.
+
+To pick a winner by coin toss from teams labeled `1, 2` I do
+
+
+```r
+teams &lt;- c(1, 2)
+sample(teams, size = 1)
+```
+
+```
+## [1] 1
+```
+
+### Doing this for all matchups with a for loop
+
+This is a reasonable, but definitely not the only, way to approach the problem
+
+- avoid using team names by assigning each team a number
+- put all matchups in a list
+- each matchup is a vector of two numbers, representing the teams to face off
+- sample one from each element at random and save the result
+
+---
+
+&lt;img src="https://www.ncaa.com/sites/default/files/public/styles/original/public-s3/images/2019/06/27/2020-NCAA-bracket-March-Madness.jpg" height="500" /&gt;
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+I will walk you through this.
+
+Create an html file that does the following
+
+1. **Create a list** of matchups for teams numbered 1 to 6, where team 1 plays team 2, 3 plays 4 etc.  Each matchup should be a vector, e.g. `c(1, 2)` is the first element of the list.
+
+2. **Using a for loop** randomly choose winners from each matchup, saving the output into a new list called `win`
+
+3. **Display** the `win` list
+
+---
+### 1. Create the list
+The list is small enough to do this manually, for now. Need to use `c` multiple times here, since creating list of vectors
+
+
+```r
+games &lt;- list(c(1, 2), c(3, 4), c(5, 6))
+```
+
+### 2. For loop
+
+Copy the list for loop syntax above and modify it for this problem. Instead of `x` in that example, use `games`. Instead of `y` output use `win`.
+
+In the body of the loop, use the `sample` function to select winners and assign them to `win` in the correct slot.
+
+---
+Output will be something like this
+
+```
+## [[1]]
+## [1] 1
+## 
+## [[2]]
+## [1] 4
+## 
+## [[3]]
+## [1] 5
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
