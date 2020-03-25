@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>programming, part b</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_programming_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_programming_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_programming_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# programming, part b
+
+---
+
+
+
+
+# What you will learn
+
+- `apply`-type functionals: `lapply`, `map`, `map2` etc.
+- `apply` vs. for loops
+- matching inputs and outputs in our tournament iteration step
+- `matrix` to create matrices
+
+
+**Main reference:** [R4DS section III](https://r4ds.had.co.nz/program-intro.html), ch 21
+
+**Resources**
+
+
+
+
+---
+# Last time: Goals when programming
+
+### Repetition and consistency
+
+- do the same thing many times
+- in a consistent way each time
+- possibly with different inputs
+- e.g. run a model on different datsets
+
+### Makes sense to the computer
+
+- correct syntax for the programming language
+- e.g. arguments appropriate for the function called
+- efficient use of computer power
+- and of course: program actually does what you want it to!
+
+### Makes sense to human readers
+
+- people can tell what code does by looking at it
+- spacing, naming, organization all facilitate clarity
+
+**If your code is difficult to read, it's difficult to find and fix mistakes!**
+---
+# Last time: Random bracket program
+These should be the basic operations of our program
+
+1. **Input** original tournament state of 64 teams
+
+2. **For each round, do** the following
+
+  a. **Select winners** randomly from the previous round
+  
+  b. **Return results** from the current round
+
+
+We ignore the play-in rounds
+
+---
+
+&lt;img src="https://www.ncaa.com/sites/default/files/public/styles/original/public-s3/images/2019/06/27/2020-NCAA-bracket-March-Madness.jpg" height="500" /&gt;
+
+---
+# Last time: For loops choosing winners
+
+
+```r
+games &lt;- list(c(1, 2), c(3, 4), c(5, 6))
+win &lt;- vector("list", length(games))
+
+for (i in 1:length(games)){
+  win[[i]] &lt;- sample(games[[i]], 1)
+}
+
+win
+```
+
+```
+## [[1]]
+## [1] 1
+## 
+## [[2]]
+## [1] 3
+## 
+## [[3]]
+## [1] 5
+```
+
+---
+# It's just a baby right now
+
+&lt;img src="https://media0.giphy.com/media/eEMsk7QPlqlwpyOM0i/giphy.gif?cid=790b76110d2d6ab2ebd4aafea80df1d73eb05a7e14e559d6&amp;rid=giphy.gif" height="450" /&gt;
+
+Make the baby grow
+
+---
+# Next steps on tourney picker
+
+### What we have
+A program that returns winners by coin toss from a list of matchups
+
+### Inputs and outputs
+
+Input of the loop is a list of pairs of teams (matchups).
+
+Output is a list of winners.
+
+### Q: What additions or changes do we need to our loop program?
+Think about step 2 of our program outline above.
+
+First, we'll learn some new techniques.
+
+---
+# `apply`-type functionals
+
+### What they are
+
+- a function that lets you apply a another function
+- to elements of a list, or
+- rows/columns of a matrix/data frame
+
+In other words **they serve much the same purpose as a loop**
+
+### We have seen one before
+
+- `map` function used in class earlier
+- applies a function to each element of a list
+- and returns a list
+
+
+---
+### Are loops slow?
+From the textbook R4DS, ch 21.5
+
+&gt; Some people will tell you to avoid for loops because they are slow. They’re wrong! (Well at least they’re rather out of date, as for loops haven’t been slow for many years.)
+
+&gt; ... you should never feel bad about using a for loop instead of a map function.
+
+### Why use `map` or other `apply` functionals
+
+- cleaner code
+- quicker to write
+- better interface within other functions, e.g. using `map` on list columns in a data frame
+- faster problem solving, once you get the hang of it
+
+These are very much worth it to learn!
+
+---
+# List of `apply`-type functionals
+
+Learn more about these by typing, e.g., `?apply`. The statement `f` is a placehold for some function.
+
+**Pay attention to the types of inputs and outputs of each!**
+
+### Base R
+`data` dummy input can be a matrix or data frame. `list` is a list object placeholder.
+
+- `apply(data, MARGIN = 1, FUN = f, f_args)`: Applies `f` to each row, in first argument. Additional arguments of `f` specified in `f_args` placeholder.  Returns a vector or matrix.
+- `apply(data, MARGIN = 2, FUN = f, f_args)`: Same as previous but for columns, not rows. Returns a vector or matrix.
+- `lapply(list, FUN = f, f_args)`: Applies `f` to each element of the list, in first argument. Additional arguments of `f` specified in `f_args` placeholder. Returns a list.
+
+---
+### tidyverse
+The [purrr package](https://purrr.tidyverse.org/reference/index.html), part of the tidyverse, has so many apply functionals and variants. Here are the big ones.
+
+- `map(list, f, f_args):` Applies `f` to each element of a list. Returns a list. Similar to `lapply` but with some syntax differences.
+- `map2(list1, list2, f, f_args):` Applies `f(., .)` a function of two arguments to each pair of elements in `list1` and `list2`. Returns a list.
+- `map_if(list, logical_condition, f, f_args)`: Applies `f` to each element satisfying `logical_condition`. Returns a list.
+- `reduce(list, f, f_args)`: Recursively apply `f`, a function with two arguments, to pairs of elements of the list in sequence. Returns the output, of whatever type `f` produces.
+- `reduce(list, f, f_args)`: Same as `reduce` but returns the intermediate results.
+
+
+See Jenny Bryan's [explanation](https://jennybc.github.io/purrr-tutorial/bk01_base-functions.html#why_purrr) of `purrr` functionality vs. base R
+---
+# Examples
+
+
+```r
+d &lt;- data.frame(a = 1:2, b = 3:4)
+d
+```
+
+```
+##   a b
+## 1 1 3
+## 2 2 4
+```
+
+Sample one from each row
+
+
+```r
+apply(d, 1, sample, size = 1)
+```
+
+```
+## [1] 3 4
+```
+
+is the same as
+
+
+```r
+out &lt;- vector("integer", length = nrow(d))
+for (i in 1:nrow(d))
+  out[i] &lt;- sample(d[i, ], 1)
+```
+
+---
+
+Sample one from each column. Note column names are retained.
+
+
+```r
+apply(d, 2, sample, size = 1)
+```
+
+```
+## a b 
+## 2 4
+```
+
+is the same as 
+
+
+```r
+out &lt;- vector("integer", length = ncol(d))
+for (i in 1:ncol(d))
+  out[i] &lt;- sample(d[, i], 1)
+```
+
+
+
+---
+### Splitting, modeling, predicting
+
+This example from the textbook splits the canned dataset `mtcars` by `cyl` variable groups, runs a linear model on each, and returns predicted values.
+
+
+```r
+by_cyl &lt;- split(mtcars, mtcars$cyl)
+mods &lt;- map(by_cyl, ~ lm(mpg ~ wt, data = .))
+map2(mods, by_cyl, predict)
+```
+
+
+#### Reduces many lines of code to just three!
+
+Side note: `split` is a base R function dividing the pre-loaded data frame `mtcars` into groups of observations defined by the *factor variable*  `cyl`. It is similar to `group_by`, except that `split` returns a list of data frames---one for each group.
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+Create an html file to do the following
+
+1. **Create** a data frame with two columns, `team_one` with team numbers `1:8` and `team_two` with team numbers `9:16`. In other words, each row is a matchup between two teams.
+2. **Use an `apply`** function to sample one winner from each matchup.
+3. **Display** the results.
+
+
+### Point
+We now have a more clean, compact way to write the core part of our program, which picks a random team from the matchup.
+
+---
+# Tourney picker inputs and outputs
+
+### Remember: step 2 of the program
+
+**For each round, do** the following
+
+  a. **Select winners** randomly from the previous round
+  
+  b. **Return results** from the current round
+  
+  
+### Running this step recursively
+
+- have done 2.a using both a loop and `apply`
+
+- want the **output of the previous round** (step 2b) to plug into the **input of the next round** (step 2a)
+
+### To do this: Output and input must have the same structure
+
+---
+# Output from `apply`
+
+Is always a matrix or vector. 
+
+
+```r
+d
+```
+
+```
+##   a b
+## 1 1 3
+## 2 2 4
+```
+
+
+
+```r
+win &lt;- apply(d, 1, sample, size = 1)
+class(win)
+```
+
+```
+## [1] "integer"
+```
+
+
+```r
+win
+```
+
+```
+## [1] 1 4
+```
+
+---
+# Mini-tourney of 8 teams
+
+Rows are matchups. Team 1 plays 5, 2 plays 6 etc.
+
+```r
+d &lt;- data.frame(a = 1:4, b = 5:8)
+d
+```
+
+```
+##   a b
+## 1 1 5
+## 2 2 6
+## 3 3 7
+## 4 4 8
+```
+
+Winners come out as a vector
+
+```r
+apply(d, 1, sample, size = 1)
+```
+
+```
+## [1] 1 6 3 4
+```
+
+### Next round's input
+
+- should be two matchups
+- i.e. a **data frame with two rows and two columns**
+
+---
+### Easier to do with matrices
+
+Create a matrix from scratch, filling it row-wise, to give the same structure as `d` above.
+
+
+```r
+d &lt;- matrix(1:8, ncol = 2, byrow = TRUE)
+d
+```
+
+```
+##      [,1] [,2]
+## [1,]    1    2
+## [2,]    3    4
+## [3,]    5    6
+## [4,]    7    8
+```
+
+`apply` works the same way for matrices
+
+
+```r
+apply(d, 1, sample, size = 1)
+```
+
+```
+## [1] 2 4 6 7
+```
+
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+**You will now take us to the finish line: One iteration of the tournament program step 2, whose output matches its inputs**.
+
+1. **Create** a matrix *like the one in the mini-tourney* above but with **16 teams instead of 8**
+2. **Use an `apply`** function to sample one winner from each matchup, assigning the result to a vector called `win`
+3. Create the matrix giving **matchups for the next round**, using `win` as the first argument in the `matrix` function. Use `byrow = TRUE` to give the tournament structure desired, meaning game 1 winner vs. game 2 winner, game 3 winner vs. game 4 winner etc.
+4. **Display** the results
+
+*Hint for Q3: Use `matrix(win, ...)` where the `...` arguments are the same as in your answer for Q1.*
+
+---
+Result should look like this, but possibly with different teams in the matchups
+
+
+```
+##      [,1] [,2]
+## [1,]    1    4
+## [2,]    5    8
+```
+
+
+### Now outputs match inputs!
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
