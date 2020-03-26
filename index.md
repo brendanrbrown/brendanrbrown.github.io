@@ -57,7 +57,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |Feb. 26|[first models, part d](slides_firstmodels_ptd.html)|[Zachary Glontz](Class21.html)|
 |Feb. 28|[first models, part e](slides_firstmodels_pte.html)|[Siddarth Bowgal](Tutorial-Feb-28.html)|
 |March 2|[first models, part f](slides_firstmodels_ptf.html)|[Naixuan Wang](L23.html)|
-|March 4|[first models, part g](slides_firstmodels_ptg.html)||
+|March 4|[first models, part g](slides_firstmodels_ptg.html)|[Jimmy Slaight](04MAR20.html)|
 |March 25|[programming, part a](slides_programming_pta.html)||
 |March 27|[programming, part b](slides_programming_ptb.html)||
 
