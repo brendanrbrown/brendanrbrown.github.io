@@ -138,3 +138,4 @@ These link to examples I mention in class, which might help give context for the
 |Feb. 14| [Errors in Iowa caucuses](https://www.washingtonpost.com/politics/2020/02/10/iowa-democratic-party-responds-ongoing-errors-caucus-results-with-shrug/?arc404=true#click=https://t.co/sfBhMwFIVq)|
 |Feb. 17|[Trump tweets, regex and list columns](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets)|
 |Feb. 26|[Simulating coronavirus](https://www.washingtonpost.com/graphics/2020/health/coronavirus-how-epidemics-spread-and-end/?itid=hp_hp-visual-stories-desktop_no-name%3Ahomepage%2Fstory-ans), [Modeling coronavirus](https://art-bd.shinyapps.io/nCov_control/)|
+|March 27|[Hospital capacity covid scenarios](https://projects.propublica.org/graphics/covid-hospitals)|
