@@ -6,6 +6,11 @@ Welcome to section one of the spring 2020 course.
 
 Here is a first attempt at [guidelines on how class will work through Zoom](zoom.html), e.g. asking me questions.
 
+### Data science links
+There is a lot of covid 19-related data science happening right now: data collection, maps and plots, forecasts, etc.
+
+See the 'Examples in data science' section for some resources, and email me more if you find them.
+
 ### Disclaimer
 Given the continued lack of clear guidance from the university administration, I reserve the right to change course policies and any other aspect of the syllabus as the situation develops.
 
@@ -139,3 +144,5 @@ These link to examples I mention in class, which might help give context for the
 |Feb. 17|[Trump tweets, regex and list columns](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets)|
 |Feb. 26|[Simulating coronavirus](https://www.washingtonpost.com/graphics/2020/health/coronavirus-how-epidemics-spread-and-end/?itid=hp_hp-visual-stories-desktop_no-name%3Ahomepage%2Fstory-ans), [Modeling coronavirus](https://art-bd.shinyapps.io/nCov_control/)|
 |March 27|[Hospital capacity covid scenarios](https://projects.propublica.org/graphics/covid-hospitals)|
+|March 27|[Forecasting hospital usage and deaths in the US](http://www.healthdata.org/research-article/forecasting-covid-19-impact-hospital-bed-days-icu-days-ventilator-days-and-deaths)|
+|March 27||[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
