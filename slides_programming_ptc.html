@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>programming, part c</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_programming_ptc_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_programming_ptc_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_programming_ptc_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# programming, part c
+
+---
+
+
+
+
+# What you will learn
+
+- write your own functions in R
+- if/else statements
+- how to make a random tournament bracket
+
+
+**Main reference:** [R4DS section III](https://r4ds.had.co.nz/program-intro.html), ch 19
+
+
+---
+# Last time: Random bracket program
+These should be the basic operations of our program
+
+1. **Input** original tournament state of 64 teams
+
+2. **For each round, do** the following
+
+  a. **Select winners** randomly from the previous round
+  
+  b. **Return results** from the current round
+
+
+We ignore the play-in rounds
+
+---
+# Last time: `apply` for tourney picker
+
+
+#### First round
+
+```r
+d &lt;- matrix(1:8, ncol = 2, byrow = TRUE)
+d
+```
+
+```
+##      [,1] [,2]
+## [1,]    1    2
+## [2,]    3    4
+## [3,]    5    6
+## [4,]    7    8
+```
+
+#### Second round
+
+```r
+apply(d, 1, sample, size = 1) %&gt;% matrix(ncol = 2, byrow = TRUE)
+```
+
+```
+##      [,1] [,2]
+## [1,]    1    3
+## [2,]    6    8
+```
+
+#### Iterate till there is a winner
+
+---
+# Creating a 'flat' version of this
+
+
+&lt;img src="https://www.ncaa.com/sites/default/files/public/styles/original/public-s3/images/2019/06/27/2020-NCAA-bracket-March-Madness.jpg" height="500" /&gt;
+
+---
+# Scaling up to the real thing
+
+### Team names don't matter
+Keep the teams as numbers in the tourney. Later, we'll see how to match the names to numbers so we can fill out the bracket correctly.
+
+### Iteration, saving each intermediate result
+
+- want all results from all rounds so we can fill out an actual bracket
+- need a loop to feed the previous round's result (from step 2b) into the next round's matchups (step 2a)
+- saving all intermediate steps
+
+### Do this in a clean, consistent way
+
+This is what functions are for...
+
+---
+# No picks to pick this year anyway
+
+.center[![](https://www.chicagotribune.com/resizer/nN3oaQ_fveuMD5fkmtCMLSBrIlo=/1200x0/top/arc-anglerfish-arc2-prod-tronc.s3.amazonaws.com/public/5ZJTVI6TANAC7E3WIMFMOGHOEQ.jpg)]
+
+---
+# Use your imagination!
+Or wait for next year. This is the beauty of the picker program: It works every year!
+
+&lt;img src="https://m.media-amazon.com/images/M/MV5BNTIyYjc5NzItOThmYS00ZmMzLWI4MWYtMWE0OTA3MmI2MWE2XkEyXkFqcGdeQXVyNzU1NzE3NTg@._V1_CR0,45,480,270_AL_UX477_CR0,0,477,268_AL_.jpg" height="400" /&gt;
+
+---
+# Functions
+
+### What are they?
+Named R objects that take inputs, performs operations, and returns outputs, e.g. `sin` or `tibble`.
+
+### Why write my own?
+Write them to
+
+- complete repetitive tasks
+- with variable inputs
+- using operations not given by a single pre-existing function
+- to give better control on how those inputs are handled within the function
+- and avoid errors from copying and pasting, e.g. variable names or types have changed from one line to another
+
+---
+# Syntax
+Using placeholders for the name `fun_name`, arguments `arg1, arg2 ...` , body `function body`, and function `output`
+```
+fun_name &lt;- function(arg1, arg2, ...){
+  
+  function body
+  
+  return(output)
+}
+```
+
+### Output
+
+- if you did not have `return`, function returns the last value computed
+- to specify what to return, use `return` as above
+
+
+---
+### Specifying default values
+Use `=` to specify the value used if the user gives none for that argument
+
+Here, setting `arg2` default to `default_arg`, which could be a number, a string, etc.
+```
+fun_name &lt;- function(arg1, arg2 = default_arg, ...){
+  function body
+  
+  return(output)
+}
+```
+
+### Tips from the textbook
+
+1. Pick names carefully: Informative but short, and **don't override existing function names** such as `mean`
+
+2. Use comments (lines starting with `#`) selectively in your function body, to make it more readable and clear. Don't overdo it.
+
+3. Use readable spacing and style. See the textbook [ch 19.4.3](https://r4ds.had.co.nz/functions.html#code-style)
+
+---
+# Example
+
+$$g(x) = \frac{1}{1+|x|} $$
+
+Specifying the default to be 1
+
+```r
+g &lt;- function(x = 1){
+  1/(1 + abs(x))
+}
+```
+
+
+```r
+g(2)
+```
+
+```
+## [1] 0.3333333
+```
+
+Giving no argument invokes the default, if one exists
+
+```r
+g()
+```
+
+```
+## [1] 0.5
+```
+
+
+---
+# Example
+
+### Haversine formula from previous class
+
+
+```r
+haversine &lt;- function(lat1, lat2, long1, long2){
+  
+  # coordinates must be in radians
+  h &lt;- sin(.5 * (lat2 - lat1)) ^ 2 + cos(lat1) * cos(lat2) * (sin(.5 * (long2 - long1)) ^ 2)
+  
+  # earth diameter taken from http://imagine.gsfc.nasa.gov/features/cosmic/earth_info.html
+  r &lt;- (12756/2)*(5/8)
+  
+  return(2*r*asin(sqrt(h)))
+}
+```
+
+Distance to Nuuk from Hanes hall
+
+```r
+haversine(lat1 = pi*35.910710/180, lat2 = pi*64.182179/180, long1 = pi*-79.051417/180, long2 = pi * -51.688468 / 180)
+```
+
+```
+## [1] 2276.99
+```
+
+---
+### Without the `return` statement
+
+```r
+haversine &lt;- function(lat1, lat2, long1, long2){
+  
+  # coordinates must be in radians
+  h &lt;- sin(.5 * (lat2 - lat1)) ^ 2 + cos(lat1) * cos(lat2) * (sin(.5 * (long2 - long1)) ^ 2)
+  
+  # earth diameter taken from http://imagine.gsfc.nasa.gov/features/cosmic/earth_info.html
+  r &lt;- (12756/2)*(5/8)
+  
+  2*r*asin(sqrt(h))
+}
+```
+
+In this simple function, it's fine not to specify `return`.
+
+```r
+haversine(lat1 = pi*35.910710/180, lat2 = pi*64.182179/180, long1 = pi*-79.051417/180, long2 = pi * -51.688468 / 180)
+```
+
+```
+## [1] 2276.99
+```
+
+---
+# Function environments
+Say we want to write a function for 
+$$g(y, x) = \frac{1}{1 + |y|+|x|} $$
+
+and write it like this
+
+```r
+g &lt;- function(x = 1){
+  1/(1 + abs(y) + abs(x))
+}
+```
+
+#### Notice we did not give `y` as an argument, even though it is used in the function. What happens?
+
+#### This is bad and we'll see why
+
+---
+### Where does a function look for objects?
+'Lexical scoping' in rough terms. See more in R4DS ch 19.7 and [Advanced R](http://adv-r.had.co.nz/Functions.html#lexical-scoping)
+
+- function looks for objects within itself first: function arguments and objects created within the function
+- if that fails: looks for objects one level up, usually the 'global environment'
+- global environment is what you see in R Studio in the top right corner
+
+### Example
+
+`y` is not an argument of my function `g`. But if I do
+
+
+```r
+y &lt;- 2
+g(x = 1)
+```
+
+```
+## [1] 0.25
+```
+
+this is `\(g(2, 1) = \frac{1}{1 + |2|+|1|} = 1/4\)`
+
+---
+# Best practice
+
+Calling objects from the global environment within a function is not ideal. 
+
+A key goal of functions is to control the inputs and outputs for an operation, so that you get correct results and avoid goofs.
+
+Instead, **a good practice is to write functions using only the objects given as arguments or defined in the function body.**
+
+
+```r
+g &lt;- function(y, x = 1){
+  1/(1 + abs(y) + abs(x))
+}
+```
+
+#### Priority given to object within function
+even if something with the same name is defined outside the function. **This gives consistency!**
+
+
+```r
+y &lt;- 2
+g(y = 3, x = 1)
+```
+
+```
+## [1] 0.2
+```
+
+
+---
+# Conditionals: if/else
+
+### Syntax
+Logical conditions help build more complex functions. Placeholder `condition` here should evaluate to a **single `TRUE` or `FALSE`** logical value.
+
+```
+if (condition) {
+  code executed when condition is TRUE
+} else {
+  code executed when condition is FALSE
+}
+```
+
+Nest multiple if/else statements using 
+
+```
+if (condition1) {
+  code executed when condition1 is TRUE
+} else if (condition2) {
+  code executed when condition1 is FALSE and condition 2 is TRUE
+} else {
+  code executed when condition1 and condition2 are FALSE
+}
+```
+
+---
+# Example
+Dummy examples
+
+
+```r
+if (TRUE){
+  print("I KNEW IT")
+} else {
+  print("BUT WHY NOT?")
+}
+```
+
+```
+## [1] "I KNEW IT"
+```
+
+
+
+```r
+if (FALSE){
+  print("I KNEW IT")
+} else {
+  print("BUT WHY NOT?")
+}
+```
+
+```
+## [1] "BUT WHY NOT?"
+```
+
+---
+# Example: Haversine units
+Say we want the option to output haversine distance in kilometers, rather than miles.
+
+Add an argument to the function that is a logical condition indicating this. Default is in miles.
+
+
+```r
+haversine &lt;- function(lat1, lat2, long1, long2, in_km = FALSE){
+  
+  # coordinates must be in radians
+  h &lt;- sin(.5 * (lat2 - lat1)) ^ 2 + cos(lat1) * cos(lat2) * (sin(.5 * (long2 - long1)) ^ 2)
+  
+  # earth diameter taken from http://imagine.gsfc.nasa.gov/features/cosmic/earth_info.html
+  # NASA calc uses 5/8 km to mi conversion rather than 0.621371
+  if (in_km){
+    r &lt;- 12756/2
+  } else {
+    r &lt;- (12756/2)*(5/8)
+  }
+  
+  2*r* asin(sqrt(h))
+  
+}
+```
+
+---
+### Great-circle approximate distance to Nuuk, in km
+
+```r
+haversine(lat1 = pi * 35.910710 / 180, lat2 = pi * 64.182179 / 180, long1 = pi * -79.051417 / 180, long2 = pi * -51.688468 / 180,
+          in_km = T)
+```
+
+```
+## [1] 3643.184
+```
+
+### [Answer from NASA](https://nssdc.gsfc.nasa.gov/special/): 3639.2 km
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+In this tutorial, we will create a function that executes **one round of our tourney picker**, meaning one iteration of step 2 in the program statement above.
+
+This is just an exercise in taking code you have already created and turning it into a function. See the 'Last time:...' slides for a hint of what to do in the function body.
+
+**Create a function called `play`** that does the following
+
+- accepts a single argument (input), a matrix representing matchups between teams
+- randomly selects winners from each matchup
+- **if** there is more than one winner (in other words, the matchup input is not the last one of the tournament): **return** a matrix of the next round's matchups
+- **else** there is only one winner, the tournament champion, so **return** the single winner
+
+*Hint: Do not over-complicate this. The code in the function body can essentially be copied and pasted from the 'Last time:...' slides above. The only task here is to put everything into a function. The only new thing is the if/else statement for what to return.*
+
+---
+# Putting it all together
+
+### Our function
+1. **Input** original tournament state of 64 teams
+
+2. **For each round, do** the following
+
+  a. **Select winners** randomly from the previous round
+  
+  b. **Return results** from the current round
+
+### What we have
+
+- a function `play` that executes one iteration of step 2
+
+
+---
+### Team names don't matter
+
+- since we are choosing randomly, we can assign each team a number `1:64`
+- then run the tournament with our picker, as above
+- match actual team names to their numbers, so that original matchups are correct
+- and so that 'East', 'West' etc. matchups will be correct in the final four
+
+e.g. if UNC played UCLA in the first round, we might have UNC assigned to team 1, UCLA assigned to team 2 in the data frame below
+
+
+```r
+d
+```
+
+```
+##      [,1] [,2]
+## [1,]    1    2
+## [2,]    3    4
+## [3,]    5    6
+## [4,]    7    8
+```
+
+---
+
+### Loop through 'play'
+Since team names don't matter, we can iterate the `play` function with a for loop until we have a winner.
+
+Since we are halving the number of teams at each round, a valid tournament must have `\(2^k\)` teams for some integer `\(k \ge 1\)`. In our case, `\(2^6 = 64\)`.
+
+So we will need to use `play` for six rounds.
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+Add the following to your HTML file
+
+Use the `play` function and the preceding description to write a program that randomly selects winners in the NCAA tournament. Your function must return the results of all interim rounds.
+
+The results should be returned as a list, where each element of the list represents the matchups for each round of the tournament (including the first one) and the final winner. Therefore, your list will have `\(6 + 1 = 7\)` elements.
+
+You need only return the number placehold values for teams. The results do not need to include the team names themselves --- since there aren't even any teams playing this year!
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
