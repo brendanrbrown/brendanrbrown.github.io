@@ -147,3 +147,4 @@ These link to examples I mention in class, which might help give context for the
 |March 27|[Hospital capacity covid scenarios](https://projects.propublica.org/graphics/covid-hospitals)|
 |March 27|[Forecasting hospital usage and deaths in the US](http://www.healthdata.org/research-article/forecasting-covid-19-impact-hospital-bed-days-icu-days-ventilator-days-and-deaths)|
 |March 27||[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
+|March 30|[Project Tycho: Disease databases](https://www.tycho.pitt.edu/featured-works/)|
