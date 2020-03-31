@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>linear models, part a</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_linear_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_linear_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_linear_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# linear models, part a
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- basics of simple and multiple linear regression in R
+
+
+**Main reference:** ISLR ch 3
+
+---
+# Review: Why we model
+
+Modeling is at the heart of data science. At best it helps us to learn about the world. At worst it leads us to shame and ruin.
+
+### Reveal hidden structure in the data
+One step beyond exploratory summaries and graphs.
+
+
+- Grouping: Which observations are related to which others?
+- Covariation: Which variables are related to which others?
+
+### Predict new outcomes based on past data
+
+- Point estimate: If I know information `\(X\)` today, what is my prediction for outcome `\(Y\)`?
+- Risk: What are the best and worst-case scenarios if my prediction about `\(Y\)` is wrong?
+
+---
+# Beware: A typical cop-out
+
+&gt; "All models are wrong but some are useful."
+&gt;
+
+&gt; Famous quotation from some famous guy
+
+### Translation: "It's wrong anyway so whatever, I'm gettin' paid"
+
+### I say: No. You can do better.
+
+You must do better. Do the best you can. Maybe millions of dollars depend on it. Maybe lives depend on it. Maybe civilization as we know it depends on it. 
+
+```
+&lt;---- thing I said weeks ago that actually has relevance now
+```
+
+### Get it right, as best you can.
+
+
+Will there be 100,000 covid19 cases in the US if we do nothing? 5 million? 100 million? 
+
+It matters. It might not be easy or possible to get something highly accurate, but you have to take the job seriously.
+---
+# Review: Before you model
+
+ask yourself
+
+### Prediction or inference/exploration?
+
+### Supervised or unsupervised?
+
+### Outcome type? e.g. regression vs. classification
+
+### Method suits the data? Data suits the goals?
+
+---
+# Supervised vs. unsupervised
+
+### Supervised learning
+
+`\(X_i\)` data and `\(Y_i\)` outcomes known for each `\(i = 1\ldots n\)`
+
+I **know what `\(Y_i\)` should be** for the observations I have, since I have those values
+
+How well is my model estimating the outcomes `\(Y_i\)`?
+
+e.g. `\(X_i\)` are student characteristics, `\(Y_i\)` are the universities they attended
+
+### Unsupervised learning
+
+`\(X_i, i = 1\ldots n\)` data is all I have
+
+we **do not have `\(Y_i\)` 'outcomes'**
+
+e.g. trying to group `\(X_i\)` into groups of related observations, without already having group labels
+
+---
+# So far: Unsupervised
+
+### K-means clustering
+
+- how best can I split the data into `\(K\)` groups
+- so that **points within a group are more 'similar' to each other than to points outside the group**
+- where 'similarity' is a given by a distance
+
+
+### Principal component analysis (PCA)
+
+- find directions along which data vary most
+- correlations among variables, strength in different PC directions
+- create low-dimensional version of the dataset
+
+---
+# Today: Linear regression
+
+### Simple linear regression: one predictor
+for `\(Y_i, X_i, \beta \in \mathbb{R}\)`, and `\(\epsilon_i \sim Normal(0, \sigma^2)\)`
+
+`$$Y_i =\beta_0 + \beta_1 X_i + \epsilon_i$$`
+#### This says our best estimate of `\(Y_i\)` is the line
+
+`$$Y_i \approx \beta_0 + \beta_1 X_i$$`
+
+### Note on terminology
+This estimate is often called the **predicted or fitted value of of `\(Y_i\)`**, even if we are not technically using our model to predict new outcomes.
+
+The `\(X_i\)` are called regressors or explanatory variables.
+
+`\(\beta_0, \beta_1\)` are called **coefficients**
+---
+### Each choice of `\(\beta_0\)`, `\(\beta_1\)` gives a line
+
+### Optimal choice
+The simple linear regression picks the values of `\(\beta_0\)`, `\(\beta_1\)` that **minimize the squared errors** between the predicted and actual values, sometimes called residual sum of squares (RSS). 
+
+The quantity `\(Y_i - \beta_0 - \beta_1X_i\)` is referred to as the ith residual.
+
+
+`$$RSS = \sum_{i=1}^n(Y_i - \beta_0 - \beta_1X_i)^2$$`
+Using calculus, you can show the minimizers are
+
+`$$\hat{\beta_1} =  \frac{\sum_{i=1}^n(X_i - \bar{X})(Y_i - \bar{Y})}{\sum_{i=1}^n(X_i - \bar{X})^2}, \quad \quad \hat{\beta_0} = \bar{Y} - \hat{\beta_1}\bar{X}$$`
+where `\(\bar{X}\)` is the sample average of the data `\(X_1 \ldots X_n\)`.
+
+---
+# Dataset
+IMDB dataset scraped by [Mine Cetinkaya-Rundel](http://www2.stat.duke.edu/~mc301/data/movies.html) at Duke. See the link for a description.
+
+
+```r
+load(url("http://www2.stat.duke.edu/~mc301/data/movies.Rdata"))
+str(movies)
+```
+
+```
+## Classes 'tbl_df', 'tbl' and 'data.frame':	651 obs. of  32 variables:
+##  $ title           : chr  "Filly Brown" "The Dish" "Waiting for Guffman" "The Age of Innocence" ...
+##  $ title_type      : Factor w/ 3 levels "Documentary",..: 2 2 2 2 2 1 2 2 1 2 ...
+##  $ genre           : Factor w/ 11 levels "Action &amp; Adventure",..: 6 6 4 6 7 5 6 6 5 6 ...
+##  $ runtime         : num  80 101 84 139 90 78 142 93 88 119 ...
+##  $ mpaa_rating     : Factor w/ 6 levels "G","NC-17","PG",..: 5 4 5 3 5 6 4 5 6 6 ...
+##  $ studio          : Factor w/ 211 levels "20th Century Fox",..: 91 202 167 34 13 163 147 118 88 84 ...
+##  $ thtr_rel_year   : num  2013 2001 1996 1993 2004 ...
+##  $ thtr_rel_month  : num  4 3 8 10 9 1 1 11 9 3 ...
+##  $ thtr_rel_day    : num  19 14 21 1 10 15 1 8 7 2 ...
+##  $ dvd_rel_year    : num  2013 2001 2001 2001 2005 ...
+##  $ dvd_rel_month   : num  7 8 8 11 4 4 2 3 1 8 ...
+##  $ dvd_rel_day     : num  30 28 21 6 19 20 18 2 21 14 ...
+##  $ imdb_rating     : num  5.5 7.3 7.6 7.2 5.1 7.8 7.2 5.5 7.5 6.6 ...
+##  $ imdb_num_votes  : int  899 12285 22381 35096 2386 333 5016 2272 880 12496 ...
+##  $ critics_rating  : Factor w/ 3 levels "Certified Fresh",..: 3 1 1 1 3 2 3 3 2 1 ...
+##  $ critics_score   : num  45 96 91 80 33 91 57 17 90 83 ...
+##  $ audience_rating : Factor w/ 2 levels "Spilled","Upright": 2 2 2 2 1 2 2 1 2 2 ...
+##  $ audience_score  : num  73 81 91 76 27 86 76 47 89 66 ...
+##  $ best_pic_nom    : Factor w/ 2 levels "no","yes": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ best_pic_win    : Factor w/ 2 levels "no","yes": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ best_actor_win  : Factor w/ 2 levels "no","yes": 1 1 1 2 1 1 1 2 1 1 ...
+##  $ best_actress_win: Factor w/ 2 levels "no","yes": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ best_dir_win    : Factor w/ 2 levels "no","yes": 1 1 1 2 1 1 1 1 1 1 ...
+##  $ top200_box      : Factor w/ 2 levels "no","yes": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ director        : chr  "Michael D. Olmos" "Rob Sitch" "Christopher Guest" "Martin Scorsese" ...
+##  $ actor1          : chr  "Gina Rodriguez" "Sam Neill" "Christopher Guest" "Daniel Day-Lewis" ...
+##  $ actor2          : chr  "Jenni Rivera" "Kevin Harrington" "Catherine O'Hara" "Michelle Pfeiffer" ...
+##  $ actor3          : chr  "Lou Diamond Phillips" "Patrick Warburton" "Parker Posey" "Winona Ryder" ...
+##  $ actor4          : chr  "Emilio Rivera" "Tom Long" "Eugene Levy" "Richard E. Grant" ...
+##  $ actor5          : chr  "Joseph Julian Soria" "Genevieve Mooy" "Bob Balaban" "Alec McCowen" ...
+##  $ imdb_url        : chr  "http://www.imdb.com/title/tt1869425/" "http://www.imdb.com/title/tt0205873/" "http://www.imdb.com/title/tt0118111/" "http://www.imdb.com/title/tt0106226/" ...
+##  $ rt_url          : chr  "//www.rottentomatoes.com/m/filly_brown_2012/" "//www.rottentomatoes.com/m/dish/" "//www.rottentomatoes.com/m/waiting_for_guffman/" "//www.rottentomatoes.com/m/age_of_innocence/" ...
+```
+
+
+---
+# Rough Qs
+Let's just ask some questions to focus what we're going to do.
+
+### Q for you: these Are exploratory or predictive-type questions?
+
+#### What is the relationship between `imdb_rating` and `critics_score`, controlling for other factors?
+
+#### What is the relationship between `imdb_rating` and `imdb_num_votes`?
+
+#### How have movie runtimes changed over time?
+
+---
+# A little cleanup
+
+Observations are movies? 
+
+```r
+count(movies, title, thtr_rel_year) %&gt;% arrange(desc(n)) %&gt;% head(n = 2)
+```
+
+```
+## # A tibble: 2 x 3
+##   title          thtr_rel_year     n
+##   &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
+## 1 Man on Wire             2008     2
+## 2 101 Dalmatians          1996     1
+```
+
+#### These are identical
+`distinct` keeps only unique rows
+
+```r
+filter(movies, title == "Man on Wire") %&gt;% distinct %&gt;% nrow
+```
+
+```
+## [1] 1
+```
+
+Modify the `movies` object with this change.
+
+
+```r
+movies &lt;- distinct(movies)
+```
+
+---
+A little more cleanup
+
+
+```r
+movies &lt;- mutate_if(movies, is.factor, .funs = as.character) %&gt;% 
+  mutate_if(is.character, .funs = ~ tolower(.) %&gt;% str_replace_all("\\s", "_"))
+```
+
+
+---
+# Ratings and scores
+
+
+![](slides_linear_pta_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+---
+# Put a line through it?
+Let's say `\(Y_i\)` is `imdb_rating` and `\(X_i\)` is `critics_score` for the ith movie. We can put a line through the data by choosing some `\(\beta_0\)`, `\(\beta_1\)`.
+
+![](slides_linear_pta_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+Code for the previous plot
+
+```r
+ggplot(data=movies, aes(x=critics_score, y=imdb_rating)) + 
+  geom_point(color = "lavenderblush4") + theme_minimal() + 
+  geom_abline(slope=.01, intercept = 4, color = "#67000d") +
+  geom_abline(slope=.028, intercept = 4.5, color = "#67000d") + 
+  geom_abline(slope=.03, intercept = 5, color = "#67000d") + 
+  geom_abline(slope=.03, intercept = 5.5, color = "#67000d") + 
+  geom_abline(slope=.025, intercept = 4.8, color = "#67000d")
+```
+
+
+---
+# Which is best?
+The linear regression optimization problem tells us the best, at least in terms of minimizing RSS, is given by `\(\hat{\beta_0}, \hat{\beta_1}\)`
+
+![](slides_linear_pta_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+---
+# Run the model in R
+Easy as pie.
+
+
+```r
+m &lt;- lm(imdb_rating ~ critics_score, data = movies)
+```
+
+### Syntax basics for `lm`
+
+- `var1 ~ var2` means `var1` is the outcome `\(Y\)` and `var2` is the regressor `\(X\)`.
+- don't confuse `~` with the same symbol used for anonymous functions
+- model includes an intercept by default
+- `var1 ~ var2 + var3 ...` allows you to add more regressors (see below)
+
+### Output from `lm`
+Output is its own object class, called `lm`. Treat it as a named list.
+
+```r
+names(m)
+```
+
+```
+##  [1] "coefficients"  "residuals"     "effects"       "rank"         
+##  [5] "fitted.values" "assign"        "qr"            "df.residual"  
+##  [9] "xlevels"       "call"          "terms"         "model"
+```
+
+---
+### Output from `lm`: what you care about
+If my `lm` object is named `m`, then 
+
+#### `m$coefficients` 
+is a named vector with the coefficients `\(\hat{\beta_0}, \hat{\beta_1}\)` that solve the optimization problem
+
+#### `m$fitted`
+vector of predicted or fitted values of `\(Y\)`, which are writte `\(\hat{Y_i} = \hat{\beta_0} + \hat{\beta_1}X_i\)`
+
+#### `m$residuals`
+is the vector of errors $Y_i - \hat{Y_i} = Y_i - \hat{\beta_0} - \hat{\beta_1}X_i $
+
+---
+### Handy `lm` summary
+
+
+```r
+summary(m)
+```
+
+```
+## 
+## Call:
+## lm(formula = imdb_rating ~ critics_score, data = movies)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2.93731 -0.39464  0.04409  0.43944  2.47508 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   4.8081064  0.0621525   77.36   &lt;2e-16 ***
+## critics_score 0.0292039  0.0009678   30.18   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.6996 on 648 degrees of freedom
+## Multiple R-squared:  0.5842,	Adjusted R-squared:  0.5836 
+## F-statistic: 910.6 on 1 and 648 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+# Significance, confidence intervals etc
+
+### Everything you need is in the summary statement
+
+- this is STOR 155 stuff
+- won't go over the theory again
+- but **review the textbook chapter 3** if you forgot
+- ask me if you have questions --- no shame in that
+
+
+Model interpretation is important, and I will care for the final project
+
+---
+# Example: imdb ratings vs. critic score
+
+![](slides_linear_pta_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+
+---
+Code for previous plot
+
+```r
+ggplot(data=movies, aes(x=critics_score, y=imdb_rating)) + geom_point(color = "lavenderblush4") + theme_minimal() + geom_smooth(method = "lm",se = F, color = "#67000d") +
+  annotate("text", x = 65, y = 4, 
+            label = paste0("Beta_0 = ", round(m$coefficients["(Intercept)"], 2), ",   Beta_1 = ", round(m$coefficients["critics_score"], 2)), color = "#67000d", size = 5)
+```
+
+---
+# Interpretation
+
+### `\(\hat{\beta_0} = 4.81\)`
+If the critics give it a zero, our model estimates an IMDB rating of `\(4.81\)`.
+
+### `\(\hat{\beta_1} = 0.03\)`
+For each unit increase in `critics_score`, there is a 0.03 increase in the IMDB rating
+
+
+### In summary: `Pr(&gt;|t|)` very small for both coefficients
+Both coefficients are **are very significantly different from zero.** 
+
+In other words, if the true values of `\(\beta_0, \beta_1\)` are in fact zero (null hypothesis), then there is less than a `\(2\times 10^{-16}\)` chance of seeing the data we actually got.
+
+This **assumes the model itself is correct...**
+
+---
+# Multiple linear regression
+
+### Same idea, more predictors/regressors
+Now each observation has `\(p\)` variables, `\(X_{i1}, \ldots X_{ip}\)` and the model says
+
+`$$Y_i \approx \beta_0 + \sum_{j=1}^p X_{ij} \beta_j$$`
+
+and the optimization problem is to pick `\(\beta_0 \ldots \beta_p\)` that minimizes the squared errors
+
+`$$RSS = \sum_{i=1}^n\left(Y_i - \beta_0 - \sum_{j=1}^p X_{ij} \beta_j\right)^2$$`
+---
+# Motivation and consequences
+Remember 'predictors' is the same as 'regressors' is the same as `\(X_i\)` variables
+
+### Why use more predictors?
+
+- more predictors means more of the variation in outcome `\(Y\)` can be explained
+- so *in general* the more meaningful predictors you have the better
+- coefficients `\(\beta_j\)` now represent the effect of the `\(j\)`th variable on the outcome **controlling for all other variables in the model**
+
+
+### Warnings
+I mention these here, but we will expand on these ideas in future lectures
+
+- model fails if `\(p &gt; n\)` the number of observations
+- using many predictors that are highly inter-dependent, meaning they represent the same information, will give bad estimates of the coefficients and bad models
+- in prediction problems: more variables increases the risk that your model fits your current data well but does poorly on new data
+
+
+---
+# Easy to run in R
+
+Just add more variables to `lm` in R.
+
+### Model controlling for number of imdb reviews
+
+
+```r
+m &lt;- lm(imdb_rating ~ critics_score + imdb_num_votes, data = movies)
+summary(m)
+```
+
+```
+## 
+## Call:
+## lm(formula = imdb_rating ~ critics_score + imdb_num_votes, data = movies)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -3.04591 -0.33892  0.02541  0.43218  2.48374 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    4.791e+00  5.990e-02  79.984  &lt; 2e-16 ***
+## critics_score  2.776e-02  9.533e-04  29.125  &lt; 2e-16 ***
+## imdb_num_votes 1.733e-06  2.411e-07   7.187 1.83e-12 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.6738 on 647 degrees of freedom
+## Multiple R-squared:  0.615,	Adjusted R-squared:  0.6138 
+## F-statistic: 516.7 on 2 and 647 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+# Do these results make sense?
+See the ISLR textbook ch 3.3 for detailed comments on how to evaluate and possibly fix these problems. I mention only the three issues I think are most important.
+
+#### relationship between `\(X\)` and `\(Y\)` is **not truly linear**
+You could try to transform your regressors, e.g. `\(Y \approx \beta_0 + \beta_1\log(X)\)`
+
+This also is **related to the previously mentioned issue of trying to fit a linear model to an inappropriate `\(Y\)`, e.g. a `\(0-1\)` outcome.**
+
+#### errors `\(Y - \hat{Y}\)` are correlated
+Line of best fit is still optimal but the standard errors for coefficients and `\(p\)`-values in the output no longer are valid
+
+#### Two or more predictors are highly correlated (collinearity)
+This make sense only if we have more than one predictor. See below. Linear regression coefficients
+
+
+---
+# Remember: Don't be this guy
+
+&lt;img src="https://www.gadgetreview.com/wp-content/uploads/2014/03/swimming-golf.jpg" height="500" /&gt;
+
+---
+# Review: Example
+
+Orange juice purchases in `OJ` dataset of `ISLR` package associated with book.
+
+`Purchase` is either `CH` for Citrus Hill or `MM` for Minute Maid brands of orange juice. 1070 observations.
+
+Recode as `CH = 1`, `MM = 0`. Linear regression with `PriceDiff`, price difference, as the only predictor.
+
+
+```r
+library(ISLR)
+library(tidyverse)
+d &lt;- mutate(OJ, Purchase = ifelse(Purchase == "CH", 1, 0))
+m &lt;- lm(Purchase ~ PriceDiff, data = d)
+coef(m)
+```
+
+```
+## (Intercept)   PriceDiff 
+##   0.5378972   0.4941303
+```
+
+It worked! But it does not make any sense...
+
+---
+# :( :( :( :( :(
+
+
+```r
+ggplot(d, aes(x = PriceDiff, y = Purchase)) + geom_point() +
+  theme_minimal() + geom_smooth(method = "lm", size = 2, color ="seagreen4", se = FALSE)
+```
+
+&lt;img src="slides_linear_pta_files/figure-html/unnamed-chunk-19-1.png" height="450" /&gt;
+
+
+
+---
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+# Tutorial
+In this tutorial, we will use a linear model to investigate the relationship between `runtime` and `thtr_rel_year`.
+
+This is one possible step in evaluating the question of how movie lengths have changed over time.
+
+1. **Run** a simple linear regression with outcome `runtime` and regressor `thtr_rel_year`.
+2. **Summarize** the regression results as in the slide above.
+3. **Plot** the regression line between these two variables.
+4. **Write** two or three sentences describing the results of 2, 3. Pay particular attention to whether the strict coefficient interpretations make sense.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
