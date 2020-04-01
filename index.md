@@ -150,3 +150,4 @@ These link to examples I mention in class, which might help give context for the
 |March 27||[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
 |March 30|[Project Tycho: Disease databases](https://www.tycho.pitt.edu/featured-works/)|
 |March 30|[Make almost any plot in R](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/)|
+|April 1|[Covid19 projections by state](http://covid19.healthdata.org/)|
