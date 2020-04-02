@@ -67,6 +67,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |March 27|[programming, part b](slides_programming_ptb.html)|[Mike Ardiff](Mar27Class.html)|
 |March 30|[programming, part c](slides_programming_ptc.html)|[Sidd Mehta](programmingCtut.html)|
 |April 1|[linear models, part a](slides_linear_pta.html)||
+|April 3|[linear models, part b](slides_linear_ptb.html)||
 
 
 
