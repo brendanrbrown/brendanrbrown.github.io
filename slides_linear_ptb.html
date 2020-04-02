@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>linear models, part b</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_linear_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_linear_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_linear_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# linear models, part b
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- overview of variable selection problem for linear regression
+- LASSO concept
+- `glmnet` to implement LASSO
+- incidental: plot a correlation heat map
+
+
+**Main reference:** ISLR ch 6.2
+
+**Resources**
+
+- [LASSO examples](https://www4.stat.ncsu.edu/~post/josh/LASSO_Ridge_Elastic_Net_-_Examples.html) from NCState course
+- [LASSO "inventor's" webpage](http://statweb.stanford.edu/~tibs/lasso.html) on the topic
+- [glmnet package introduction paper](https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf)
+
+---
+# Review: Linear regression
+Each observation `\(i = 1 \ldots n\)` has `\(p\)` variables, `\(X_{i1}, \ldots X_{ip}\)` and the model says
+
+`$$Y_i \approx \beta_0 + \sum_{j=1}^p X_{ij} \beta_j$$`
+
+and the optimization problem is to pick `\(\beta_0 \ldots \beta_p\)` that minimizes the squared errors
+
+`$$RSS = \sum_{i=1}^n\left(Y_i - \beta_0 - \sum_{j=1}^p X_{ij} \beta_j\right)^2$$`
+
+
+---
+# Review: Do these results make sense?
+See the ISLR textbook ch 3.3 for detailed comments on how to evaluate and possibly fix these problems. I mention only the three issues I think are most important.
+
+#### relationship between `\(X\)` and `\(Y\)` is **not truly linear**
+You could try to transform your regressors, e.g. `\(Y \approx \beta_0 + \beta_1\log(X)\)`
+
+This also is **related to the previously mentioned issue of trying to fit a linear model to an inappropriate `\(Y\)`, e.g. a `\(0-1\)` outcome.**
+
+#### errors `\(Y - \hat{Y}\)` are correlated
+Line of best fit is still optimal but the standard errors for coefficients and `\(p\)`-values in the output no longer are valid
+
+#### Two or more predictors are highly correlated (collinearity)
+Linear regression coefficients will be poorly estimated, and standard errors will be off. If we are modeling for prediction purposes, our predictions could have high variance when tested on new data.
+
+---
+# Review: Model complexity
+
+### Why use more predictors?
+
+- more predictors means more of the variation in outcome `\(Y\)` can be explained
+- so *in general* the more meaningful predictors you have the better
+- coefficients `\(\beta_j\)` now represent the effect of the `\(j\)`th variable on the outcome **controlling for all other variables in the model**
+
+
+### Warnings
+I mention these here, but we will expand on these ideas in future lectures
+
+- model fails if `\(p &gt; n\)` the number of observations
+- using many predictors that are highly inter-dependent, meaning they represent the same information, will give bad estimates of the coefficients and bad models
+- in prediction problems: more variables increases the risk that your model fits your current data well but does poorly on new data
+- models with too many variables are difficult to interpret
+
+
+
+---
+# Variable selection in regression
+A common situation these days is to have a glut of variables.
+
+I have already mentioned that **adding more variables always increases `\(R^2\)`**, so we need some other way to evaluate which variables to include.
+
+#### How do we know if they are all worth keeping?
+
+#### How many should we include in a 'good' model?
+
+### Some common variable selection methods
+
+- adjusted `\(R^2\)`-like statistics, e.g. AIC, BIC Cp
+- 'stepwise' regression methods: trying different combos of variables
+- regularization: LASSO and Ridge. Optimization problem is modified to penalize large number of variables.
+
+---
+# LASSO
+
+I will only talk about this approach to the problem.
+
+### Why not other methods?
+
+- stepwise methods have problems but still end up in textbooks like ours
+- some leading statisticians (e.g. [Andrew Gelman](https://statmodeling.stat.columbia.edu/2014/06/02/hate-stepwise-regression/)) do not use them at all
+- adjusted fit statistics are a bit old-fashioned
+
+
+### LASSO and Ridge do 'regularization'
+- penalty for models with many variables is worked into the optimization
+- it is a relatively 'modern' approach to the problem of model complexity
+- fits with remaining concepts in class, such as cross validation (coming up shortly)
+- Ridge regression is a fine approach too, but we only have so much time
+
+### But there are no miracles
+There is no magic machine that will give you the best model automatically. Know your data, evaluate the results, put in the work. **I will talk about this process explicitly in coming lectures.**
+---
+
+&lt;img src="https://media.giphy.com/media/3Uk3Tyk0k7veo/giphy.gif" height="400" /&gt;
+
+
+---
+# LASSO optimization problem
+Very similar setup to the linear regression problem, with a crucial difference. In this case we might well have a number of variables `\(p &gt; n\)` number of observations.
+
+### Optimization problem penalizes many variables
+Fix a number `\(\lambda &gt; 0\)`. Choose `\(\beta_0, \beta_1\ldots\)` that minimize 
+
+`$$\sum_{i=1}^n\left(Y_i - \beta_0 - \sum_{j=1}^p X_{ij} \beta_j\right)^2 + \lambda \sum_1^p |\beta_j|$$`
+
+### Result
+
+- still `\(Y_i \approx \beta_0 + \sum_{j=1}^p X_{ij} \beta_j\)`
+- but `\(\beta_j = 0\)` **possible to reduce model complexity**
+- bigger `\(\lambda\)` means more complexity reduction
+- if `\(\lambda = 0\)`, get back linear regression
+- **choosing** `\(lambda\)` **is an important task that I defer to a future lecture**
+
+---
+# Dataset: NBA data again
+This is what we used in the PCA lectures
+
+```r
+bb &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nba-teams-2017.csv") %&gt;%
+  select(-games_played, -minutes)
+head(bb, n = 3)
+```
+
+```
+## # A tibble: 3 x 25
+##   team   wins losses win_prop points field_goals field_goals_att…
+##   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;
+## 1 Gold…    67     15    0.817   116.        43.1             87.1
+## 2 San …    61     21    0.744   105.        39.3             83.7
+## 3 Hous…    55     27    0.671   115.        40.3             87.2
+## # … with 18 more variables: field_goals_prop &lt;dbl&gt;, points3 &lt;dbl&gt;,
+## #   points3_attempted &lt;dbl&gt;, points3_prop &lt;dbl&gt;, free_throws &lt;dbl&gt;,
+## #   free_throws_att &lt;dbl&gt;, free_throws_prop &lt;dbl&gt;, off_rebounds &lt;dbl&gt;,
+## #   def_rebounds &lt;dbl&gt;, rebounds &lt;dbl&gt;, assists &lt;dbl&gt;, turnovers &lt;dbl&gt;,
+## #   steals &lt;dbl&gt;, blocks &lt;dbl&gt;, block_fga &lt;dbl&gt;, personal_fouls &lt;dbl&gt;,
+## #   personal_fouls_drawn &lt;dbl&gt;, plus_minus &lt;dbl&gt;
+```
+
+---
+# Correlations in NBA data
+
+&lt;img src="slides_linear_ptb_files/figure-html/unnamed-chunk-4-1.png" width="500" height="450" /&gt;
+
+---
+# Do we need all these variables?
+
+- blocks of light color suggest **many variables are highly correlated**
+- this makes a decent **candidate for attempting regularization**
+- this is also what we saw, in a more detailed way, from the PCA
+- I say 'more detailed' because unlike in PCA the correlation statistics above do not account for directions of maximal variation, second maximal etc. 
+
+### Code for previous plot
+You could run this on any data frame with numeric variables. Just replace `cor(select(bb, -team)) %&gt;%` with `cor(my_data) %&gt;%`
+
+```r
+cor(select(bb, -team)) %&gt;%
+  as_tibble(., rownames = "var1") %&gt;% 
+  pivot_longer(-var1, names_to = "var2", values_to = "corr") %&gt;%
+  ggplot(., aes(x = var1, y = var2, fill = corr)) + geom_tile() +
+  theme_bw() + theme(axis.text.x = element_blank(), axis.text.y = element_blank()) + 
+  scale_fill_distiller(palette = "Reds")
+```
+
+---
+# Run LASSO with fixed lambda
+
+using the [`glmnet` package.](https://cran.r-project.org/web/packages/glmnet/index.html)
+
+```r
+library(glmnet)
+```
+
+### Syntax
+As with `lm`, the default is to include an intercept.
+```
+glmnet(x, y, family = "gaussian", alpha = 1, lambda = my_lambda)
+```
+`x` must be a **matrix** of your variables, and `y` a vector.
+
+`alpha = 1` is telling the function to use LASSO. `family = "gaussian"` tells it to do regression, since this function also does regularized versions of logit and other generalized linear models.
+
+### Warning
+We are about to run LASSO for a fixed, pre-specified value of `\(\lambda\)`. This is atypical, since usually you fit the model over many choices of `\(\lambda\)`. We will see how to do this in an upcoming lecture.
+
+---
+# LASSO on NBA data
+
+### Goal: Model points scored
+Ignore team names since these are just row labels.
+
+```r
+m1 &lt;- glmnet(select(bb, -team, -points) %&gt;% data.matrix, 
+            bb$points, family = "gaussian", alpha = 1, lambda = 2)
+```
+
+### Output
+
+As with `lm`, this creates its own class of output called `glmnet` that you can index like a list. To see what each of these things is, do `?glmnet` and look at the Value section.
+
+```r
+names(m1)
+```
+
+```
+##  [1] "a0"        "beta"      "df"        "dim"       "lambda"    "dev.ratio"
+##  [7] "nulldev"   "npasses"   "jerr"      "offset"    "call"      "nobs"
+```
+
+---
+# Getting coefficients
+When using just one `\(\lambda\)`,
+
+- `m1$beta` gives the variable coefficients, a matrix with two columns: variable names and coef. values
+- `m1$a0` gives the intercept, a real number
+
+### `\(\lambda = 2\)` sets many coefficients zero
+All others are zero.
+
+```r
+m1$beta[m1$beta[, "s0"] &gt; 0, ]
+```
+
+```
+## field_goals     points3 free_throws 
+##  0.91563005  0.06957868  0.02853977
+```
+
+
+```r
+m1$a0
+```
+
+```
+##       s0 
+## 68.65425
+```
+
+
+---
+# Varying lambda
+
+### `\(\lambda = 0.01\)` allows more `\(\beta_j\)` to be non-zero
+Notice the estimates themselves change as well.
+
+```r
+m2 &lt;- glmnet(select(bb, -team, -points) %&gt;% data.matrix, 
+            bb$points, family = "gaussian", alpha = 1, lambda = .01)
+m2$beta[m2$beta[, "s0"] &gt; 0, ]
+```
+
+```
+##           field_goals field_goals_attempted               points3 
+##          1.9853285681          0.0005645149          0.9979444193 
+##           free_throws       free_throws_att 
+##          0.9964493585          0.0095302737
+```
+
+
+```r
+m2$a0
+```
+
+```
+##        s0 
+## 0.4275211
+```
+
+---
+# LM version
+To regress the output `points` on all other variables, use the `.` on the right-hand side of our usual formula. Question: Why might losses be `NA` here? `lm` has fixed our silly mistake.
+
+```r
+m &lt;- lm(points ~ ., data = select(bb, -team))
+m$coefficients
+```
+
+```
+##           (Intercept)                  wins                losses 
+##         -46.733139923          -1.774877886                    NA 
+##              win_prop           field_goals field_goals_attempted 
+##         144.638216141           0.960749405           0.487400765 
+##      field_goals_prop               points3     points3_attempted 
+##           0.862357339           1.270197333          -0.106189235 
+##          points3_prop           free_throws       free_throws_att 
+##          -0.077233430           0.390265046           0.446960803 
+##      free_throws_prop          off_rebounds          def_rebounds 
+##           0.137226508          -0.055308861          -0.030304690 
+##              rebounds               assists             turnovers 
+##           0.012856110          -0.004504559           0.028860952 
+##                steals                blocks             block_fga 
+##          -0.015773461          -0.077075331           0.110522495 
+##        personal_fouls  personal_fouls_drawn            plus_minus 
+##           0.002766291           0.015556007           0.052740586
+```
+
+
+
+---
+# LASSO v. LM: interpretation
+To make things concrete, consider the case with `\(\lambda = 0.01\)`. In both LM and LASSO our model is for the `\(ith\)` team `$$points_i = Y_i \approx \beta_0 + \sum_{j=1}^p X_{ij} \beta_j$$`
+
+#### LASSO: 'constrained' line of best fit easier to understand
+
+- points increases by about 2 for each field goal, 
+- **controlling for** the number of three-pointers, free throws, and attempted field goals and free throws
+- intercept is very close to zero, i.e. no shots no points
+
+#### LM: we know what these mean, technically, but hard to understand
+
+What does it mean for 
+
+- points to increase by about 1 for each field goal
+- controlling for win proportion, number of wins, rebounds, blocks ...
+- or for the intercept to be -46?
+
+---
+# LASSO v. LM: prediction
+
+### Major improvement of LASSO (and Ridge regression)
+
+We will discuss **bias v. variance trade-off in future lectures.**
+
+For now, a little teaser
+
+#### Regularized models in general reduce the variance of our predictions onto new datasets
+see the discussion at the end of the Ridge regression chapter in ISLR, ch 6.2.1.
+
+#### and might perform better for prediction problems
+if we choose `\(\lambda\)` appropriately
+
+#### even though the LM 'fits' the current data better
+e.g. using `\(R^2\)` statistics
+
+---
+# Taking a step back
+
+As a modeling task, this doesn't really make sense. We are just trying to demonstrate LASSO v. LM methods here for a dataset where LASSO sets many coefficients to zero.
+
+### From an exploration perspective
+
+- already know that more field goals, three-pointers and free throws lead to more points
+- those are the only ways to get points!
+- we learned nothing really
+
+### For a prediction perspective
+
+- all of our important variables (field goals etc.) **are determined in the game itself**
+- but model to predict points scored in a future game **can only use variables known before the game begins**
+
+### What to do?
+
+- might be better to explore a different outcome from `points`
+- this data is **not really appropriate** for predicting points scored in future games
+- would need game-level data
+---
+# Now you try!
+
+&lt;img src="https://hillrag.com/wp-content/uploads/2019/01/Kids-play-basketball-as-part-of-DPR-programming-at-Lamond-Riggs-Recreation-Center.-Image_-Courtesy-DPR.jpeg" height="500" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Tutorial
+In this tutorial, we will explore the `glmnet` LASSO functionality a bit more.
+
+You will need to look at the help file for the `glmnet` function, either by running `?glmnet` or in the [package help file](https://cran.r-project.org/web/packages/glmnet/glmnet.pdf).
+
+1. **Install and load** the `glmnet` package if necessary.
+2. **Read** the nba dataset from github as above, and remove `games_played`, `minutes` and `team` variables
+3. **Run the LASSO for the following values of** `\(\lambda\)`: `seq(from = .1, to = 1, by = .1)` a sequence of `\(\lambda\)` from .1 to 1.
+4. **Display** the intercepts and beta coefficients for each choice of `\(lambda\)`
+5. Describe in one or two sentences what you see, and why you might see differences between models for different `\(\lambda\)`, if any.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
