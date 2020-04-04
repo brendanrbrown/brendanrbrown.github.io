@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>models for classification, part a</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_classification_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_classification_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_classification_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# models for classification, part a
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- idea of generalized linear models, supervised learning for classification
+- `glm` implementation in R
+
+
+**Main reference:** ISLR ch 4.3
+
+
+---
+# Review: Before you model
+
+ask yourself
+
+### Prediction or inference/exploration?
+
+### Supervised or unsupervised?
+
+### Outcome type? e.g. regression vs. classification
+
+### Method suits the data? Data suits the goals?
+
+---
+# Dumb thing we did
+
+Orange juice purchases in `OJ` dataset of `ISLR` package associated with book.
+
+`Purchase` is either `CH` for Citrus Hill or `MM` for Minute Maid brands of orange juice. 1070 observations.
+
+Recode as `CH = 1`, `MM = 0`. Linear regression with `PriceDiff`, price difference, as the only predictor.
+
+
+```r
+library(ISLR)
+library(tidyverse)
+d &lt;- mutate(OJ, Purchase = ifelse(Purchase == "CH", 1, 0))
+m &lt;- lm(Purchase ~ PriceDiff, data = d)
+coef(m)
+```
+
+```
+## (Intercept)   PriceDiff 
+##   0.5378972   0.4941303
+```
+
+It worked! But it does not make any sense...
+
+---
+# :(
+
+What if we interpret `\(\hat{Y}\)` as the **estimated probability** of `Purchase`?
+&lt;img src="slides_classification_pta_files/figure-html/unnamed-chunk-3-1.png" height="500" /&gt;
+
+---
+# :/
+
+I added some jitter to see how things compare, e.g. points close to 0 are actually 0.
+&lt;img src="slides_classification_pta_files/figure-html/unnamed-chunk-4-1.png" height="450" /&gt;
+
+---
+# ...
+
+### What if we want more variables?
+
+```r
+m &lt;- lm(Purchase ~ PriceDiff + LoyalCH, data = d)
+summary(m)
+```
+
+```
+## 
+## Call:
+## lm(formula = Purchase ~ PriceDiff + LoyalCH, data = d)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1.08532 -0.21969 -0.00464  0.24716  1.06071 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.0001221  0.0234074   0.005    0.996    
+## PriceDiff   0.3782450  0.0408590   9.257   &lt;2e-16 ***
+## LoyalCH     0.9805019  0.0360437  27.203   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.3608 on 1067 degrees of freedom
+## Multiple R-squared:  0.4542,	Adjusted R-squared:  0.4532 
+## F-statistic: 443.9 on 2 and 1067 DF,  p-value: &lt; 2.2e-16
+```
+
+
+---
+# :( :( :(
+Probability interpretation no longer valid, and **this makes no sense at all**.
+&lt;img src="slides_classification_pta_files/figure-html/unnamed-chunk-6-1.png" height="500" /&gt;
+---
+
+&lt;img src="https://media3.giphy.com/media/vRjPmn64qgbhm/200.webp?cid=ecf05e47059f70e545f873728b780e409d4859ecdd63f060&amp;rid=200.webp" height="400" /&gt;
+
+
+---
+# :)
+
+```r
+m &lt;- glm(Purchase ~ PriceDiff + LoyalCH, family = binomial, data = d)
+```
+
+&lt;img src="slides_classification_pta_files/figure-html/unnamed-chunk-9-1.png" height="450" /&gt;
+
+
+---
+# Generalized linear models
+
+`\(Y_i = 0\)` or `\(1\)` outcome, with explanatory/regressor/predictor variables `\(X_{i1} \ldots X_{ip}\)`. Write `\(X_i\)` for the vector of variables for observation `\(i\)`---this is the `\(i\)`th row of your data frame.
+
+### Idea
+Linear regression no longer makes sense. Instead
+
+- estimate `\(p_i =\)` Probability `\((Y_i = 1)\)`
+- where `\(p_i\)` will depend on the data and some choices of coefficients `\(\beta_0, \ldots \beta_p\)`
+- choose `\(\beta_0 \ldots \beta_p\)` that **maximize the likelihood function**
+
+`$$\Pi_{i:Y_i = 1} p_i \times \Pi_{i:Y_i = 0}(1-p_i)$$`
+
+first product is over outcomes such that `\(Y_i =1\)` and the second over outcomes such that `\(Y_i = 0\)`.
+---
+# Logistic regression
+
+### Different ways to estimate `\(p_i\)` will give different types of models, e.g. logistic, probit...
+I will focus on logistic regression.
+
+### Estimation of `\(p_i\)`
+In logistic regression,
+
+`$$p_i = \frac{\exp(\beta_0 + \sum_{j=1}^p X_{ij} \beta_j) }{1+\exp(\beta_0 + \sum_{j=1}^p X_{ij} \beta_j) }$$`
+
+so named because `\(\frac{e^x}{1+e^x}\)` is the logistic function. Notice it is **always between 0, 1**.
+
+
+---
+# Estimation in R
+A whole suite of generalized linear models in R can be implemented with the base R function `glm`.
+
+
+```r
+m &lt;- glm(Purchase ~ PriceDiff + LoyalCH, family = binomial, data = d)
+class(m)
+```
+
+```
+## [1] "glm" "lm"
+```
+
+### Output
+A bunch of stuff we don't care about right now...
+
+```r
+names(m)
+```
+
+```
+##  [1] "coefficients"      "residuals"         "fitted.values"    
+##  [4] "effects"           "R"                 "rank"             
+##  [7] "qr"                "family"            "linear.predictors"
+## [10] "deviance"          "aic"               "null.deviance"    
+## [13] "iter"              "weights"           "prior.weights"    
+## [16] "df.residual"       "df.null"           "y"                
+## [19] "converged"         "boundary"          "model"            
+## [22] "call"              "formula"           "terms"            
+## [25] "data"              "offset"            "control"          
+## [28] "method"            "contrasts"         "xlevels"
+```
+
+---
+# Coefficients, fitted values
+
+### `m$coefficients`
+`\(\hat{\beta_j}\)` are the coefficients given by the solution to our likelihood maximization problem. Can still calculate `\(p\)`-values etc. But careful with your interpretation. Inverting the logistic function,
+
+`$$\log\left(\frac{p_i}{1-p_i}\right) \approx  \beta_0 + \sum_{j=1}^p X_{ij} \beta_j$$`
+
+The left-hand side is called the **log-odds**, the log of the ratio between probability of `\(Y_i = 1\)` and probability `\(Y_i = 0\)`. So the null hypothesis is that `\(\beta_j\)` is 0 means the `\(j\)`th variable has no effect on the log-odds.
+
+
+### `m$fitted.values`
+This gives the **estimated probabilities**, `$$\hat{p_i} = \frac{\exp(\hat{\beta_0} + \sum_{j=1}^p X_{ij} \hat{\beta_j}) }{1+\exp(\hat{\beta_0} + \sum_{j=1}^p X_{ij} \hat{\beta_j}) }$$`
+
+And we **can now estimate** `\(\hat{Y_i}\)` **with the rule** `\(\hat{Y_i} = 1\)` if `\(\hat{p_i} &gt; .5\)`.
+
+---
+
+
+```r
+summary(m)
+```
+
+```
+## 
+## Call:
+## glm(formula = Purchase ~ PriceDiff + LoyalCH, family = binomial, 
+##     data = d)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.8187  -0.5388   0.2424   0.5692   2.7533  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  -3.2522     0.2233 -14.564   &lt;2e-16 ***
+## PriceDiff     2.8621     0.3426   8.354   &lt;2e-16 ***
+## LoyalCH       6.3964     0.3858  16.578   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1430.85  on 1069  degrees of freedom
+## Residual deviance:  840.35  on 1067  degrees of freedom
+## AIC: 846.35
+## 
+## Number of Fisher Scoring iterations: 5
+```
+
+---
+&lt;img src="slides_classification_pta_files/figure-html/unnamed-chunk-13-1.png" height="450" /&gt;
+---
+Code for previous plot.
+
+
+```r
+d &lt;- mutate(d, yhat = ifelse(m$fitted.values &gt; .5, 1, 0), err = abs(yhat - Purchase))
+
+select(d, yhat, y = Purchase, PriceDiff) %&gt;%
+  pivot_longer(-PriceDiff, names_to = "outcome", values_to = "Purchase") %&gt;%
+  ggplot(aes(x = PriceDiff, y = Purchase, color = outcome)) + geom_jitter(alpha = .5) + theme_minimal() +
+  scale_color_manual(values = c("seagreen4", "tomato3")) +
+  annotate("text", x = 0, y = .5, label = paste("Correct Predictions / N = ", round(sum(1-d$err)/nrow(d), 2)), size = 5)
+```
+
+
+
+---
+# Now you try!
+
+&lt;img src="https://media.giphy.com/media/K2A5bJ3MiZRzW/giphy.gif" height="450" /&gt;
+
+
+---
+# Tutorial
+Let's take a second look at the forest fires dataset from Montesinho Natural Park, Portugal. 
+
+
+```r
+park &lt;- read_csv('http://www.dsi.uminho.pt/~pcortez/forestfires/forestfires.csv')
+```
+
+### Variables
+See here for a [full description](http://www3.dsi.uminho.pt/pcortez/forestfires/forestfires-names.txt) of the dataset. 
+
+- `area` is the area burned on a given day, in hectares
+- `temp`, temperature in celsius (average? max?)
+- `wind` wind speed in km/h (average? max?)
+- some weather-related indices
+- `day` of the week, `month`
+
+---
+# Tutorial
+
+### Goal: Model fire/no fire outcome for each day
+
+1. **Load** the `park` dataset as above
+2. **Create a new variable** called `fire` such that `fire = 1` if `area &gt; 0` and `fire=0` otherwise
+3. **Convert** the following variables to `factor` type, to tell `glm` these are categorical:
+  - `X`, `Y`, `month`, `day`
+  - ideally using a `mutate_at` statement
+4. **Display** the number of observations in each `fire` category
+5. **Run a logistic model** on the outcome `fire` using all other variables as regressors **except `area`**
+6. **Make a scatter plot** of the estimated probabilities of `fire` as a function of `temp`, with different colors for `month`
+
+
+
+
+---
+# Montesinho Natural Park, Portugal
+![](http://www.visitportoandnorth.travel/var/porto_norte/storage/images/porto-and-the-north/visit/artigos/montesinho-natural-park/940900-2-eng-US/Montesinho-Natural-Park.jpg)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
