@@ -259,7 +259,7 @@ select(d, yhat, y = Purchase, PriceDiff) %&gt;%
   pivot_longer(-PriceDiff, names_to = "outcome", values_to = "Purchase") %&gt;%
   ggplot(aes(x = PriceDiff, y = Purchase, color = outcome)) + geom_jitter(alpha = .5) + theme_minimal() +
   scale_color_manual(values = c("seagreen4", "tomato3")) +
-  annotate("text", x = 0, y = .5, label = paste("Correct Predictions / N = ", round(sum(1-d$err)/nrow(d), 2)), size = 5)
+  annotate("text", x = 0, y = .5, label = paste("Correct Predictions / N = ", round(mean(1-d$err), 2)), size = 5)
 ```
 
 
