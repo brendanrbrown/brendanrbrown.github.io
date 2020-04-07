@@ -93,7 +93,7 @@ They will be updated with details for each project piece as its due date nears.
 The project is divided into four pieces
 
 - Proposal: Due March 2, 2:30 pm
-- Data exploration and cleaning report: Due April 8, 2:30 pm
+- Data exploration and cleaning report: Due April 10, 2:30 pm
 - Final report: Due April 24, 5:00 pm
 - Final presentation: Last day of classes and university-designated final exam time
 
