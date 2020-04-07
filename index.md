@@ -68,7 +68,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |March 30|[programming, part c](slides_programming_ptc.html)|[Sidd Mehta](programmingCtut.html)|
 |April 1|[linear models, part a](slides_linear_pta.html)|[Celia Collias](ClassApril1.html)|
 |April 3|[linear models, part b](slides_linear_ptb.html)|[Sandeep Boddepalli](4_3_tut.html)|
-|April 6|[classification models, part a](slides_classification_pta.html)||
+|April 6|[classification models, part a](slides_classification_pta.html)|[Sidh Kulgod](4-6-2020-tutorial-sidharth-kulgod.html)|
 
 
 
