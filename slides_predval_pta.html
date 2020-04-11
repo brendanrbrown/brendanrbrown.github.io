@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>cross validation and prediction: part a</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_predval_pta_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_predval_pta_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_predval_pta_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# cross validation and prediction: part a
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- mindset of prediction
+- fundamental: test and training sets to evaluate models
+- `rsample` package basic functions
+
+
+**Main reference:** ISLR ch 2.2
+
+**Resources**
+
+- [Applied Predictive Modeling book](http://appliedpredictivemodeling.com/), free copy through [UNC libraries](https://catalog.lib.unc.edu/catalog/UNCb7414199)
+- [rsample package reference](https://tidymodels.github.io/rsample/articles/Basics.html)
+- [tidymodels intro](https://www.tidyverse.org/blog/2018/08/tidymodels-0-0-1/)
+
+---
+# Modeling for prediction
+`\(Y_i\)` outcomes with associated variables `\(X_{i1} \ldots X_{ip}\)` for observations `\(i=1\ldots n\)`.
+
+### Goal
+
+- model outcomes `\(Y_i\)` using the existing data
+- given a **new observation** with variables `\(X_1, X_2 \ldots X_p\)`
+- predict unseen outcome `\(Y\)` with `\(\hat{Y}\)`, estimate from the model
+- pick a model that **minimizes an appropriate concept of 'error'**
+
+### Mindset
+
+- usually willing to accept less interpretability
+- e.g. might care less about 'significant' coefficients in linear model
+- strive for **methods to evaluate model performance systematically**
+- that emulate how the model might perform on new, unseen data
+
+### 'Different' models
+
+- often this means **same type of model, different parameters**
+- e.g. **LASSO with different `\(\lambda\)` values**, SVM with different cost and gamma
+
+---
+
+&lt;img src="https://i.chzbgr.com/full/1329767680/hE859A9D8/whoa-i-can-see-da-future" height="500" /&gt;
+
+
+---
+
+&lt;img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQyC1NSXAppMgQ-0Ktrt6u5jK63TDGbxlun3073X8WT5T_Ch_aA&amp;usqp=CAU" height="400" /&gt;
+
+---
+
+&lt;img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRF4zu1xhxgR7RsgWiO9OtdUdgZWiPYbObdgitD8xKQR2Xn8qeb&amp;usqp=CAU" height="350" /&gt;
+---
+# Training and test sets
+This is one of the most important ideas of the semester.
+
+### Fundamental procedure
+
+1. randomly **split your data** into two groups of observations: training set and test set
+2. **fit model on the training set**
+3. **predict using model on the test set** as though this were 'new' data
+4. calculate **error**
+
+The training set typically is the larger one
+
+### Why does this help?
+
+- **overfitting:** model fits data very well but large prediction error
+- **high-variance predictions:** model predictions very sensitive to small changes in data used to fit it
+
+---
+# What is error?
+Some things we've seen so far. These are good defaults.
+### Mean-squared error (MSE)
+Seen in Linear models, LASSO
+
+`$$\text{error}_i = (Y_i - \hat{Y_i})^2, \quad \quad \text{MSE} = \frac{1}{n} \sum_1^n (Y_i - \hat{Y_i})^2$$`
+
+### Classification error
+Seen in logistic regression, SVM. The function `\(1(x)\)` is `\(1\)` if `\(x = TRUE\)`, else `\(0\)` 
+
+`$$\text{error}_i =  1(Y_i \neq \hat{Y_i})$$`
+
+`$$\text{accuracy} =  1 - \frac{1}{n} \sum_1^n \text{error}_i$$`
+
+[Sensitivity and specificity](https://en.wikipedia.org/wiki/Sensitivity_and_specificity) describe how well your model predicts outcomes `\(Y_i = 1\)` vs. `\(Y_i = 0\)`.
+
+---
+# Resampling data in R
+
+### Doing it both the easy and easier way
+
+- will use `tidymodels` package functions that fit well with what we've learned
+- but **write our own simple program in the tutorial** to split the data into test/train sets
+- to ensure you have a good grasp of this fundamental concept
+
+### `tidymodels`: don't install whole thing
+
+Like the `tidyverse`, actually a [large collection of packages](https://www.tidyverse.org/blog/2018/08/tidymodels-0-0-1/). Some are more a work in progress than others. **I don't recommend installing this whole thing right now**, since it has a lot of stuff you don't need.
+
+### `rsample`: just this for now
+Handy [tools for splitting and resampling data](https://tidymodels.github.io/rsample/articles/Basics.html) for modeling purposes. Works well with familiar `tidyverse` syntax and objects we've seen.
+
+
+---
+# Example: SVM kernel selection
+
+Forest fire data prep from last time
+
+```r
+library(tidyverse)
+library(rsample)
+library(e1071)
+```
+
+
+```r
+park &lt;- read_csv('http://www.dsi.uminho.pt/~pcortez/forestfires/forestfires.csv') %&gt;%
+  mutate(fire = ifelse(area &gt; 0, 1, 0)) %&gt;%
+  mutate_at(.vars = vars(X, Y, month, day, fire), as.factor) %&gt;%
+  select(-area)
+```
+
+---
+# `initial_split` syntax
+Just the basics for this `rsample` function.
+
+### Create an `rsplit` object
+`prop` gives the proportion of rows in your *training* set
+
+```
+df_split &lt;- initial_split(df, prop)
+```
+
+### Extract training and testing sets
+
+```
+df_train &lt;- training(df_split)
+
+df_test &lt;- testing(df_split)
+```
+
+### Splitting time series
+
+`initial_time_split` does something similar but for time series objects, sampling the first `prop` of observations. This is essential because order matters for a time series.
+
+---
+# Example
+
+
+```r
+set.seed(1305)
+park_sp &lt;- initial_split(park, prop = .8)
+```
+
+
+```r
+class(park_sp); names(park_sp)
+```
+
+```
+## [1] "rsplit"   "mc_split"
+```
+
+```
+## [1] "data"   "in_id"  "out_id" "id"
+```
+
+
+```r
+training(park_sp) %&gt;% class
+```
+
+```
+## [1] "tbl_df"     "tbl"        "data.frame"
+```
+
+
+```r
+training(park_sp) %&gt;% nrow(.)/nrow(park)
+```
+
+```
+## [1] 0.8007737
+```
+
+
+---
+# Radial or linear? Without split
+`predict` here is just giving us the **fitted values** for outcomes from the data we used to create the model
+
+#### Radial kernel
+
+```r
+m &lt;- svm(fire ~., data = park, cost = 10, kernel = 'radial', gamma = 1)
+mutate(park, yhat = predict(m), err = yhat != fire) %&gt;% summarise(accuracy_m =  mean(!err))
+```
+
+```
+## # A tibble: 1 x 1
+##   accuracy_m
+##        &lt;dbl&gt;
+## 1      0.992
+```
+
+#### Linear kernel
+
+```r
+m &lt;- svm(fire ~., data = park, cost = 10, kernel = 'linear', gamma = 1)
+mutate(park, yhat = predict(m), err = yhat != fire) %&gt;% summarise(accuracy_m =  mean(!err))
+```
+
+```
+## # A tibble: 1 x 1
+##   accuracy_m
+##        &lt;dbl&gt;
+## 1      0.621
+```
+
+---
+# Predicting on new data
+
+### `predict` method
+`predict` is a generic function that has different applications for different model objects in R, e.g. `svm`, `linear`, `glmnet` etc.
+
+
+```
+yhat &lt;- predict(model, newdata = new_df)
+```
+- generic syntax where **`new_df` represents data not used to fit the model**
+- excluding `new_df` creates 'fitted' values, model predictions for the data used to create the model
+
+### with training and test sets
+
+- `model` would be created using your training set
+- `new_df` would be your test set
+
+---
+# Little function friend
+Since we're going to do the same thing possibly many times, why not write a function
+
+
+```r
+get_accuracy &lt;- function(df_train, df_test, kernel, cost, gamma){
+  
+  m &lt;- svm(fire ~., data = df_train, cost = cost, kernel = kernel, gamma = gamma)
+  
+  df_test &lt;- mutate(df_test,
+                    yhat = predict(m, newdata = df_test),
+                    err = yhat != fire)
+  
+  return(list(df_test = df_test, accuracy = mean(!df_test$err))) 
+}
+```
+
+---
+
+
+```r
+df_lin &lt;- get_accuracy(training(park_sp), testing(park_sp), "linear", cost = 10, gamma = 1)
+df_rad &lt;- get_accuracy(training(park_sp), testing(park_sp), "radial", cost = 10, gamma = 1)
+```
+
+### test error, radial vs linear kernel
+
+
+```r
+df_lin$accuracy ; df_rad$accuracy
+```
+
+```
+## [1] 0.5728155
+```
+
+```
+## [1] 0.5631068
+```
+
+### Q: Why did this happen?
+
+---
+# Now you try!
+
+&lt;img src="https://media.giphy.com/media/3Uk3Tyk0k7veo/giphy.gif" height="400" /&gt;
+
+Let us perspire to greatness!
+
+---
+# Tutorial
+
+This tutorial has two parts, A) and B)
+
+### A) 
+
+1. **Write** your own split program that takes a data frame and returns a list with two elements: a `train` set data frame and a `test` set data frame. See the next slide for details.
+
+2. **Check** that it works using a dummy data frame
+
+
+
+---
+### A) Your own splitting program
+In some ways the `rsample` functions are overkill. Splitting data is a simple idea, and you might find it more convenient to write your own program to do so.
+
+There are several reasonable ways to do this. Do it **as you see fit, but do not use** the `rsample` or other specialized functions for this purpose. You **can use** `dplyr` functions such as `sample_n`.
+
+1. Randomly sample data frame rows for the test set, **without replacement**
+2. Remove test set data from original data frame
+3. Remaining rows form training set
+
+You should end up with a single **list** object with two named elements: a `training` data frame and a `test` data frame. These two data frames should share no observations in common.
+
+
+
+
+
+---
+### B) 
+
+1. Use the `get_accuracy` function above to compare the SVM model on the `park` data with
+- **radial** kernel
+- **cost values** .5 to 5 by .25.
+- **gamma** `\(=1\)`
+
+**Do this using a `map` or `lapply` functional.**
+
+2. **Compare** the accuracy of each model by **plotting the results.**
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
