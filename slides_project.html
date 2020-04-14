@@ -65,13 +65,13 @@ All materials **submitted on Sakai.**
 #### Due: Monday March 2 at 2:30 pm
 
 ### Report on data exploration and cleaning
-#### Now Due: Friday April 10 at 2:30 pm
+#### Now Due: Wednesday April 10 at 2:30 pm
 
 ### Final report
 #### Due: Friday April 24 at 5:00 pm
 
 ### Final presentation
-#### Due: Final class period and scheduled exam time
+#### Due: Scheduled exam time, Tuesday May 5, 8-11 am eastern
 
 
 
@@ -538,40 +538,176 @@ I will look for
 
 
 ---
-# Evaluation: Other
+# Evaluation: Final report (40 points)
 
-Details will be posted for each item as the date nears
+### Read these instructions carefully
 
-But with plenty of time before the due date
+### Overview
 
-I will raise these briefly in class
+- **should stand alone** as a complete and interesting project report
+- **in general, set `echo = F` on chunks**, or `results = 'hide'`, showing only code and output that helps communicate your results or clarifies your methods
+  - you'll need to show more of the code in the results section, for example
+- writing, presentation **style actually matters** when communicating results to others and will be graded
+- submit **html** for the report format but **include Rmd and supporting files** in your submission
 
+### Organization
+As with exploratory analysis, you have some flexibility. It **must include** three main sections
+
+- introduction
+- data description and exploration
+- results
+
+---
+### Scope, interest, originality (8 points)
+In general, groups are on the right track after two rounds of feedback. I will be looking for
+
+- project addresses questions/goals that are of general interest and allow your report's reader to learn something worthwhile
+  - e.g. not answered with a single bar plot, single summary, etc.
+  - your project will include questions that are more simple, of course, but they cannot be the totality of the work
+- questions/goals are explored thoroughly and thoughtfully
+  - e.g. a bad thing would be to run a regression, print the output and call it done
+  - 'thorough' means you have considered the tools at your disposal: course materials, course textbooks, relevant recommendations from me if your work falls outside the previous two
+  - you need not follow my recommendations: it is your project. But if I make a strong suggestion about some method, you should take that as a sign that a reasonable analysis needs at least to justify why you did not use it
+
+---
+### Communication (4 points)
+
+- free of spelling and grammatical errors
+- plots have legible titles and labels, are generally easy to read
+- written sections are clear and well organized
+- appropriate headings included to organize the report
+
+---
+### Introduction (6 points)
+
+- goals and/or questions are clearly stated and well-defined
+- overview of the dataset and how it is relevant for the goals/questions
+- summary and reflections on answers to questions or results of goals
+- appropriate plots or other output where and if needed to support the text
+
+### Comments
+
+- you might find that your results are not as good as you had hoped
+- some problems are genuinely difficult, so inconclusive or disappointing results are common
+- this is fine so long as you have clearly shown that you **explored resonable options to tackle the problem** available to you from the course or from my specific advice in our conversations
+
+---
+### Data description (6 points)
+Largely can be a **refined version of your exploratory report**, if it was good
+
+- key variables are clearly defined
+- dataset context and source is explained to a degree that is relevant
+  - can be a brief mention if there is nothing much to say, e.g. NBA stats released by the league
+- includes only output that contributes valuable information to understanding the dataset
+  - e.g. don't just print a large object
+- makes reasonable and thorough attempt to explore data patterns and structure that are essential to evaluating goals/questions
+- plots and summaries are effectively communicate relevant ideas
+- accompanying text supplements the other output, rather than simply summarizing what the reader can already see
+  - rather than summarizing the output, tell the reader why it is important, some follow-up thoughts or how it affected your project goals
+
+---
+### Results (16 points)
+As before, the way you satisfy these points will depend a lot on your project (e.g. exploratory vs predictive goals)
+
+- show enough code and output so I can **clearly see your methods and results**
+  - probably more code here than in other sections
+- methods are technically **appropriate for your data**
+- possible **technical issues** are reasonably evaluated
+  - e.g. I have mentioned many times in class that linear models can have problems if outcomes are contstrained, for example are non-negative. This is not an automatic disqualifier. But you must show that your model makes sense for the data.
+- methods give **valid** means to answer questions or achieve goals
+- thoughtful and technically **correct interpretation** of output from methods
+  - most often this will be in text to accompany output or at the top/bottom of the section
+- possible tweaks and improvements to initial methods were explored and implemented
+  - e.g. if you did `\(K\)`-means, did you explore other `\(K\)` values or at least justify why the `\(K\)` you chose is the only valid one?
+
+---
+# Format: Final presentation
+
+### Dates
+
+- On exam day: Tuesday **May 5, 8-11 am eastern**
+- I am sorry about the 8 am time, but it is what the unversity has scheduled and I cannot deviate
+- on the positive side, it will allow more students to present
+
+### Administrative
+
+- university **exam schedule still holds.** [See these FAQ](https://keeplearning.unc.edu/faqs/)
+- **all students are expected to attend unless they have a pre-approved excuse from me**
+- request it from me (if you haven't already) by the **end of the day on April 22**
+
+**Use the zoom class time link**
+
+---
+# Evaluation: Presentation (30 points)
+
+### Length, format
+
+- **7 minutes** per group, plus a couple of minutes for questions
+- as in class, shared screen with audio **on zoom**. you will have the option to share video if you choose
+- **Please practice** once before the presentation, as **I will be somewhat strict on time** to be fair to all students
+- can be html slides, or a trimmed-down version of your final report. See the criteria below.
+- **stay engaged** so you can ask questions during your classmates' presentations
+
+### General advice
+
+- you will be in a time crunch, most likely
+- simply pick the most compelling questions and results from your project
+- **you do not need to cover every detail of the project**
+- reuse as much material from your final report as you can to avoid duplicating efforts
+- let pictures and output do the talking in general, with little text
+- be prepared to answer questions
+
+---
+### Visual communication (13 points)
+
+- well-chosen visual elements such as plots to accompany spoken elements
+- well-organized and concise presentation
+  - don't just scroll through your final report
+- plots, summaries are effective at communicating your point and are easy to read
+- results displayed are carefully chosen to enhance, not overburden, the presentation
+
+### Verbal communication (13 points)
+
+- clear statement of goals/questions and motivation
+- clear presentation of results
+- clear organization and flow of presentation
+- commentary complements the visual elements rather than re-stating the obvious
+  - what is most important in the plot?
+  - what did you learn from this output? etc.
+
+---
+### Responses to questions (4 points)
+Priority will be given to student-led questions. I will ask at least one question.
+
+- demonstrate understanding of the project, it's strengths and weaknesses
+- answers that are as thoughtful and precise as is practicable in this format
 
 
 ---
-# Format of reports
+# Peer evaluation
 
-### In general
+- will post a brief **survey in Sakai under assignments**
+- **due by May 5, 8 am** the date of the presentation
+- no response will give you an automatic `\(0.75\)` for the peer-eval score
 
-Submit R Markdown **html AND Rmd** files
+### Peer evaluation score
 
-Unlike in homework
+- Each team member evaluates you on two questions
+- You will not know what they say
+- I will average responses for you from all group members
+- **Final peer evaluation score on a 0 to 1.05 scale**
+- see how this will be used below
+---
+### Questions in peer survey
+Answer each on a scale of 0 to 11.
 
-- show only output, not code, unless the code itself is relevant
+1. Rate the quality of (name)'s work on this project, from 0 (did not submit work) to 10 (substantial and excellent work submitted to complete project), to 10.5 (quality was above and beyond what was needed or expected)
 
-- submit Rmd files along with html
+2. Rate the quality of (names)'s team participation for this project, from 0 (offensive conduct, non-communicative) to 10 (met deadlines, did what was asked, treated others with respect) to 10.5 (would recommend this person for any group project)
 
-Written and visual expression really matters
+### Group project final grade calculation
 
-Final work can include extras if you wish, such as interactive graphics. These are not required, however.
-
-### Format of final presentation
-
-A short presentation, e.g. 8-10 minutes
-
-Slides or web-based
-
-Will give details as the date approaches
+`$$\text{average of peer evaluation} \times \text{project total score} = \text{your score}$$`
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
