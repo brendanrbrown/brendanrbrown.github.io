@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>cross validation and prediction: part b</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_predval_ptb_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_predval_ptb_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_predval_ptb_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# cross validation and prediction: part b
+
+---
+
+
+
+
+
+
+
+# What you will learn
+
+- basics of cross validation
+- implementation in R
+- intro to new dataset on opioid deaths in NC counties which we'll explore for a few classes
+
+
+**Main reference:** ISLR ch 5.1
+
+**Resources**
+
+- [Applied Predictive Modeling book](http://appliedpredictivemodeling.com/), free copy through [UNC libraries](https://catalog.lib.unc.edu/catalog/UNCb7414199)
+- [rsample package reference](https://tidymodels.github.io/rsample/articles/Basics.html)
+
+---
+# Modeling for prediction
+`\(Y_i\)` outcomes with associated variables `\(X_{i1} \ldots X_{ip}\)` for observations `\(i=1\ldots n\)`.
+
+### Goal
+
+- model outcomes `\(Y_i\)` using the existing data
+- given a **new observation** with variables `\(X_1, X_2 \ldots X_p\)`
+- predict unseen outcome `\(Y\)` with `\(\hat{Y}\)`, estimate from the model
+- pick a model that **minimizes an appropriate concept of 'error'**
+
+### Mindset
+
+- usually willing to accept less interpretability
+- e.g. might care less about 'significant' coefficients in linear model
+- strive for **methods to evaluate model performance systematically**
+- that emulate how the model might perform on new, unseen data
+
+### 'Different' models
+
+- often this means **same type of model, different parameters**
+- e.g. **LASSO with different `\(\lambda\)` values**, SVM with different cost and gamma
+
+---
+
+&lt;img src="https://i.chzbgr.com/full/1329767680/hE859A9D8/whoa-i-can-see-da-future" height="500" /&gt;
+
+
+---
+
+&lt;img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQyC1NSXAppMgQ-0Ktrt6u5jK63TDGbxlun3073X8WT5T_Ch_aA&amp;usqp=CAU" height="400" /&gt;
+
+---
+
+&lt;img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRF4zu1xhxgR7RsgWiO9OtdUdgZWiPYbObdgitD8xKQR2Xn8qeb&amp;usqp=CAU" height="350" /&gt;
+---
+# Review: Train, test sets
+This is one of the most important ideas of the semester.
+
+### Fundamental procedure
+
+1. randomly **split your data** into two groups of observations: training set and test set
+2. **fit model on the training set**
+3. **predict using model on the test set** as though this were 'new' data
+4. calculate **error**
+
+The training set typically is the larger one
+
+### Why does this help?
+
+- **overfitting:** model fits data very well but large prediction error
+- **high-variance predictions:** model predictions very sensitive to small changes in data used to fit it
+
+---
+# Don't stop there
+
+### Problems with data splitting
+
+1) training and test sets might not be 'similar', e.g. almost all outcomes of one type in the training set
+2) **test error**, error of predictions on test set, can vary quite a bit depending on which observations chosen
+3) model built on training set **does not see all of the data**, and **more data is better** when modeling
+
+### Fixes
+
+1) 'stratified' sampling, which controls for distribution of values in each set for important variables
+2, 3) Cross-validation
+
+---
+# Stratified sampling
+
+### Won't cover it in detail
+Just some tips to get you started
+
+- `rsample` package function `initial_split`
+- `stata` argument tells it which single variable to stratify on
+- `breaks` argument gives number bins to break up `stata` by
+- sampling now done from **each bin** given by `strata` and `breaks`
+
+For examples, see `?initial_split`.
+
+**This makes functions like `initial_split` slightly more worth using**, since otherwise it is so easy to split data randomly.
+
+### Onward!
+
+
+---
+# k-fold cross validation
+
+### Fundamental procedure (modified)
+
+1. randomly split data into **k subsets (also called 'folds') of roughly equal size**
+2. Do the following until all subsets have been tested on
+  - choose a subset to act as the test set
+  - train model on all subsets *except* the chosen one
+  - test model on chosen subset, compute error
+
+![](cv_pic.gif)
+
+From *Applied Predictive Modeling*
+
+---
+# Do it in `R`
+
+### Do it yourself
+Minor modification needed to our `splitter` program from last time.
+
+### Do it with `rsample`
+Rather than 'k-fold' they use 'v-fold'
+
+
+#### Most basic syntax
+```
+vfold(df, v = num_folds)
+```
+
+#### More advanced options
+`repeats` lets you create multiple cross-validation splits, and `strata`, `breaks` works as in the `initial_split` function.
+
+```
+vfold(df, v = num_folds, repeats = num_repeat)
+```
+
+---
+# New data for examples
+Old data was getting stale.
+
+### Opioid data from Washington Post records request
+
+- available through [`arcos` package.](https://wpinvestigative.github.io/arcos/index.html)
+- tracks every prescription opioid pill from producer to consumer
+- in every county in the US from 2006-2014
+- source: Drug Enforcement Agency
+
+### Initial question
+Skipping the usual cleaning, exploratory questions. If you did not know, the [opioid crisis](https://www.washingtonpost.com/national/2019/07/20/opioid-files/) is a big deal in the US. 
+
+#### Does the number of prescription opioid pills sold in an NC county influence the number of opoid deaths?
+Seems like it should, but if it doesn't this might suggest pills are not coming from pharmacies in-county.
+
+---
+# Data import, cleaning
+Also check it out for yourself using the `arcos` help page linked above.
+
+### Pills and population from WaPo
+
+```r
+library(tidyverse)
+library(arcos)
+library(rsample)
+
+pills &lt;- summarized_county_annual(state = "NC", key = "WaPo") %&gt;% 
+  select(county = BUYER_COUNTY, year, dosage_unit = DOSAGE_UNIT) %&gt;%
+  mutate(county = tolower(county) %&gt;% str_replace("\\s+", "_"))
+
+pop &lt;- county_population(state = "NC", key = "WaPo") %&gt;%
+  select(county = county_name, year, population) %&gt;%
+  mutate(county = tolower(county) %&gt;% str_replace("\\s+", "_"))
+```
+
+---
+### Opioid dosage by buyer type
+Buyer refers to the retailer, not the final customer.
+
+
+```r
+buyer &lt;- combined_buyer_annual(state = "NC", key = "WaPo") %&gt;% 
+  select(buyer_type = BUYER_BUS_ACT, county = BUYER_COUNTY, dosage_unit = DOSAGE_UNIT, year) %&gt;% 
+  group_by(year, county, buyer_type) %&gt;%
+  summarise(n_buyer = n(), dosage_unit = sum(dosage_unit)) %&gt;%
+  ungroup %&gt;%
+  mutate_at(c("county", "buyer_type"), .funs = tolower) %&gt;%
+  mutate(buyer_type = str_replace_all(buyer_type, pattern = c("[[:punct:]0-9]" = "", "\\s+" = "_")),
+         county = str_replace_all(county, "\\s+", "_"),
+         buyer_type = str_replace(buyer_type, "dw$", "")) %&gt;%
+  group_by(county, year, buyer_type) %&gt;%
+  summarise(dosage_unit = sum(dosage_unit)) %&gt;%
+  ungroup %&gt;%
+  pivot_wider(id_cols = c("county", "year"), names_from = buyer_type, values_from = dosage_unit,
+              values_fill = list(dosage_unit = 0))
+```
+
+---
+### Deaths from prescribed opioids
+Using the state's terrible [Tableau widget](https://www.injuryfreenc.ncdhhs.gov/DataSurveillance/Poisoning.htm) for deaths by poisoning. These are 'commonly prescribed opioids'.
+
+
+```r
+death &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/opioid_deaths_nc.csv') %&gt;%
+  pivot_longer(-county, names_to = "year", values_to = "op_death") %&gt;%
+  mutate(year = as.integer(year), county = tolower(county) %&gt;% str_replace_all("\\s+", "_"))
+```
+
+---
+### Employment data from US BEA
+Using, e.g., their [interactive data tool.](https://www.bea.gov/data/income-saving/personal-income-county-metro-and-other-areas)
+
+
+```r
+nc &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_income.csv') %&gt;%
+  select(-GeoFips, -LineCode) %&gt;%
+  pivot_longer(cols = `2006`:`2018`, names_to = "year") %&gt;%
+  mutate_at(c("Description", "GeoName"), 
+            .funs = ~ str_replace_all(., pattern = c("[[:punct:]0-9]" = "", "\\s+" = "_")) %&gt;%
+              str_replace("_$", "") %&gt;% tolower) %&gt;%
+  mutate(GeoName = str_replace(GeoName, "_nc$", ""),
+         year = as.integer(year)) %&gt;%
+  pivot_wider(id_cols = c("GeoName", "year"), names_from = Description, values_from = value) %&gt;%
+  select(county = GeoName, year, contains("employment"))
+```
+
+---
+### Joining
+
+#### Two missing counties
+
+```r
+anti_join(pop, pills, by = c("county", "year")) %&gt;% count(county)
+```
+
+```
+## # A tibble: 2 x 2
+##   county     n
+##   &lt;chr&gt;  &lt;int&gt;
+## 1 camden     9
+## 2 hyde       9
+```
+
+
+```r
+d &lt;- inner_join(pills, pop, by = c("county", "year"))  %&gt;%
+  inner_join(., buyer, by = c("county", "year")) %&gt;%
+  inner_join(death, ., by = c("county", "year")) %&gt;%
+  inner_join(., nc, by = c("county", "year"))
+```
+
+---
+### Brief look and link to data
+Get the cleaned version from github: https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv
+
+Skipping all the usual stuff
+
+```
+## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':	588 obs. of  11 variables:
+##  $ county                    : chr  "alamance" "alamance" "alamance" "alamance" ...
+##  $ year                      : num  2009 2010 2011 2012 2013 ...
+##  $ op_death                  : num  12 6 7 5 5 9 13 6 4 1 ...
+##  $ dosage_unit               : num  5518180 5529390 6057440 6259710 6098840 ...
+##  $ population                : num  144769 147072 149439 151170 152472 ...
+##  $ chain_pharmacy            : num  3725460 3743200 4279280 4390510 4255720 ...
+##  $ practitioner              : num  560 390 1860 900 1900 1700 0 0 0 330 ...
+##  $ retail_pharmacy           : num  1792160 1785800 1776300 1868300 1841220 ...
+##  $ total_employment          : num  74921 74330 76422 77711 77885 ...
+##  $ wage_and_salary_employment: num  59584 58861 60496 61744 61490 ...
+##  $ proprietors_employment    : num  15337 15469 15926 15967 16395 ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   county = col_character(),
+##   ..   year = col_double(),
+##   ..   op_death = col_double(),
+##   ..   dosage_unit = col_double(),
+##   ..   population = col_double(),
+##   ..   chain_pharmacy = col_double(),
+##   ..   practitioner = col_double(),
+##   ..   retail_pharmacy = col_double(),
+##   ..   total_employment = col_double(),
+##   ..   wage_and_salary_employment = col_double(),
+##   ..   proprietors_employment = col_double()
+##   .. )
+```
+
+
+---
+# Back to cross validation!
+
+### CV stratified by year
+
+
+```r
+d_cv &lt;- vfold_cv(d, v = 8, strata = year, breaks = n_distinct(d$year))
+
+class(d_cv)
+```
+
+```
+## [1] "vfold_cv"   "rset"       "tbl_df"     "tbl"        "data.frame"
+```
+
+
+
+```r
+class(d_cv$splits); names(d_cv$splits); class(d_cv$splits[[1]])
+```
+
+```
+## [1] "list"
+```
+
+```
+## [1] "1" "2" "3" "4" "5" "6" "7" "8"
+```
+
+```
+## [1] "rsplit"      "vfold_split"
+```
+
+---
+### Huh?
+Like with `initial_splits` we need additional functions to get the test and training sets. You find it easier just to write your own function...
+
+To get the split where the `\(j\)`th fold is the **test set** do
+```
+assessment(d_cv$splits[[1]])
+```
+
+and to get the **training set**
+```
+analysis(d_cv$splits[[1]])
+```
+
+
+```r
+assessment(d_cv$splits[[1]]) %&gt;% nrow
+```
+
+```
+## [1] 78
+```
+
+```r
+analysis(d_cv$splits[[1]]) %&gt;% nrow
+```
+
+```
+## [1] 510
+```
+
+---
+
+```r
+map(d_cv$splits, .f = ~ analysis(.x) %&gt;% count(year))[c(1, 5)]
+```
+
+```
+## $`1`
+## # A tibble: 6 x 2
+##    year     n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1  2009    85
+## 2  2010    85
+## 3  2011    85
+## 4  2012    85
+## 5  2013    85
+## 6  2014    85
+## 
+## $`5`
+## # A tibble: 6 x 2
+##    year     n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1  2009    86
+## 2  2010    86
+## 3  2011    86
+## 4  2012    86
+## 5  2013    86
+## 6  2014    86
+```
+
+
+---
+# Back to the question
+
+### Does the number of prescription opioid pills sold in an NC county influence the number of opoid deaths?
+
+- will have indicators for `county` and `year`
+- not viewing as a time series here
+- `dosage_unit` can be thought of as a `pill`, though of course a dosage can be more or less than one physical pill
+
+
+### Today: LASSO
+
+### Q: Why might LASSO be good or bad here?
+We'll compare various options using cross validation in future lectures.
+
+---
+# Now you try!
+
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+She's working harder than usual today
+
+---
+# Tutorial
+In this tutorial, you will begin to investigate how well a linear model with LASSO does at answering our question.
+
+**We will follow up on this next time.**
+
+This tutorial has two parts:
+
+#### A) 
+
+1. **Load** the `nc_opioid` dataset from github
+2. **Run** the `vfold_cv` on it as above
+3. Create a list where each element has two items:
+  - a `train` dataset
+  - a `test` dataset
+  - from each split in `d_cv`
+
+---
+#### B)
+
+1. **Write a function** called `get_accuracy` that is similar to the one created last time (see next slide) that does the following
+  - input for `df_train`, `df_test` and `lambda` parameter of LASSO
+  - converts `year` and `county` to factors in both `df_train` and `df_test`
+  - fits the LASSO on `op_death` variable outcome against all other variables
+  - computes the **test error** using the mean squared error
+  - returns the test error as `error` and the `lambda` value as `lambda`
+2. Use the `map` or `lapply` functionals to **run `get_accuracy`** on each element of `d_cv$splits` for the **value `lambda = 1`**
+3. **Display the results**
+
+
+---
+#### Function from last time. Need to modify it.
+
+```r
+get_accuracy &lt;- function(df_train, df_test, kernel, cost, gamma){
+  
+  m &lt;- svm(fire ~., data = df_train, cost = cost, kernel = kernel, gamma = gamma)
+  
+  df_test &lt;- mutate(df_test,
+                    yhat = predict(m, newdata = df_test),
+                    err = yhat != fire)
+  
+  return(list(df_test = df_test, accuracy = mean(!df_test$err))) 
+}
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
