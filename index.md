@@ -72,6 +72,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |April 8|[classification models, part b](slides_classification_ptb.html)|[Jed Huang](Tutorial-4-8.html)|
 |April 13|[Prediction, cross validation, part a](slides_predval_pta.html)||
 |April 15|[Guest lecture files: API and Shiny app](https://github.com/ldjack5/teaching?files=1)|
+|April 17|[Prediction, cross validation, part b](slides_predval_ptb.html)|
 
 
 ## Homework
