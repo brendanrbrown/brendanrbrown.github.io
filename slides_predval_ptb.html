@@ -94,20 +94,20 @@ The training set typically is the larger one
 
 ### Problems with data splitting
 
-1) training and test sets might not be 'similar', e.g. almost all outcomes of one type in the training set
-2) **test error**, error of predictions on test set, can vary quite a bit depending on which observations chosen
-3) model built on training set **does not see all of the data**, and **more data is better** when modeling
+1. training and test sets might not be 'similar', e.g. almost all outcomes of one type in the training set
+2. **test error**, error of predictions on test set, can vary quite a bit depending on which observations chosen
+3. model built on training set **does not see all of the data**, and **more data is better** when modeling
 
 ### Fixes
 
-1) 'stratified' sampling, which controls for distribution of values in each set for important variables
-2, 3) Cross-validation
+1. 'stratified' sampling, which controls for distribution of values in each set for important variables
+2. and 3 Cross-validation
 
 ---
 # Stratified sampling
 
 ### Won't cover it in detail
-Just some tips to get you started
+We'll see an example later.
 
 - `rsample` package function `initial_split`
 - `stata` argument tells it which single variable to stratify on
@@ -148,14 +148,14 @@ Rather than 'k-fold' they use 'v-fold'
 
 #### Most basic syntax
 ```
-vfold(df, v = num_folds)
+vfold_cv(df, v = num_folds)
 ```
 
 #### More advanced options
 `repeats` lets you create multiple cross-validation splits, and `strata`, `breaks` works as in the `initial_split` function.
 
 ```
-vfold(df, v = num_folds, repeats = num_repeat)
+vfold_cv(df, v = num_folds, repeats = num_repeat)
 ```
 
 ---
@@ -173,7 +173,7 @@ Old data was getting stale.
 Skipping the usual cleaning, exploratory questions. If you did not know, the [opioid crisis](https://www.washingtonpost.com/national/2019/07/20/opioid-files/) is a big deal in the US. 
 
 #### Does the number of prescription opioid pills sold in an NC county influence the number of opoid deaths?
-Seems like it should, but if it doesn't this might suggest pills are not coming from pharmacies in-county.
+Seems like it should, but if it doesn't this might suggest pills are not coming from sources in-county.
 
 ---
 # Data import, cleaning
@@ -230,7 +230,7 @@ death &lt;- read_csv('https://raw.githubusercontent.com/brendanrbrown/brendanrbr
 
 ---
 ### Employment data from US BEA
-Using, e.g., their [interactive data tool.](https://www.bea.gov/data/income-saving/personal-income-county-metro-and-other-areas)
+Using, e.g., their [interactive data tool.](https://www.bea.gov/data/income-saving/personal-income-county-metro-and-other-areas) or the [BEA API](https://apps.bea.gov/api/) through the [`bea.R` package](https://github.com/us-bea/bea.R).
 
 
 ```r
@@ -273,7 +273,7 @@ d &lt;- inner_join(pills, pop, by = c("county", "year"))  %&gt;%
 
 ---
 ### Brief look and link to data
-Get the cleaned version from github: https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv
+Get the cleaned version from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv)
 
 Skipping all the usual stuff
 
@@ -427,9 +427,9 @@ She's working harder than usual today
 
 ---
 # Tutorial
-In this tutorial, you will begin to investigate how well a linear model with LASSO does at answering our question.
+In this tutorial, you will begin to investigate how well a linear model with LASSO does at answering our question. 
 
-**We will follow up on this next time.**
+**We'll do it together, as usual.** And we will follow up on this next time.
 
 This tutorial has two parts:
 
@@ -445,17 +445,32 @@ This tutorial has two parts:
 ---
 #### B)
 
-1. **Write a function** called `get_accuracy` that is similar to the one created last time (see next slide) that does the following
+1. **Write a function** called `get_error` that is similar to `get_accuracy` created last time (see next slide) that does the following
   - input for `df_train`, `df_test` and `lambda` parameter of LASSO
-  - converts `year` and `county` to factors in both `df_train` and `df_test`
+  - converts `year` to factor in both `df_train` and `df_test`
+  - converts `df_train` to a matrix using `model.matrix` (see below)
+  - **does not use `county` as a predictor**, i
   - fits the LASSO on `op_death` variable outcome against all other variables
   - computes the **test error** using the mean squared error
-  - returns the test error as `error` and the `lambda` value as `lambda`
-2. Use the `map` or `lapply` functionals to **run `get_accuracy`** on each element of `d_cv$splits` for the **value `lambda = 1`**
+  - returns the test data set with errors and predictions as `df_test`, the test error as `mse`,  and the `lambda` value as `lambda`
+2. Use the `map` or `lapply` functionals to **run `get_error`** on each element of `d_cv$splits` for the **value `lambda = 1`**
 3. **Display the results**
 
+---
+
+#### Important notes
+Your regressors now include the factor `year`. `glmnet` running LASSO cannot handle these directly and must be given a matrix where the factors have already been converted to dummy variable columns. See the example in the next slides. 
+
+Also, you need to use `newx` for predicting on a glmnet model, rather than `newdata`. See `?predcit.glmnet`. The output has some idiosyncrasies.
+
+#### Less-important note
+It would be more efficient, from a programming perspective, to convert your variables to factors when you load the data, rather than in your `get_error` function. But we will be re-using this code, and I might not always want the year to be a factor.
+
+#### Note note
+Many modeling packages, including `glmnet` some built-in cross validation functionality. We'll see that later. There are times when we find it convenient to do own CV first, for example if we want the *same* splits used for different models.
 
 ---
+
 #### Function from last time. Need to modify it.
 
 ```r
@@ -469,6 +484,28 @@ get_accuracy &lt;- function(df_train, df_test, kernel, cost, gamma){
   
   return(list(df_test = df_test, accuracy = mean(!df_test$err))) 
 }
+```
+
+---
+#### converting factors to dummy variables with `model.matrix`
+
+
+```r
+x &lt;- tibble(var1 = factor(c("a", "b", "c", "a")), var2 = c(-1, 1, 2, 0), y = runif(4))
+model.matrix(~ ., data = x)
+```
+
+```
+##   (Intercept) var1b var1c var2         y
+## 1           1     0     0   -1 0.9150330
+## 2           1     1     0    1 0.1578076
+## 3           1     0     1    2 0.0837661
+## 4           1     0     0    0 0.1207360
+## attr(,"assign")
+## [1] 0 1 1 2 3
+## attr(,"contrasts")
+## attr(,"contrasts")$var1
+## [1] "contr.treatment"
 ```
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
