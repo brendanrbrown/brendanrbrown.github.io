@@ -156,3 +156,5 @@ These link to examples I mention in class, which might help give context for the
 |March 30|[Project Tycho: Disease databases](https://www.tycho.pitt.edu/featured-works/)|
 |March 30|[Make almost any plot in R](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/)|
 |April 1|[Covid19 projections by state](http://covid19.healthdata.org/)|
+|April 15|[SEIR CV19 model shiny app code](https://github.com/alsnhll/SEIR_COVID19)|
+|April 17|[Modeling discussion CovidActNow](https://blog.covidactnow.org/dr-nirav-shah-discusses-covid-act-now-model/)|
