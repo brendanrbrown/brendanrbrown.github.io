@@ -241,7 +241,7 @@ get_error &lt;- function(d, lambda){
 
 ### Which gives the best model?
 
-- could use `map2` function to run `get_error` for every pair of `\(\lambda\)` and test values
+- could use nested `map` functions to run `get_error` for all `\(\lambda\)` and test values
 - better to **modify `get_error`** to evaluate multiple `\(\lambda\)` in one go
 
 ### But, a shortcut: Built-in cv
