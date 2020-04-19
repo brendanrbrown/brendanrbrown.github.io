@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>cross validation and prediction: part c, or ‘Into the Wild’</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_predval_ptc_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_predval_ptc_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_predval_ptc_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# cross validation and prediction: part c, or ‘Into the Wild’
+
+---
+
+
+
+
+# First: Thank you
+
+&lt;img src="https://i.dailymail.co.uk/i/newpix/2018/06/08/12/4D0A89B200000578-5821007-image-a-64_1528458980381.jpg" height="500" /&gt;
+
+*Orphaned gorilla and keeper in Virunga National Park*
+---
+### My last live lecture
+
+- no class Wednesday or Friday
+- still have OH Wednesday 8am
+
+### 'Into the Wild' series continues on video
+
+- will be posted to Sakai **today, Monday**
+- goal is to give you as much material as you need with time enough to use it for the project
+- plus this is the Rona Semester and apparently there are no rules
+- free-form lecture is the **culmination of what we've learned**
+
+### In it we will discover...
+sets within sets, forests within forests, forests within oceans, pitfalls, waterfalls, lassos, ridges, fishes and primates making mistakes
+
+---
+
+# First: Course evaluations
+
+### Please take 5m to do this: I know you're busy
+
+### Feedback, positive or negative, will make this course better
+
+- have tried a few new things
+- e.g. regular tutorials
+- real rather than pre-packaged examples
+- modeling as exploration
+
+### More responses means better data
+
+#### especially important to respond if you don't have strong feelings one way or the other
+
+---
+
+
+
+
+# What you will learn
+
+- automated cross validation methods, e.g. `cv.glmnet`
+- comparing cross validation errors
+- custom function to compare CV errors across different model types
+
+
+**Main reference:** ISLR ch 5
+
+**Resources**
+
+- [Applied Predictive Modeling book](http://appliedpredictivemodeling.com/), free copy through [UNC libraries](https://catalog.lib.unc.edu/catalog/UNCb7414199)
+- [rsample package reference](https://tidymodels.github.io/rsample/articles/Basics.html)
+
+---
+# Final week: Not like this
+
+.center[![](https://asset-manager.bbcchannels.com/i/2czfr0000f41000)]
+
+*Albatross over an Artic sea at sunset*, BBC Earth
+
+#### We are not working our way toward a far-off peak.
+---
+# Instead: Into a murky world
+
+.center[![](https://www.nps.gov/piro/learn/nature/images/DeepForest_1.JPG?maxwidth=650&amp;autorotate=false)]
+
+*Pictured Rocks National Lakeshore, Michigan*, National Park Service
+---
+# Review : Problems with single split
+
+1. training and test sets might not be 'similar', e.g. almost all outcomes of one type in the training set
+2. **test error**, error of predictions on test set, can vary quite a bit depending on which observations chosen
+3. model built on training set **does not see all of the data**, and **more data is better** when modeling
+
+### Fixes
+
+1. 'stratified' sampling, which controls for distribution of values in each set for important variables
+2. and 3 Cross-validation
+
+---
+# Review: k or v-fold cv
+
+### Fundamental procedure (modified)
+
+1. randomly split data into **k subsets (also called 'folds') of roughly equal size**
+2. Do the following until all subsets have been tested on
+  - choose a subset to act as the test set
+  - train model on all subsets *except* the chosen one
+  - test model on chosen subset, compute error
+
+![](cv_pic.gif)
+
+From *Applied Predictive Modeling*
+
+---
+# Review: Do it in `R`
+
+### Do it yourself
+Minor modification needed to our `splitter` program from last time.
+
+### Do it with `rsample`
+Rather than 'k-fold' they use 'v-fold'
+
+
+#### Most basic syntax
+```
+vfold_cv(df, v = num_folds)
+```
+
+#### More advanced options
+`repeats` lets you create multiple cross-validation splits, and `strata`, `breaks` works as in the `initial_split` function.
+
+```
+vfold_cv(df, v = num_folds, repeats = num_repeat)
+```
+
+---
+# Review: Opioid data
+#### Does the number of prescription opioid pills sold in an NC county influence the number of opoid deaths?
+Seems like it should, but if it doesn't this might suggest pills are not coming from sources in-county.
+
+### Opioid data from Washington Post
+
+Get the dataset we made last time from [github](https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv)
+
+- opioid data **was** available through [`arcos` package.](https://wpinvestigative.github.io/arcos/index.html)
+- raw data still available at [WaPo site](https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/#download-resources), though this might have a paywall `:(`
+- tracks every prescription opioid pill from producer to consumer
+- in every county in the US from 2006-2014
+- source: Drug Enforcement Agency
+
+
+
+---
+Skipping all the usual stuff. Year is turned to factor here.
+
+```r
+library(tidyverse); library(rsample); library(glmnet)
+d &lt;- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv") %&gt;% mutate(year = as.factor(year))
+str(d)
+```
+
+```
+## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':	588 obs. of  11 variables:
+##  $ county                    : chr  "alamance" "alamance" "alamance" "alamance" ...
+##  $ year                      : Factor w/ 6 levels "2009","2010",..: 1 2 3 4 5 6 1 2 3 4 ...
+##  $ op_death                  : num  12 6 7 5 5 9 13 6 4 1 ...
+##  $ dosage_unit               : num  5518180 5529390 6057440 6259710 6098840 ...
+##  $ population                : num  144769 147072 149439 151170 152472 ...
+##  $ chain_pharmacy            : num  3725460 3743200 4279280 4390510 4255720 ...
+##  $ practitioner              : num  560 390 1860 900 1900 1700 0 0 0 330 ...
+##  $ retail_pharmacy           : num  1792160 1785800 1776300 1868300 1841220 ...
+##  $ total_employment          : num  74921 74330 76422 77711 77885 ...
+##  $ wage_and_salary_employment: num  59584 58861 60496 61744 61490 ...
+##  $ proprietors_employment    : num  15337 15469 15926 15967 16395 ...
+```
+
+---
+# Last time: CV for LASSO
+Making a list of cross-validation training/test sets.
+
+```r
+d_cv &lt;- vfold_cv(d, v = 8, strata = year, breaks = n_distinct(d$year))
+d_cv &lt;- map(d_cv$splits, .f = ~ list(train = analysis(.x), test = assessment(.x)))
+```
+
+
+```r
+d_cv[[1]]$train %&gt;% head
+```
+
+```
+## # A tibble: 6 x 11
+##   county year  op_death dosage_unit population chain_pharmacy practitioner
+##   &lt;chr&gt;  &lt;fct&gt;    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;          &lt;dbl&gt;        &lt;dbl&gt;
+## 1 alama… 2009        12     5518180     144769        3725460          560
+## 2 alama… 2010         6     5529390     147072        3743200          390
+## 3 alama… 2011         7     6057440     149439        4279280         1860
+## 4 alama… 2012         5     6259710     151170        4390510          900
+## 5 alama… 2013         5     6098840     152472        4255720         1900
+## 6 alama… 2014         9     6079040     153713        4399140         1700
+## # … with 4 more variables: retail_pharmacy &lt;dbl&gt;, total_employment &lt;dbl&gt;,
+## #   wage_and_salary_employment &lt;dbl&gt;, proprietors_employment &lt;dbl&gt;
+```
+
+---
+# Get error for LASSO
+
+This assumed we had a **fixed**  `\(\lambda\)` for the LASSO. 
+
+```r
+get_error &lt;- function(d, lambda){
+  # see note. For now this works with only scalar lambda
+  y_train &lt;- d$train$op_death
+  df_train &lt;- mutate(d$train, year = as.factor(year)) %&gt;% 
+    select(-op_death, -county) %&gt;%
+    model.matrix(~ -1 + ., data = .)
+  test &lt;- mutate(d$test, year = as.factor(year)) %&gt;% 
+    select(-op_death, -county) %&gt;%
+    model.matrix(~ -1 + ., data = .)
+  
+  # -1 above in model.matrix because intercept = T below
+  m &lt;- glmnet(df_train, y_train, alpha = 1, lambda = lambda, intercept = T)
+  
+  # change syntax for predict if using multiple lambda
+  df_test &lt;- mutate(d$test,
+                    yhat = predict(m, newx = test)[, "s0"],
+                    err = (yhat - op_death)^2)
+  
+  return(list(df_test = df_test, mse = mean(df_test$err), lambda = lambda)) 
+}
+```
+
+---
+# Goal: Choosing lambda
+
+### Which gives the best model?
+
+- could use `map2` function to run `get_error` for every pair of `\(\lambda\)` and test values
+- better to **modify `get_error`** to evaluate multiple `\(\lambda\)` in one go
+
+### But, a shortcut: Built-in cv
+Many packages, including `glmnet` **have built-in CV methods**, e.g.
+
+```
+cv.glmnet(x, y, lambda = my_lambda, nfolds = k)
+```
+
+and for `svm` just use the `cross` argument giving the number of folds
+
+```
+svm(y ~ x1 + x2 ..., data = df, cost = cost_val, gamma = gamma_val, kernel,
+    cross = k)
+```
+
+---
+### When to use built-in CV
+
+- choosing parameter values for a single type of model
+- e.g. choosing `lambda` in LASSO or `cost` in SVM
+- where other considerations, e.g. stratification, is not too important
+
+### Why have our own CV function?
+- **not all models** have built-in methods, e.g. `glm`
+- **greater transparency** in your code: you know exactly how the splitting and testing goes
+- **greater control** over sampling, e.g. stratification
+- **comparing multiple models with the same CV splits** usually requires us to define CV splits outside the modeling function itself
+
+### Similar arguments for own CV vs. helper packages
+
+- several packages will do CV for you for certain methods
+- e.g. `boot` package has a function for doing CV with the base `glm` function
+- be sure you know what it's doing: read docs and check simple cases
+
+---
+# Choosing lambda with `cv.glmnet`
+Notice the change here in how we specify lambda with `nlambda`, the number of `\(\lambda\)` values to try, which is `glmnet`'s preferred method. See `?glmnet`.
+
+```r
+m &lt;- mutate(d, year = as.factor(year)) %&gt;% 
+    select(-op_death, -county) %&gt;%
+    model.matrix(~ -1 + ., data = .) %&gt;%
+  cv.glmnet(x = ., y = d$op_death, alpha = 1, nlambda = 15, intercept = T)
+```
+
+### Output
+
+- `m$lambda` sequence of `\(\lambda\)` tested, high to low
+- `m$glmnet.fit$beta` coefficients matrix, one column for each `\(\lambda\)` from high to low
+- `m$glmnet.fit$a0` intercepts fitted (if `intercept=T`), one for each `\(\lambda\)` from high to low
+- `m$cvm` average error (e.g. MSE) across all CV tests for each fixed `\(\lambda\)`
+
+### Average CV error
+Each element of `m$cvm` is the average of test errors across all CV splits, for a fixed `\(\lambda\)` 
+
+---
+# Best lambda
+`m$lambda.min` gives the `\(\lambda\)` value **minimizing average CV error**, ie smallest value of `m$cvm`
+
+
+```r
+plot(m)
+```
+
+&lt;img src="slides_predval_ptc_files/figure-html/unnamed-chunk-8-1.png" height="450" /&gt;
+
+---
+Technicality: beta matrix is a `dgCMatrix` type that can't be handled with `as_tibble`. Converting to a matrix first is a workaround.
+
+
+```r
+ll &lt;- tibble(lambda = colnames(m$glmnet.fit$beta), log_lambda = log(m$lambda))
+b &lt;- as.matrix(m$glmnet.fit$beta) %&gt;% as_tibble %&gt;%
+  mutate(var = row.names(m$glmnet.fit$beta)) %&gt;% 
+  pivot_longer(-var, names_to = "lambda", values_to = "coef") %&gt;%
+  left_join(., ll, by = "lambda")
+head(b)
+```
+
+```
+## # A tibble: 6 x 4
+##   var      lambda  coef log_lambda
+##   &lt;chr&gt;    &lt;chr&gt;  &lt;dbl&gt;      &lt;dbl&gt;
+## 1 year2009 s0     0          1.66 
+## 2 year2009 s1     0          0.999
+## 3 year2009 s2     0          0.341
+## 4 year2009 s3     0         -0.317
+## 5 year2009 s4     0.282     -0.975
+## 6 year2009 s5     0.760     -1.63
+```
+
+---
+&lt;img src="slides_predval_ptc_files/figure-html/unnamed-chunk-10-1.png" height="550" /&gt;
+
+---
+Code for previous plot
+
+```r
+ggplot(b, aes(x = var, y = log_lambda, fill = coef != 0)) + geom_raster() + theme_minimal() + scale_fill_brewer(palette = "Accent") + 
+  theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
+  geom_hline(yintercept = log(m$lambda.min), color = "#386cb0") +
+  annotate("text", x = "total_employment", y = log(m$lambda.min)+.5, label = "Optimal log lambda",
+           color = "#386cb0")
+```
+
+---
+# But this is only the beginning
+
+.center[![](https://cdna.artstation.com/p/assets/images/images/009/609/998/large/cristi-balanescu-cristib-theforgottenage-final.jpg?1519924301)]
+
+*Art for Arkham Horror, the Card Game*, by Cristi Balanescu
+
+#### Have we found a treasure or an abomination...?
+
+---
+# Comparing CV errors across models
+
+### Prepping for future work
+
+- will use **mean CV error** as defined above
+- to **choose between very different models** 
+- e.g. **LASSO** vs **`lm` with a single predictor** vs. **Poisson `glm`**
+- will want to **use the same CV splits for all models**
+- so need to use our own function rather than built-in methods
+
+### Modifying `get_error`
+Many ways to approach this problem. Let's work on modifying what we have.
+
+- need to allow **multiple** `\(\lambda\)`
+- **handle special LASSO `predict`** syntax for multiple `\(\lambda\)`
+- write a 'wrapper' function that computes average CV error for each `\(\lambda\)`
+
+---
+### How does `predict` work for `glmnet` with multiple lambda?
+
+
+```r
+x &lt;- mutate(d, year = as.factor(year)) %&gt;% select(-op_death, -county) %&gt;% model.matrix(~ ., data = .)
+m &lt;- glmnet(x = x, y = d$op_death, alpha = 1, nlambda = 15)
+```
+
+Computing fitted values to see what output structure we get. Will be the same when we use `newx` to predict on new data.
+
+```r
+yhat &lt;- predict(m, newx = x)
+dim(yhat); class(yhat)
+```
+
+```
+## [1] 588  15
+```
+
+```
+## [1] "matrix"
+```
+
+- `matrix` not data frame
+- one row per observation
+- one column for prediction from each `\(\lambda\)` value
+- `\(\lambda\)` in **decreasing order** from left to right columns
+
+
+---
+# Now I try!
+
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+She's still the hardest working primate in the forest.
+
+#### [Watch our hero (almost) vanquish this log!](https://www.youtube.com/watch?v=3oRq78CwE7c)
+
+---
+# Tutorial (I do it)
+
+### This is where I demo the following
+
+1. modify `get_error`, **renaming it `get_error_glmnet`**, to allow multiple `\(\lambda\)` and to generalize to Ridge regression and other `glmnet` methods (e.g. poisson regression) with similar syntax.
+2. write an analogous function **`get_error_glm`** to compute test error for each fold in my CV split for a `lm` or `glm` model --- which have similar syntax.
+
+Will use much of what we have already learned, and some flourishes to make this more **generalizable**, without hard-coding the variable names in the function.
+
+### Next video: comparing CV error, new models but same old troubles
+
+See other `glmnet` family options, such as Poisson regression, in this [vignette.](https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf)
+---
+# We've reached a crossing
+![](https://asset-manager.bbcchannels.com/i/2czfh0000f41000)
+*BBC Earth,* After this there is no clear path
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
