@@ -74,7 +74,7 @@ Trying to do other stuff while participating in a lecture is very 2010s. In the 
 |April 15|[Guest lecture files: API and Shiny app](https://github.com/ldjack5/teaching?files=1)|
 |April 17|[Prediction, cross validation, part b](slides_predval_ptb.html)|[Akshatha Bharadwaj](Tutorial---Cross-Validation-B.html)|
 |April 20|[Prediction, cross validation, part c](slides_predval_ptc.html)|See Rmd for April 22|
-|April 22|Prediction, cross validation, part d (no slides)|[Rmd here, video on Sakai](slides_predval_ptc.Rmd)|
+|April 22|Prediction, cross validation, part d (no slides)|[Rmd here, video on Sakai](slides_predval_ptd.Rmd)|
 
 **Note: You won't be able to generate slides from the .Rmd for April 22, 24 without the xaringan packge**, but they're not really meant to be viewed as slides anyway. Just strip the code you need, if any, from the files.
 
