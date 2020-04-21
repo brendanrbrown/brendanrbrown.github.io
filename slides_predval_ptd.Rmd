@@ -1,0 +1,347 @@
+---
+title: "cross validation and prediction: part d, or 'Crossing the river'"
+author: ""
+date: ""
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts]
+    fig_caption: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+![](https://asset-manager.bbcchannels.com/i/2czf80000f41000)
+
+---
+# Last time
+```{r, echo = T}
+library(tidyverse); library(rsample); library(glmnet)
+d <- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv") %>% mutate(year = as.factor(year))
+```
+
+---
+# Too big for the slide! (see Rmd)
+See below for why I suggest user-provided lambdas in this function. Could wrap this in something nicer
+```{r, eval = T, echo=T, out.height=500}
+get_error_glmnet <- function(d, y_var, x_var, lambda, alpha = 1, family = "gaussian"){
+  
+  # could also include a check on model family here to be sure it's one of these or gaussian
+  mod_check <- family %in% c("binomial", "multinomial")
+  
+  # use vars() for the x_var argument to get select-like syntax
+  # can use y_var without quotations
+  y_var <- enquo(y_var)
+  
+  y_train <- select(d$train, !!y_var) %>% as.matrix
+  y_test <- select(d$test, !!y_var) %>% as.matrix
+  train <- select(d$train, !!!x_var) %>% model.matrix(~ -1 + ., data = .)
+  test <- select(d$test, !!!x_var) %>% model.matrix(~ -1 + ., data = .)
+  
+  # need response as factor for glmnet in these cases
+  
+  if (mod_check)
+    y_train <- as.factor(y_train)
+    
+  
+  # -1 above in model.matrix because intercept = T below
+  m <- glmnet(train, y_train, alpha = alpha, lambda = lambda, 
+              family = family, intercept = T)
+  
+  if (family == "gaussian"){
+    
+    err <- predict(m, newx = test) %>%
+    apply(2, FUN = function(x) mean((x - y_test)^2))
+    
+  } else if (family == "poisson") {
+    
+    err <- predict(m, newx = test, type = "response") %>%
+    apply(2, FUN = function(x) mean((x - y_test)^2))
+    
+  } else {
+    
+    err <- predict(m, newx = test, type = "class") %>%
+      apply(2, FUN = function(x) mean(x != y_test))
+    
+  }
+  
+  
+  return(tibble(lambda = m$lambda, err = err))
+}
+```
+
+---
+```{r, eval = T, echo=T}
+get_error_glm <- function(formula, d, y_var, x_var, family = "gaussian"){
+  
+  # could clean up the quosures here a bit with yvar and xvar 
+  # done to make it consistent with prev function
+  y_var <- enquo(y_var)
+  train <- select(d$train, !!!x_var) %>% bind_cols(., select(d$train, !!y_var))
+  
+  m <- glm(enquo(formula), data = train, family = family)
+  
+  if (family == "gaussian"){
+    
+    yhat <- predict(m, newdata = d$test)
+    
+    mutate(d$test, err = !!y_var - yhat) %>% summarise(err = mean(err^2))
+    
+  } else if (family == "poisson") {
+    
+    yhat <- predict(m, newdata = d$test, type = "response")
+    
+    mutate(d$test, err = !!y_var - yhat) %>% summarise(err = mean(err^2))
+    
+  } else {
+    
+    yhat <- predict(m, newdata = d$test)
+    
+    # first level is 'failure' in glm
+    mutate(d$test, yhat = ifelse(yhat < .5, levels(!!y_var)[1], levels(!!y_var)[2]),
+           err = !!y_var != yhat) %>% summarise(err = mean(err))
+  }
+  
+}
+
+```
+
+---
+# We've reached a crossing
+![](https://asset-manager.bbcchannels.com/i/2czfh0000f41000)
+
+---
+# Today I demo
+
+### Samples within samples
+
+### Compare CV error across models
+---
+![](https://tidymodels.github.io/rsample/articles/Applications/diagram.png)
+
+---
+### Out of the woods, but is it the end or just another hostile land?
+
+We finally have a clean, clear procedure that can be used for
+
+- **selecting between models** of diverse kinds, e.g. 
+```{r, echo = F, eval=T}
+d <- initial_split(d, .85, strata = year, breaks  = n_distinct(d$year))
+train <- training(d)
+test <- testing(d)
+
+d_cv <- vfold_cv(train, v = 8, strata = year, breaks = n_distinct(d$year))
+d_cv <- map(d_cv$splits, .f = ~ list(train = analysis(.x), test = assessment(.x)))
+```
+
+```{r}
+
+m <- mutate(train, year = as.factor(year)) %>% 
+    select(-op_death, -county) %>%
+    model.matrix(~ -1 + ., data = .) %>%
+  cv.glmnet(x = ., y = train$op_death, alpha = 1, nlambda = 50, intercept = T)
+
+mp <- mutate(train, year = as.factor(year)) %>% 
+    select(-op_death, -county) %>%
+    model.matrix(~ -1 + ., data = .) %>%
+  cv.glmnet(x = ., y = train$op_death, alpha = 1, nlambda = 50, intercept = T, family = "poisson")
+
+testmat <- select(test, -op_death, -county) %>%
+  model.matrix(~ -1 + ., data = .)
+
+out <- mutate(test, 
+               linear = predict(m, newx = testmat, s = "lambda.min")[,1],
+               poisson = predict(mp, newx = testmat, s = "lambda.min", type = "response")[,1]) %>%
+  pivot_longer(c("linear", "poisson"), names_to = "model", values_to = "yhat")
+
+group_by(out, model) %>% summarise(mse = mean((op_death - yhat)^2))
+
+ggplot(out, aes(op_death, yhat, color = model)) + geom_point() + theme_minimal() +
+  geom_abline(intercept = 0, slope = 1, color = "tomato4") + scale_color_brewer(palette = "RdPu")
+
+```
+
+```{r}
+crazy <- nested_cv(train, outside = vfold_cv(v = 4), inside = bootstraps(times = 10))
+
+crazy; class(crazy)
+```
+
+
+
+```{r, echo=F, eval=T}
+# if we specify nlambda, glmnet finds a good range of lambda to try
+# but it does so using the data itself, so different cv splits give different lambda
+# not good if we want to find the average error across all cv splits
+
+# HELPER FUNCTION TO GET THE LAMBDA RANGE ON THE FULL DATA FIRST
+# note this depends on alpha, family, data etc.
+
+get_lambda <- function(d_full, y_var, x_var, nlambda = 50, alpha = 1, family = "gaussian"){
+  
+  y_var <- enquo(y_var)
+  
+  y <- select(d_full, !!y_var) %>% as.matrix
+  x <- select(d_full, !!!x_var) %>% model.matrix(~ -1 + ., data = .)
+  
+  m <- glmnet(x, y, family = family, alpha = alpha, nlambda = nlambda)
+ 
+  # tibble return works better with other types used later
+  return(tibble(lambda = m$lambda)) 
+}
+
+```
+
+```{r}
+# testing it
+bind_rows(d_cv[[1]]$train, d_cv[[1]]$train) %>%
+  get_lambda(nlambda = 50, y_var = op_death, x_var = vars(-county, -op_death))
+```
+
+```{r, echo = T, eval=T}
+# syntax examples for custom functions
+
+# test on regression case
+out <- get_error_glmnet(d_cv[[1]], op_death, vars(-county, -op_death), lambda = c(1, .5, .1))
+
+out
+
+# test on dummy classification case. would work similarly for multinomial. just set family = "multinomial"
+out <- mutate(mtcars, y = as.factor(mpg > 20)) %>% list(train = ., test = .) %>%
+  get_error_glmnet(y, vars(-y), family = "binomial")
+
+out
+
+
+out <- get_error_glm(op_death ~ ., d_cv[[1]],
+                     op_death, vars(-county, -op_death), family = "gaussian")
+
+out
+```
+
+
+```{r, echo = F, eval=T}
+# Try various models: linear lasso, linear ridge, poisson lasso, poisson ridge
+
+# partial fixes certain arguments, making a function only of the remaining arguments
+
+# now a function
+err_short <- partial(get_error_glmnet, y_var = op_death, x_var = vars(-op_death, -county))
+
+lambda_short <- partial(get_lambda, d_full = bind_rows(d_cv[[1]]$test, d_cv[[1]]$train), 
+                          y_var = op_death, x_var = vars(-op_death, -county))
+
+
+# could improve efficiency, but would need to make it pass arguments properly inside mutate
+out <- list(alpha = 0:1, family = c("gaussian", "poisson"), d = d_cv) %>% 
+  cross %>%
+  map(~ lambda_short(alpha = .x$alpha, family = .x$family) %>%
+        append(.x, .) %>%
+        append(., err_short(d = .$d, family = .$family, alpha = .$alpha, lambda = .$lambda)['err'])
+      ) %>%
+  transpose %>% as_tibble %>%
+  mutate_at(c("alpha", "family"), simplify)
+
+
+out
+
+```
+
+
+```{r}
+# this type of structure might be useful, but we want err averaged across each cv group for each lambda and each model
+# unnest ungroups our list columns
+out <- unnest(out, cols = c("lambda", "err"))
+
+head(out)
+
+# each (alpha, lambda, family) triple identifies a cv test error
+count(out, alpha, lambda, family) %>% summarise(min(n), max(n))
+
+# average cv err for each model and each lambda
+out <- group_by(out, alpha, family, lambda) %>%
+  summarise(err = mean(err))
+  
+
+out
+```
+
+```{r}
+filter(out, alpha == 0, family == "poisson") %>%
+  ggplot(aes(log(lambda), err)) + geom_point(color = sample(colors(), 1)) + theme_minimal()
+```
+
+
+```{r}
+filter(out, alpha == 0, family == "gaussian") %>%
+  ggplot(aes(log(lambda), err)) + geom_point(color = sample(colors(), 1)) + theme_minimal()
+```
+
+
+```{r}
+# get the lambdas that minimize in each group
+# still grouped
+
+filter(out, err == min(err))
+```
+
+
+```{r}
+# fit with optimal params on entire training data
+# some awkwardness because glmnet doesn't like being used inside mutate
+# this won't work
+# out <- mutate(out, m = glmnet(trainx, y = train$op_death, family = family, alpha = alpha, lambda = lambda))
+
+trainx <- mutate(train, year = as.factor(year)) %>% 
+    select(-op_death, -county) %>%
+    model.matrix(~ -1 + ., data = .)
+
+out <- transpose(out) %>%
+  map(~ list(params = .x, m = glmnet(trainx, y = train$op_death, family = .x$family, alpha = .x$alpha, lambda = .x$lambda)))
+
+length(out)
+out[[1]]$m %>% class
+```
+
+
+```{r}
+testx <- mutate(test, year = as.factor(year)) %>% 
+    select(-op_death, -county) %>%
+    model.matrix(~ -1 + ., data = .)
+
+predict(out[[1]]$m, newx = testx)[, 's0'] %>% head
+```
+
+
+```{r}
+out <-  map(out, ~ list(params = as_vector(.x$params), 
+                yhat = predict(.x$m, newx = testx)[, 's0']) %>% 
+      c(., err = mean((test$op_death - .$yhat)^2)) 
+    )
+
+out[[1]]
+```
+
+```{r}
+out <- transpose(out) %>% as_tibble %>% mutate(err = simplify(err))
+
+out
+```
+
+```{r}
+filter(out, err == min(err))$params
+```
+
+```{r}
+mutate(test, yhat = as_vector(filter(out, err == min(err))$yhat)) %>%
+  ggplot(aes(op_death, yhat))  + geom_point() + theme_minimal() +
+  geom_abline(intercept = 0, slope = 1, color = "red")
+```
+
+
+---
+
+
+![](https://asset-manager.bbcchannels.com/i/2czf30000f41000)
