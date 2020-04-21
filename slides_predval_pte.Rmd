@@ -1,0 +1,218 @@
+---
+title: "cross validation and prediction: part e, or 'Weird forests'"
+author: ""
+date: ""
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts]
+    fig_caption: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+![](https://scx1.b-cdn.net/csz/news/800/2020/remotesoutha.jpeg)
+
+*Kelp forests of Tierra del Fuego*
+---
+# Last time
+```{r, echo = T}
+library(tidyverse); library(rsample); library(glmnet); library(randomForest); library(rlang)
+d <- read_csv("https://raw.githubusercontent.com/brendanrbrown/brendanrbrown.github.io/master/nc_opioid.csv") %>% mutate(year = as.factor(year))
+```
+
+```{r, echo = T, eval=T}
+d <- initial_split(d, .85, strata = year, breaks  = n_distinct(d$year))
+train <- training(d)
+test <- testing(d)
+
+d_cv <- vfold_cv(train, v = 8, strata = year, breaks = n_distinct(d$year))
+d_cv <- map(d_cv$splits, .f = ~ list(train = analysis(.x), test = assessment(.x)))
+```
+
+---
+![](https://tidymodels.github.io/rsample/articles/Applications/diagram.png)
+
+---
+# Random Forest
+
+### Popular non-parametric method
+
+### Draws on strengths of resampling techniques (see ch 15.1 of ESLR linked below)
+
+### Can be used as one of a few 'default' models
+
+### Tends to be good at capturing non-linear relationships
+
+### Remember: no magic universal solutions
+
+---
+# Random Forest idea
+
+![](https://uc-r.github.io/public/images/analytics/random_forests/tree-correlation-1.png)
+
+*from UC analytics site linked below*
+
+
+see also Algorithm 15.1 on p 588 of [ESLR](https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12.pdf)
+---
+### Resources for random forests
+
+- [Elements of statistical learning, chapter 15](https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12.pdf)
+- [UC analytics site with demos](https://uc-r.github.io/random_forests)
+
+---
+
+###Usage
+Recommended syntax using some default parameters related to the algorithm, e.g. default is `ntree = 500`
+
+- if `y` is a factor, will do **classification**
+- otherwise will do **regression**
+```{r}
+m <- randomForest(x = select(train, -county, -op_death), y = train$op_death)
+
+names(m)
+```
+
+---
+```{r}
+plot(m); plot(m$mse) # underwhelming
+```
+
+---
+# Estimation on train, predict on test
+```{r, dpi=500, out.height=500}
+set.seed(1305)
+m <- randomForest(x = select(train, -county, -op_death), y = train$op_death)
+
+mutate(test, yhat = predict(m, newdata = test)) %>% ggplot(aes(op_death, yhat)) + geom_point(color = sample(colors(), 1)) + theme_bw() + geom_abline(intercept = 0, slope = 1, color = sample(colors(), 1))
+```
+
+---
+Do it within the function itself
+
+```{r}
+m <- randomForest(x = select(train, -county, -op_death), y = train$op_death, 
+                  xtest = select(test, -county, -op_death), ytest = test$op_death)
+
+# one mse for each tree, so not exactly the test mse
+names(m$test); length(m$test$predicted); length(m$test$mse)
+
+mutate(test, yhat = m$test$predicted) %>% ggplot(aes(op_death, yhat)) + geom_point(color = sample(colors(), 1)) + theme_bw() + geom_abline(intercept = 0, slope = 1, color = sample(colors(), 1))
+```
+
+---
+
+![](https://i.guim.co.uk/img/media/5fc75c8d99c4759edeba3787b9e34110317e17a0/0_0_3000_2000/master/3000.jpg?width=620&quality=85&auto=format&fit=max&s=70795dd37fb1acc7ab7da6b5bfd656ef)
+
+*Sea urchin invasion killing the kelp forest*
+
+---
+### Let's functionalize this thing
+If you're knitting slides here this will be messy. Just grab code from the rmd.
+
+#### Goal: Throw random forest into our forest of models from last time and see what happens.
+I don't even remember where we are
+
+---
+```{r, echo = F, out.height=550}
+knitr::include_graphics('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b4d90aba-35a2-4594-af0f-ac1a1f5f79f2/d1t5180-6cd7e588-8051-44e2-9706-87d19494a11a.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2I0ZDkwYWJhLTM1YTItNDU5NC1hZjBmLWFjMWExZjVmNzlmMlwvZDF0NTE4MC02Y2Q3ZTU4OC04MDUxLTQ0ZTItOTcwNi04N2QxOTQ5NGExMWEuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.ueR0D-cF1Pk1LWO-PKej0FLCU4tOGk7XRBPgnjAZh4M')
+```
+
+
+---
+
+
+
+
+```{r}
+# helper function for get_err
+# to call predict method correctly, return consistent
+
+get_err_helper <- function(mod, x_var_test){
+  
+  if (class(mod) == c("glm", "lm")){
+    # if you are modifying this for binomial or multinomial family create a new 
+    # if statement in here and choose type = "class"
+    
+    yhat <- predict(mod, newdata = x_var_test, type = "response")
+    
+  } else if (class(mod) == "randomForest"){
+    
+    yhat <- predict(mod, newdata = x_var_test)
+    
+  } else if (class(mod) == "cv.glmnet"){
+    # post script: to fix the problem I encountered, I just added the following after the predict() statement 
+    # %>% as.numeric 
+    yhat <- model.matrix(~ -1 + ., data = x_var_test) %>%
+       predict(mod, newx = ., s = "lambda.min", type = "response") %>% as.numeric
+  } else stop("Model type unsupported.")
+  
+  yhat
+}
+
+get_err <- function(train, test, y_var, x_var, formula){
+  # for a test/train split I want to
+  # run the model (with cv if necessary) on the training data
+  # predict on test data
+  # return test error (in this case MSE) along with model names / parameters if needed
+  
+  y_var <- enquo(y_var)
+  x_var_train <- select(train, !!!x_var)
+  x_var_test <- select(test, !!!x_var)
+  y_var_train <- eval_tidy(y_var, train)
+  y_var_test <- eval_tidy(y_var, test)
+  
+  m <- list(mforest = randomForest(x = x_var_train, y = y_var_train),
+            mpoisson = glm(enquo(formula),
+                           data = bind_cols(select(train, !!y_var), x_var_train), family = "poisson"),
+            mlinear = glm(enquo(formula),
+                          data = bind_cols(select(train, !!y_var), x_var_train), family = "gaussian"),
+            mpoisson_lasso = x_var_train %>% model.matrix(~ -1 + ., data = .) %>%
+              cv.glmnet(x = ., y = y_var_train, alpha = 1, nlambda = 50, intercept = T, family = "poisson"),
+            mlinear_lasso = x_var_train %>% model.matrix(~ -1 + ., data = .) %>%
+              cv.glmnet(x = ., y = y_var_train, alpha = 1, nlambda = 50, intercept = T)
+            )
+
+  m <- map(m, .f = get_err_helper, x_var_test = x_var_test)
+  
+  m
+}
+
+
+```
+
+
+
+```{r}
+out <- get_err(train, test, op_death, vars(-op_death, -county), formula = op_death ~ .)
+
+names(out)
+map(out, class)
+```
+
+```{r}
+out <- as_tibble(out) %>%
+  bind_cols(test) %>%
+  pivot_longer(cols = starts_with("m"), names_to = "model", values_to = "yhat")
+```
+
+```{r}
+group_by(out, model) %>% summarise(mse = mean((op_death - yhat)^2))
+```
+
+```{r}
+ggplot(out, aes(op_death, yhat, color = model)) + geom_point(alpha = .5) + theme_bw() +
+  scale_color_brewer(palette = "RdYlBu") + geom_abline(intercept = 0, slope = 1, color = "peru")
+```
+
+
+---
+# Goodybye!
+```{r, out.height=450, echo = F}
+knitr::include_graphics('https://whalewatchingazores.com/blog/wp-content/uploads/2018/08/4-1.jpg')
+```
+
+*Sperm whale breaches in the Azores*

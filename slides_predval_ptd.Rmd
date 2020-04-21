@@ -1,13 +1,3 @@
----
-title: "cross validation and prediction: part d, or 'Crossing the river'"
-author: ""
-date: ""
-output:
-  xaringan::moon_reader:
-    css: [default, metropolis, metropolis-fonts]
-    fig_caption: true
----
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
@@ -152,8 +142,8 @@ testmat <- select(test, -op_death, -county) %>%
   model.matrix(~ -1 + ., data = .)
 
 out <- mutate(test, 
-               linear = predict(m, newx = testmat, s = "lambda.min")[,1],
-               poisson = predict(mp, newx = testmat, s = "lambda.min", type = "response")[,1]) %>%
+               linear = predict(m, newx = testmat, s = "lambda.min") %>% as.numeric,
+               poisson = predict(mp, newx = testmat, s = "lambda.min", type = "response") %>% as.numeric) %>%
   pivot_longer(c("linear", "poisson"), names_to = "model", values_to = "yhat")
 
 group_by(out, model) %>% summarise(mse = mean((op_death - yhat)^2))
