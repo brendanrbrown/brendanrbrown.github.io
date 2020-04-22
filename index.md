@@ -165,3 +165,4 @@ These link to examples I mention in class, which might help give context for the
 |April 15|[SEIR CV19 model shiny app code](https://github.com/alsnhll/SEIR_COVID19)|
 |April 17|[Modeling discussion CovidActNow](https://blog.covidactnow.org/dr-nirav-shah-discusses-covid-act-now-model/)|
 |April 17|[WaPo Tracking revisions to CV19 projections](https://www.washingtonpost.com/politics/2020/04/14/how-mortality-predictions-leading-coronavirus-model-dropped-over-time/)|
+|April 22|[Another cv19 thing: COVIDanalytics.io](https://www.covidanalytics.io/)|
