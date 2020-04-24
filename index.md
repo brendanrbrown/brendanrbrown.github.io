@@ -166,3 +166,4 @@ These link to examples I mention in class, which might help give context for the
 |April 17|[Modeling discussion CovidActNow](https://blog.covidactnow.org/dr-nirav-shah-discusses-covid-act-now-model/)|
 |April 17|[WaPo Tracking revisions to CV19 projections](https://www.washingtonpost.com/politics/2020/04/14/how-mortality-predictions-leading-coronavirus-model-dropped-over-time/)|
 |April 22|[Another cv19 thing: COVIDanalytics.io](https://www.covidanalytics.io/)|
+|April 27|[Why is US CO2 emissions per capita so high?](https://arstechnica.com/science/2020/04/americans-have-texas-sized-carbon-footprints-heres-why/)|
