@@ -133,7 +133,7 @@ A good way to find datasets is to look for data science projects, e.g. [at the P
 
 Our textbook for programming is [R4DS](https://r4ds.had.co.nz/), and for modeling is [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/).
 
-[R studio cheatsheets](https://rstudio.com/resources/cheatsheets/) are a good place to start. [Advanced R](https://adv-r.hadley.nz/) has a lot of good information, too, but probably more than you need.
+[R studio cheatsheets](https://rstudio.com/resources/cheatsheets/) are a good place to start. [Advanced R](https://adv-r.hadley.nz/) has a lot of good information, too, but probably more than you need. Here is a link to [all the cheatsheets in one pdf](https://rstudio.com/wp-content/uploads/2019/01/Cheatsheets_2019.pdf).
 
 Become good at Googling your problems.
 
