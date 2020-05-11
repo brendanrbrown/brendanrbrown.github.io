@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Interlude: Semester project</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <link href="slides_project_summer_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_project_summer_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="slides_project_summer_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Interlude: Semester project
+
+---
+
+
+
+
+
+
+# Now you try!
+.center[![](https://ichef.bbci.co.uk/wwfeatures/live/624_351/images/live/p0/26/0z/p0260z5q.jpg)]
+
+---
+
+### Semester-long project
+
+
+### Worth 55 percent of course grade
+
+
+### Split into small pieces
+
+
+### Each person has distinct roles
+
+
+### You will hold each other accountable
+
+
+### These slides are your official instructions
+
+
+---
+# Deliverables
+
+These mimic the main deliverables in a data science project.
+
+All materials **submitted on Sakai.**
+
+### Proposal and exploration
+#### Due: Monday June 1, at 11:55 pm
+
+### Final report
+#### Due: Monday June 15, at 11:55 pm
+
+### Final presentation
+#### Due: Scheduled exam time
+
+
+
+---
+# Note on the final presentation
+
+Just like in a final exam
+
+- **you must be present**
+- unless you have a pre-approved excuse
+- even if you are not the main presenter
+- since I or your classmates might have questions you are best qualified to answer for your group
+
+
+---
+# Roles
+
+### I randomly choose groups
+
+### Assignments posted on sakai
+
+
+### Two roles in each group
+
+### You decide who does what
+
+### Decide these soon: Read these slides again to know your duties
+
+
+---
+# Lead vs. support
+
+### Each role is assigned to be the lead in some areas
+
+### But this is just a default to ensure everything is covered
+
+### Delegate amongst yourselves in whatever way you deem best
+
+---
+class: center, inverse
+# Vulcan
+
+.center[![](https://vignette.wikia.nocookie.net/memoryalpha/images/b/be/Tuvok%2C_2293.jpg/revision/latest/scale-to-width-down/350?cb=20051005162544&amp;path-prefix=en)] 
+
+---
+class: center, inverse, middle
+# Role description
+
+
+**Guide** project scope and direction throughout the semester but particularly early on
+
+
+**Point of contact** for instructor and TA
+
+
+**Reveal** patterns and hidden information in the data through exploration and transformation of variables
+
+
+**Resolve** data quality issues, clearly defining limitations of analysis
+
+
+**Refine** initial questions and scope, seeking additional data if needed
+
+---
+class: center, inverse, middle
+# Tasks
+
+**Submit** all project deliverables on Sakai for the group.
+
+**Lead project proposal and exploration**, in collaboration with group, by
+
+determining initial questions
+
+identifying possible datasets
+
+**Direct and coordinate** the creation of descriptive summaries, graphs
+
+**Troubleshoot** data quality, structure and importation problems with teammates
+
+
+---
+class: center, inverse
+# Borg
+
+.center[![](https://vignette.wikia.nocookie.net/memoryalpha/images/f/fd/Seven_of_Nine%2C_2399.jpg/revision/latest/scale-to-width-down/350?cb=20200221051322&amp;path-prefix=en)] 
+
+---
+class: center, inverse, middle
+# Role description
+
+
+**Imagine** types of analysis to help project achieve its goals, e.g. 
+
+clustering methods to aid exploratory analysis
+
+model to predict outcome of interest
+
+**Devise and implement** models and methods best suited to the analysis
+
+**Point person for the group** on technical aspects of the project, e.g. interpreting models correctly
+
+**Imagine and create advanced features** that help the audience understand your dataset and project, e.g.
+
+maps
+
+Shiny app or other interactive features
+
+---
+class: center, inverse, middle
+# Tasks
+
+
+**Lead final report creation** . Much of what is *new* in the final report will be analysis, modeling and interpretation.
+
+
+**Guide** final project conclusions to ensure technical correctness and validity
+
+
+---
+# Weird situations
+
+### Three-person groups
+
+Choose a role that suits your interests
+
+Can overlap
+
+
+### Someone drops out, is incapacitated etc.
+
+Contact me as soon as possible, and we will re-evaluate duties
+
+### Group member non-responsive, fails to do tasks etc.
+
+Again, a group member should **contact me as soon as possible** to resolve the situation.
+
+
+#### Failure to contribute, to do the tasks to which you have committed could lead to your removal from the group and requirement to start your own project from scratch
+This is truly a last-resort option. I will only use it after consultation with each group member. However, I will not hesitate to use it if the situation warrants, even late in the semester.
+
+---
+# Evaluation: Overview
+
+
+### Proposal and exploration (30 points)
+
+
+### Final report (40 points)
+
+
+### Final presentation (30 points)
+
+
+---
+
+
+### Objective criteria
+
+- Meet specific requirements for each deliverable and follow instructions
+- Technical correctness of conclusions, methods and coding
+
+
+### Subjective criteria
+
+- Scope and ambition of project
+- Creativity of approach and effort of the team
+- Effectiveness of communication in written and oral reports, including meetings with me or TA
+- Analysis and discussion of any limitations or uncertainty
+
+
+---
+# Evaluation: Proposal and exploration (30 points)
+
+### Format of submission
+Think of this as a presentation to an engaged fellow data scientist (me) who wants to know the details of your work.
+
+- R markdown document, with **four main sections**: proposal overview, data summary, exploration/cleaning, preliminary results
+- html and Rmd files
+- **display all code** used for output, meaning keep the default chunk option `echo = TRUE`
+- **avoid displaying absurd output** such as printing an entire data frame
+
+### All is relative to your goals
+Your exploration should be with your proposal questions/goals in mind. Questions/goals can be changed, if needed, and this report will show me why.
+
+---
+## Proposed questions (4 points)
+
+
+### At least 5 interesting initial questions to investigate or goals to achieve
+
+These should be more than the simple 'how many' types of questions you ask in exploration
+
+Should require more than simple grouped summary tables to answer, for example
+
+A goal could be to develop a model to predict some outcome or to classify new observations, for example
+
+### Give motivation for questions, make clear why the chosen datasets will help to answer them
+
+---
+## Data and data sources (3 points)
+
+
+### Stock datasets, from `R` packages, are not allowed
+
+
+### Kaggle, UCI machine learning repository, other standard datasets highly discouraged
+
+
+### Datasets must be rich enough plausibly to answer questions
+You can add or remove datasets later in the semester, but should not change the overall direction and scope of the project
+
+
+### Brief summary information of the dataset
+Source, content, etc. Not a full exploratory analysis.
+
+---
+## Methods and scope (2 points)
+
+
+### Initial ideas for how to answer questions, achieve goals
+
+
+Includes types of visual elements to consider, other types of data you would like to have, and models that might be appropriate
+
+This does not need to determine what you ultimately do. Just demonstrate that you have thought about an approach to the problem.
+
+--
+
+## Brief description of related work (1 point)
+Includes links to and brief descriptions of projects that have attempted similar goals, and of the extent to which your project will differ or be similar.
+
+For example, if you are doing a project to analyze election polling data, you could evaluate a couple of examples of work at https://fivethirtyeight.com/.
+
+
+---
+### Data summary (4 points)
+Should include brief statements with well-presented plots or summaries **if they help make your case**, that describe the current state of your project and an evaluation of your project goals in light of what you learned about the data.
+
+More specifically, it should address
+
+- descriptive information about the data as it relates to project goals
+  - e.g. 'we were interested in how the recession affected incomes, but the data we have show no change...'
+  - or 'Our PCA suggests player height was important in separating the best from worst teams, so we expect this to be an important variable in our model.'
+- major data quality issues encountered, if any
+- re-evaluation of the goals/questions given in the proposal
+  - does the dataset still make sense for this?
+  - do the goals themselves still make sense?
+- statement and justification of changes to project scope or data, if any
+
+---
+### Exploration/cleaning (8 points)
+Again, I emphasize that exactly what this looks like will depend on the project, and that all questions here should be relative to your stated goals. Use appropriate output, e.g. plots, tables, bullet points etc.
+
+- have you evaluated **meaningful** top-level summary information?
+  - e.g. if you have time series financial data, a mean across time might not be meaningful if you have not accounted for inflation
+- have you searched for **group-wise differences** in summary statistics, if applicable?
+- have you **presented** information in a compelling way, that lets me see why this helps understand the data?
+- how well have you used **relevant tools** at your disposal? For example, if PCA might have been a good method for your problem, did you try it?
+- how thoroughly did you evaluate the data for potential **quality issues**?
+- how well did you **address those issues**?
+- how **relevant** were your explorations and quality checks **to the questions/goals**?
+
+---
+### Preliminary results (8 points)
+Here you make an initial attempt to resolve your questions or achieve your goals. I break this into the basic types of tasks across the projects. Your project might have some blend of these.
+
+#### Modeling/prediction goals
+We will cover more modeling topics soon. If your project is model-focused, you already know to get ahead. You will have time to refine your methods. Even if you do not feel confident, say, about evaluating model 'goodness' you can take a first try at it based on your understanding of what the model does and why you want to use it.
+
+I will look for well-supported content in the following areas:
+
+- justification for model or models considered
+- fit initial model or models, meaning use it on the data
+- preliminary evaluation of how well it worked
+
+---
+
+#### Exploratory type questions
+I will look for
+
+- exploratory techniques (e.g. graphs, groupwise summaries) that are clearly related to your questions
+- methods that are appropriate for the variable types, at least so far as we have seen in class
+- conclusions and reflections based on the results. These should make sense in the context of the problem, directly relate to the questions posed, and take into account relevant limitations in the dataset, if any
+
+
+---
+# Evaluation: Final report (40 points)
+
+### Read these instructions carefully
+
+### Overview
+
+- **should stand alone** as a complete and interesting project report
+- **in general, set `echo = F` on chunks**, or `results = 'hide'`, showing only code and output that helps communicate your results or clarifies your methods
+  - you'll need to show more of the code in the results section, for example
+- writing, presentation **style actually matters** when communicating results to others and will be graded
+- submit **html** for the report format but **include Rmd and supporting files** in your submission
+
+### Organization
+As with exploratory analysis, you have some flexibility. It **must include** three main sections
+
+- introduction
+- data description and exploration
+- results
+
+---
+### Scope, interest, originality (8 points)
+In general, groups are on the right track after two rounds of feedback. I will be looking for
+
+- project addresses questions/goals that are of general interest and allow your report's reader to learn something worthwhile
+  - e.g. not answered with a single bar plot, single summary, etc.
+  - your project will include questions that are more simple, of course, but they cannot be the totality of the work
+- questions/goals are explored thoroughly and thoughtfully
+  - e.g. a bad thing would be to run a regression, print the output and call it done
+  - 'thorough' means you have considered the tools at your disposal: course materials, course textbooks, relevant recommendations from me if your work falls outside the previous two
+  - you need not follow my recommendations: it is your project. But if I make a strong suggestion about some method, you should take that as a sign that a reasonable analysis needs at least to justify why you did not use it
+
+---
+### Communication (4 points)
+
+- free of spelling and grammatical errors
+- plots have legible titles and labels, are generally easy to read
+- written sections are clear and well organized
+- appropriate headings included to organize the report
+
+---
+### Introduction (6 points)
+
+- goals and/or questions are clearly stated and well-defined
+- overview of the dataset and how it is relevant for the goals/questions
+- summary and reflections on answers to questions or results of goals
+- appropriate plots or other output where and if needed to support the text
+
+### Comments
+
+- you might find that your results are not as good as you had hoped
+- some problems are genuinely difficult, so inconclusive or disappointing results are common
+- this is fine so long as you have clearly shown that you **explored resonable options to tackle the problem** available to you from the course or from my specific advice in our conversations
+
+---
+### Data description (6 points)
+Largely can be a **refined version of your exploratory report**, if it was good
+
+- key variables are clearly defined
+- dataset context and source is explained to a degree that is relevant
+  - can be a brief mention if there is nothing much to say, e.g. NBA stats released by the league
+- includes only output that contributes valuable information to understanding the dataset
+  - e.g. don't just print a large object
+- makes reasonable and thorough attempt to explore data patterns and structure that are essential to evaluating goals/questions
+- plots and summaries are effectively communicate relevant ideas
+- accompanying text supplements the other output, rather than simply summarizing what the reader can already see
+  - rather than summarizing the output, tell the reader why it is important, some follow-up thoughts or how it affected your project goals
+
+---
+### Results (16 points)
+As before, the way you satisfy these points will depend a lot on your project (e.g. exploratory vs predictive goals)
+
+- show enough code and output so I can **clearly see your methods and results**
+  - probably more code here than in other sections
+- methods are technically **appropriate for your data**
+- possible **technical issues** are reasonably evaluated
+  - e.g. I have mentioned many times in class that linear models can have problems if outcomes are contstrained, for example are non-negative. This is not an automatic disqualifier. But you must show that your model makes sense for the data.
+- methods give **valid** means to answer questions or achieve goals
+- thoughtful and technically **correct interpretation** of output from methods
+  - most often this will be in text to accompany output or at the top/bottom of the section
+- possible tweaks and improvements to initial methods were explored and implemented
+  - e.g. if you did `\(K\)`-means, did you explore other `\(K\)` values or at least justify why the `\(K\)` you chose is the only valid one?
+
+
+---
+# Evaluation: Presentation (30 points)
+
+### Length, format
+
+- **7 minutes** per group, plus a couple of minutes for questions
+- as in class, shared screen with audio **on zoom**. you will have the option to share video if you choose
+- **Please practice** once before the presentation, as **I will be somewhat strict on time** to be fair to all students
+- can be html slides, or a trimmed-down version of your final report. See the criteria below.
+- **stay engaged** so you can ask questions during your classmates' presentations
+
+### General advice
+
+- you will be in a time crunch, most likely
+- simply pick the most compelling questions and results from your project
+- **you do not need to cover every detail of the project**
+- reuse as much material from your final report as you can to avoid duplicating efforts
+- let pictures and output do the talking in general, with little text
+- be prepared to answer questions
+
+---
+### Visual communication (13 points)
+
+- well-chosen visual elements such as plots to accompany spoken elements
+- well-organized and concise presentation
+  - don't just scroll through your final report
+- plots, summaries are effective at communicating your point and are easy to read
+- results displayed are carefully chosen to enhance, not overburden, the presentation
+
+### Verbal communication (13 points)
+
+- clear statement of goals/questions and motivation
+- clear presentation of results
+- clear organization and flow of presentation
+- commentary complements the visual elements rather than re-stating the obvious
+  - what is most important in the plot?
+  - what did you learn from this output? etc.
+
+---
+### Responses to questions (4 points)
+Priority will be given to student-led questions. I will ask at least one question.
+
+- demonstrate understanding of the project, it's strengths and weaknesses
+- answers that are as thoughtful and precise as is practicable in this format
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create();
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
