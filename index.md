@@ -33,47 +33,46 @@ This will help you keep track of which lecture slides and videos are associated 
 || [dplyr part b](slides_dplyr_partb.html)|
 |May 15| [dplyr part c](slides_dplyr_partc.html)|
 || [dplyr part d](slides_dplyr_partd.html)|
-|Jan. 24| [explore part a](slides_EDA_pta.html) | [Michael Almaguer](Michaelexercise124.html)|
-|Jan. 27| [explore part b](slides_EDA_ptb.html) | [Yuchen Li](1.27-stor320-inclass.html)|
-|Jan. 29| [explore part c](slides_EDA_ptc.html) | [Kiley Supina](January29.html)|
-|Jan. 31| [tidy part a](slides_tidyrel_pta.html)|[Sriganesh Gopal](tutorial8.html)|
-|Feb. 3| Semester project intro||
-|Feb. 5| [tidy part b](slides_tidyrel_ptb.html)|[Grant McGrew](Feb_5_tutorial.html)|
-|Feb. 7| [tidy part c](slides_tidyrel_ptc.html)|[Tongyu Zhao](2.7-Tongyu-Zhao.html)|
-|Feb. 10|[strings part a](slides_strings_pta.html)|[Bellete Lu](tutorial_strings_part_a.html)|
-|Feb. 12|[strings part b](slides_strings_ptb.html)|[Jack Glandt](tutorial-strings-part-b.html)|
-|Feb. 14|[strings part c](slides_strings_ptc.html)|[Bellete Lu](string-part-c.html)|
-|Feb. 17|[strings part d](slides_strings_ptd.html)|[Josh McCorquodale](2_17-Lecture.html)|
-|Feb. 19|[first models, part a](slides_firstmodels_pta.html)|[Akshatha Bharadwaj](Tutorial-15.html)|
-|Feb. 21|[first models, part b](slides_firstmodels_ptb.html)|[Gabby Ruehle](320_Tutorial_2-21.html)|
-|Feb. 24|[first models, part c](slides_firstmodels_ptc.html)|[Trevor Stephens](STORFeb24.html), [Mark Heymann](Tutorial-2-24.html)|
-|Feb. 26|[first models, part d](slides_firstmodels_ptd.html)|[Zachary Glontz](Class21.html)|
-|Feb. 28|[first models, part e](slides_firstmodels_pte.html)|[Siddarth Bowgal](Tutorial-Feb-28.html)|
-|March 2|[first models, part f](slides_firstmodels_ptf.html)|[Naixuan Wang](L23.html)|
-|March 4|[first models, part g](slides_firstmodels_ptg.html)|[Jimmy Slaight](04MAR20.html)|
-|March 25|[programming, part a](slides_programming_pta.html)|[Qingyu Sun](3-25.html)|
-|March 27|[programming, part b](slides_programming_ptb.html)|[Mike Ardiff](Mar27Class.html)|
-|March 30|[programming, part c](slides_programming_ptc.html)|[Sidd Mehta](programmingCtut.html)|
-|April 1|[linear models, part a](slides_linear_pta.html)|[Celia Collias](ClassApril1.html)|
-|April 3|[linear models, part b](slides_linear_ptb.html)|[Sandeep Boddepalli](4_3_tut.html)|
-|April 6|[classification models, part a](slides_classification_pta.html)|[Sidh Kulgod](4-6-2020-tutorial-sidharth-kulgod.html)|
-|April 8|[classification models, part b](slides_classification_ptb.html)|[Jed Huang](Tutorial-4-8.html)|
-|April 13|[Prediction, cross validation, part a](slides_predval_pta.html)|[Jordan KongQuee](TutorialApr13.html)|
-|April 15|[Guest lecture files: API and Shiny app](https://github.com/ldjack5/teaching?files=1)|
-|April 17|[Prediction, cross validation, part b](slides_predval_ptb.html)|[Akshatha Bharadwaj](Tutorial---Cross-Validation-B.html)|
-|April 20|[Prediction, cross validation, part c](slides_predval_ptc.html)|See Rmd for April 22|
-|April 22|Prediction, cross validation, part d (no slides)|[Rmd here, video on Sakai](slides_predval_ptd.Rmd)|
-|April 24|Prediction, cross validation, part e (no slides)|[Rmd here, video on Sakai](slides_predval_pte.Rmd)|
+|May 18| [Semester project instructions](slides_project.html)|
+|| [explore part a](slides_EDA_pta.html) |
+|May 19| [explore part b](slides_EDA_ptb.html) | 
+|| [explore part c](slides_EDA_ptc.html) | 
+|May 20| [tidy part a](slides_tidyrel_pta.html)|
+|May 21|[tidy part b](slides_tidyrel_ptb.html)|
+|| [tidy part c](slides_tidyrel_ptc.html)|
+|May 22|[strings part a](slides_strings_pta.html)|
+||[strings part b](slides_strings_ptb.html)|
+|May 27|[strings part c](slides_strings_ptc.html)|
+||[strings part d](slides_strings_ptd.html)|
+|May 28|[Guest lecture files: API and Shiny app](https://github.com/ldjack5/teaching?files=1)|
+|May 29|[first models, part a](slides_firstmodels_pta.html)|
+||[first models, part b](slides_firstmodels_ptb.html)|
+|June 1|[first models, part c](slides_firstmodels_ptc.html)|
+||[first models, part d](slides_firstmodels_ptd.html)|
+|June 2|[first models, part e](slides_firstmodels_pte.html)|
+||[first models, part f](slides_firstmodels_ptf.html)|
+|June 3|[first models, part g](slides_firstmodels_ptg.html)|
+|June 4|[programming, part a](slides_programming_pta.html)|
+||[programming, part b](slides_programming_ptb.html)|
+|June 5|[programming, part c](slides_programming_ptc.html)|
+|June 8|[linear models, part a](slides_linear_pta.html)|
+||[linear models, part b](slides_linear_ptb.html)|
+|June 9|[classification models, part a](slides_classification_pta.html)|
+||[classification models, part b](slides_classification_ptb.html)|
+|June 10|[Prediction, cross validation, part a](slides_predval_pta.html)|
+||[Prediction, cross validation, part b](slides_predval_ptb.html)|
+|June 11|[Prediction, cross validation, part c](slides_predval_ptc.html)|
+|June 12|Prediction, cross validation, part d (no slides)|[Rmd here, video on Sakai](slides_predval_ptd.Rmd)|
+||Prediction, cross validation, part e (no slides)|[Rmd here, video on Sakai](slides_predval_pte.Rmd)|
 
-**Note: You won't be able to generate slides from the .Rmd for April 22, 24 without the xaringan packge**, but they're not really meant to be viewed as slides anyway. Just strip the code you need, if any, from the files.
+**Note: You won't be able to generate slides from the .Rmd for the final videos without the xaringan packge**, but they're not really meant to be viewed as slides anyway. Just strip the code you need, if any, from the files.
 
 ## Homework
 
-
 |Date assigned | Instructions | Date due|
 |--- | ---- |
-|Jan. 8 | [hw 0](hw0.html) | Jan. 10|
-|Jan. 13 | [hw 1](hw1.Rmd) | Jan. 22|
+|May 13| [hw 0](hw0.html) | May 14|
+|May 15| [hw 1](hw1.Rmd) |May 22|
 |Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
 |Feb. 7 | [hw 3](hw3.Rmd) | Feb. 14|
 |Feb. 17| [hw 4](hw4.Rmd)| Feb. 26|
