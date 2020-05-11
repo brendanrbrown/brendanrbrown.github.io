@@ -42,11 +42,11 @@ This will help you keep track of which lecture slides and videos are associated 
 || [tidy part c](slides_tidyrel_ptc.html)|
 |May 22|[strings part a](slides_strings_pta.html)|
 ||[strings part b](slides_strings_ptb.html)|
-|May 27|[strings part c](slides_strings_ptc.html)|
+|May 26|[strings part c](slides_strings_ptc.html)|
 ||[strings part d](slides_strings_ptd.html)|
-|May 28|[Guest lecture files: API and Shiny app](https://github.com/ldjack5/teaching?files=1)|
-|May 29|[first models, part a](slides_firstmodels_pta.html)|
-||[first models, part b](slides_firstmodels_ptb.html)|
+|May 27|[Guest lecture files: API and Shiny app](https://github.com/ldjack5/teaching?files=1)|
+|May 28|[first models, part a](slides_firstmodels_pta.html)|
+|May 29|[first models, part b](slides_firstmodels_ptb.html)|
 |June 1|[first models, part c](slides_firstmodels_ptc.html)|
 ||[first models, part d](slides_firstmodels_ptd.html)|
 |June 2|[first models, part e](slides_firstmodels_pte.html)|
@@ -72,26 +72,12 @@ This will help you keep track of which lecture slides and videos are associated 
 |Date assigned | Instructions | Date due|
 |--- | ---- |
 |May 13| [hw 0](hw0.html) | May 14|
-|May 15| [hw 1](hw1.Rmd) |May 22|
-|Jan. 24 | [hw 2](hw2.Rmd) | Feb. 3|
-|Feb. 7 | [hw 3](hw3.Rmd) | Feb. 14|
-|Feb. 17| [hw 4](hw4.Rmd)| Feb. 26|
-|Feb. 26| [hw 5](hw5.Rmd)| March 4|
-|March 25| [hw 6](hw6.Rmd)| April 3|
+|May 15| [hw 1](hw1.Rmd) |May 20|
+|May 20 | [hw 2](hw3.Rmd) | May 27|
+|May 27| [hw 3](hw4.Rmd)| June 3|
+|June 3| [hw 4](hw5.Rmd)| June 10|
+|June 10| [hw 5](hw6.Rmd)| June 15|
 
-## Semester-long project
-These slides contain instructions on role, grading criteria, and deliverables: [Semester project](slides_project.html)
-
-They will be updated with details for each project piece as its due date nears.
-
-The project is divided into four pieces
-
-- Proposal: Due March 2, 2:30 pm
-- Data exploration and cleaning report: Due April 10, 2:30 pm
-- Final report: Due April 24, 5:00 pm
-- Final presentation: Last day of classes and university-designated final exam time
-
-You will be randomly assigned to a group, typically of four people. **Assignments are posted on Sakai** under Resources. Each student has a distinct role in the group, which groups choose for themselves.
 
 ### Data sources
 I will post some sites here that are good options for finding datasets. 
@@ -128,29 +114,27 @@ Become good at Googling your problems.
 These link to examples I mention in class, which might help give context for the kinds of data and analysis you can use in the project.
 
 
-|Date | Example |
-|------|-------|
-|Jan. 10| [Sermons](https://www.pewforum.org/2019/12/16/the-digital-pulpit-a-nationwide-analysis-of-online-sermons/) |
-|Jan. 13| [Dog shelters](https://pudding.cool/2019/10/shelters/) |
-|Jan. 15| [Climate action](https://climateactiontracker.org/data-portal/?mode=countries)|
-|Jan. 17| [Federal Reserve financial accounts](https://www.federalreserve.gov/releases/Z1/)|
-|Jan. 24| [Death row](https://theintercept.com/series/the-condemned/)|
-|Jan. 27| [FRED](https://fred.stlouisfed.org/)|
-|Jan. 29| [Diaspora in the U.S.](https://pudding.cool/2020/01/diaspora/)|
-|Jan. 31| [Brain artery MRA images](https://www.insight-journal.org/midas/community/view/21)|
-|Feb. 3| [Bob Ross](https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/)|
-|Feb. 10|[Hip hop vocabulary](https://pudding.cool/projects/vocabulary/index.html)|
-|Feb. 14| [Errors in Iowa caucuses](https://www.washingtonpost.com/politics/2020/02/10/iowa-democratic-party-responds-ongoing-errors-caucus-results-with-shrug/?arc404=true#click=https://t.co/sfBhMwFIVq)|
-|Feb. 17|[Trump tweets, regex and list columns](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets)|
-|Feb. 26|[Simulating coronavirus](https://www.washingtonpost.com/graphics/2020/health/coronavirus-how-epidemics-spread-and-end/?itid=hp_hp-visual-stories-desktop_no-name%3Ahomepage%2Fstory-ans), [Modeling coronavirus](https://art-bd.shinyapps.io/nCov_control/)|
-|March 27|[Hospital capacity covid scenarios](https://projects.propublica.org/graphics/covid-hospitals)|
-|March 27|[Forecasting hospital usage and deaths in the US](http://www.healthdata.org/research-article/forecasting-covid-19-impact-hospital-bed-days-icu-days-ventilator-days-and-deaths)|
-|March 27||[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
-|March 30|[Project Tycho: Disease databases](https://www.tycho.pitt.edu/featured-works/)|
-|March 30|[Make almost any plot in R](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/)|
-|April 1|[Covid19 projections by state](http://covid19.healthdata.org/)|
-|April 15|[SEIR CV19 model shiny app code](https://github.com/alsnhll/SEIR_COVID19)|
-|April 17|[Modeling discussion CovidActNow](https://blog.covidactnow.org/dr-nirav-shah-discusses-covid-act-now-model/)|
-|April 17|[WaPo Tracking revisions to CV19 projections](https://www.washingtonpost.com/politics/2020/04/14/how-mortality-predictions-leading-coronavirus-model-dropped-over-time/)|
-|April 22|[Another cv19 thing: COVIDanalytics.io](https://www.covidanalytics.io/)|
-|April 27|[Why is US CO2 emissions per capita so high?](https://arstechnica.com/science/2020/04/americans-have-texas-sized-carbon-footprints-heres-why/)|
+| [Sermons](https://www.pewforum.org/2019/12/16/the-digital-pulpit-a-nationwide-analysis-of-online-sermons/) |
+| [Dog shelters](https://pudding.cool/2019/10/shelters/) |
+| [Climate action](https://climateactiontracker.org/data-portal/?mode=countries)|
+| [Federal Reserve financial accounts](https://www.federalreserve.gov/releases/Z1/)|
+| [Death row](https://theintercept.com/series/the-condemned/)|
+| [FRED](https://fred.stlouisfed.org/)|
+| [Diaspora in the U.S.](https://pudding.cool/2020/01/diaspora/)|
+| [Brain artery MRA images](https://www.insight-journal.org/midas/community/view/21)|
+| [Bob Ross](https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/)|
+|[Hip hop vocabulary](https://pudding.cool/projects/vocabulary/index.html)|
+| [Errors in Iowa caucuses](https://www.washingtonpost.com/politics/2020/02/10/iowa-democratic-party-responds-ongoing-errors-caucus-results-with-shrug/?arc404=true#click=https://t.co/sfBhMwFIVq)|
+|[Trump tweets, regex and list columns](https://jennybc.github.io/purrr-tutorial/ls13_list-columns.html#regex_and_trump_tweets)|
+|[Simulating coronavirus](https://www.washingtonpost.com/graphics/2020/health/coronavirus-how-epidemics-spread-and-end/?itid=hp_hp-visual-stories-desktop_no-name%3Ahomepage%2Fstory-ans), [Modeling coronavirus](https://art-bd.shinyapps.io/nCov_control/)|
+|[Hospital capacity covid scenarios](https://projects.propublica.org/graphics/covid-hospitals)|
+|[Forecasting hospital usage and deaths in the US](http://www.healthdata.org/research-article/forecasting-covid-19-impact-hospital-bed-days-icu-days-ventilator-days-and-deaths)|
+||[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
+|[Project Tycho: Disease databases](https://www.tycho.pitt.edu/featured-works/)|
+|[Make almost any plot in R](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/)|
+|[Covid19 projections by state](http://covid19.healthdata.org/)|
+|[SEIR CV19 model shiny app code](https://github.com/alsnhll/SEIR_COVID19)|
+|[Modeling discussion CovidActNow](https://blog.covidactnow.org/dr-nirav-shah-discusses-covid-act-now-model/)|
+|[WaPo Tracking revisions to CV19 projections](https://www.washingtonpost.com/politics/2020/04/14/how-mortality-predictions-leading-coronavirus-model-dropped-over-time/)|
+|[Another cv19 thing: COVIDanalytics.io](https://www.covidanalytics.io/)|
+|[Why is US CO2 emissions per capita so high?](https://arstechnica.com/science/2020/04/americans-have-texas-sized-carbon-footprints-heres-why/)|
