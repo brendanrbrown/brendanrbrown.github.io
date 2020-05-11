@@ -1,4 +1,3 @@
-Welcome to the summer session one course
 
 ## About the course
 See the [syllabus](syllabus_stor320_su1.pdf) for details. The course is divided into three rough parts,
