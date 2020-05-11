@@ -63,7 +63,7 @@ This will help you keep track of which lecture slides and videos are associated 
 ||[Prediction, cross validation, part b](slides_predval_ptb.html)|
 |June 11|[Prediction, cross validation, part c](slides_predval_ptc.html)|
 |June 12|Prediction, cross validation, part d (no slides)|[Rmd here, video on Sakai](slides_predval_ptd.Rmd)|
-||Prediction, cross validation, part e (no slides)|[Rmd here, video on Sakai](slides_predval_pte.Rmd)|
+|June 15|Prediction, cross validation, part e (no slides)|[Rmd here, video on Sakai](slides_predval_pte.Rmd)|
 
 **Note: You won't be able to generate slides from the .Rmd for the final videos without the xaringan packge**, but they're not really meant to be viewed as slides anyway. Just strip the code you need, if any, from the files.
 
