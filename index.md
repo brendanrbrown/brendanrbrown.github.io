@@ -1,50 +1,39 @@
-Welcome to section one of the spring 2020 course.
-
-## COVID19 update
-
-[These slides describe how the course will change](covid19.html), based on the available guidance from UNC Chapel Hill administrators. I will update them as the situation changes and will notify students via Sakai.
-
-Here is a first attempt at [guidelines on how class will work through Zoom](zoom.html), e.g. asking me questions.
-
-### Data science links
-There is a lot of covid 19-related data science happening right now: data collection, maps and plots, forecasts, etc.
-
-See the 'Examples in data science' section for some resources, and email me more if you find them.
-
-### Disclaimer
-Given the continued lack of clear guidance from the university administration, I reserve the right to change course policies and any other aspect of the syllabus as the situation develops.
-
-I will not do so capriciously and will attempt to balance needs of our students with the demands of academic standards.
-
-## Who we are
-
-Brendan Brown (instructor) and 
-Taylor Petty (TA)
+Welcome to the summer session one course
 
 ## About the course
-See the [syllabus](syllabus_stor320_1.pdf) for details. The course is divided into three parts,
+See the [syllabus](syllabus_stor320_su1.pdf) for details. The course is divided into three rough parts,
 
 1. Core data science coding skills
 2. Modeling
-3. Advanced topics (as time allows)
+3. Advanced topics
 
 
+## Lectures and tutorials
 
+**Lectures will not be held live and will be pre-recorded.** Videos are available through the Sakai page.
 
-## Lectures
-These will be posted as they become relevant. You will have laptops in class, but my advice is to be diligent and stay focused on the lecture material.
+Each video is associated with a single set of slides and accompanying tutorial. However, a single 'day' of lectures often will cover two or more videos and slides. This is necessary because of the condensed summer session timeline.
 
-Trying to do other stuff while participating in a lecture is very 2010s. In the 2020s, we should all be aware that multitasking [does not work](https://www.psychologytoday.com/us/blog/creativity-without-borders/201405/the-myth-multitasking) and [might even be bad for you](https://appliedpsychologydegree.usc.edu/blog/to-multitask-or-not-to-multitask/).
+Each slide deck and video is associated with a short exercise, called a tutorial. See the syllabus for details.
 
-|Date | Slides | Tutorial example|
+**Tutorials from all of the material covered for a given day will be due by the start of the next scheduled course period.** This could mean you have multiple tutorials to complete in a 24-hour period.
+
+For example, 
+
+- tutorials from the lecture slides/videos associated with the Thursday May 14 class would be due by 9:45 am on Friday May 15
+- tutorials from the lecture slides/videos in the Friday May 15 class would be due by 9:45 am on Monday May 18
+
+## Lecture guide
+This will help you keep track of which lecture slides and videos are associated with which date of instruction. Videos are posted on Sakai.
+
+|Date of instruction | Lectures covered|
 |------|-------|----|
-|Jan. 8| [Welcome](slides_welcome.html) | |
-|Jan. 10| [RMarkdown and basic coding](slides_workflow.html) | |
-|Jan. 13| [dplyr part a](slides_dplyr_parta.html)|[Rees Braam](1-13-19.html)|
-|Jan. 15| [dplyr part b](slides_dplyr_partb.html)|[Josh McCorquodale](1_15-Lecture.html)|
-|Jan. 17| [dplyr part c](slides_dplyr_partc.html)|[Kay Youngstrom](17-January-Tutorial.html)|
-|Jan. 20| MLK day||
-|Jan. 22| [dplyr part d](slides_dplyr_partd.html)|[Suyang Wang](In-class-Tutorial_Suyang-Wang.html)|
+|May 13| [Welcome](slides_welcome.html) |
+|| [RMarkdown and basic coding](slides_workflow.html) |
+|May 14| [dplyr part a](slides_dplyr_parta.html)|
+|| [dplyr part b](slides_dplyr_partb.html)|
+|May 15| [dplyr part c](slides_dplyr_partc.html)|
+|| [dplyr part d](slides_dplyr_partd.html)|
 |Jan. 24| [explore part a](slides_EDA_pta.html) | [Michael Almaguer](Michaelexercise124.html)|
 |Jan. 27| [explore part b](slides_EDA_ptb.html) | [Yuchen Li](1.27-stor320-inclass.html)|
 |Jan. 29| [explore part c](slides_EDA_ptc.html) | [Kiley Supina](January29.html)|
