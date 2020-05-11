@@ -138,3 +138,4 @@ These link to examples I mention in class, which might help give context for the
 |[WaPo Tracking revisions to CV19 projections](https://www.washingtonpost.com/politics/2020/04/14/how-mortality-predictions-leading-coronavirus-model-dropped-over-time/)|
 |[Another cv19 thing: COVIDanalytics.io](https://www.covidanalytics.io/)|
 |[Why is US CO2 emissions per capita so high?](https://arstechnica.com/science/2020/04/americans-have-texas-sized-carbon-footprints-heres-why/)|
+|[Which COVID19 data can you trust?](https://hbr.org/2020/05/which-covid-19-data-can-you-trust)|
