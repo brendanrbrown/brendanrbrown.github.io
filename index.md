@@ -33,7 +33,7 @@ This will help you keep track of which lecture slides and videos are associated 
 || [dplyr part b](slides_dplyr_partb.html)|
 |May 15| [dplyr part c](slides_dplyr_partc.html)|
 || [dplyr part d](slides_dplyr_partd.html)|
-|May 18| [Semester project instructions](slides_project.html)|
+|May 18| [Semester project instructions](slides_project_summer.html)|
 || [explore part a](slides_EDA_pta.html) |
 |May 19| [explore part b](slides_EDA_ptb.html) | 
 || [explore part c](slides_EDA_ptc.html) | 
