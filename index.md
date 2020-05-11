@@ -129,7 +129,7 @@ These link to examples I mention in class, which might help give context for the
 |[Simulating coronavirus](https://www.washingtonpost.com/graphics/2020/health/coronavirus-how-epidemics-spread-and-end/?itid=hp_hp-visual-stories-desktop_no-name%3Ahomepage%2Fstory-ans), [Modeling coronavirus](https://art-bd.shinyapps.io/nCov_control/)|
 |[Hospital capacity covid scenarios](https://projects.propublica.org/graphics/covid-hospitals)|
 |[Forecasting hospital usage and deaths in the US](http://www.healthdata.org/research-article/forecasting-covid-19-impact-hospital-bed-days-icu-days-ventilator-days-and-deaths)|
-||[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
+|[Perspective: US mortality in 2018](https://www.cdc.gov/nchs/nvss/deaths.htm)|
 |[Project Tycho: Disease databases](https://www.tycho.pitt.edu/featured-works/)|
 |[Make almost any plot in R](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/)|
 |[Covid19 projections by state](http://covid19.healthdata.org/)|
