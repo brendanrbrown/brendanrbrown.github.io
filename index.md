@@ -139,3 +139,4 @@ These link to examples I mention in class, which might help give context for the
 |[Another cv19 thing: COVIDanalytics.io](https://www.covidanalytics.io/)|
 |[Why is US CO2 emissions per capita so high?](https://arstechnica.com/science/2020/04/americans-have-texas-sized-carbon-footprints-heres-why/)|
 |[Which COVID19 data can you trust?](https://hbr.org/2020/05/which-covid-19-data-can-you-trust)|
+|[U.S. Wilderness Areas, map and data download](https://wilderness.net/default.php)|
