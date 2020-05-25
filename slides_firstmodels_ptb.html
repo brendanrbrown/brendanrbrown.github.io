@@ -245,7 +245,7 @@ See details in ISLR
 
 **Not to be confused with 'regression' models that predict categorical outcomes**, e.g. generalized linear models
 ---
-# Classification
+# Classification (or counts)
 
 Important: I lump in here outcomes that are **discrete** numbers
 
@@ -274,7 +274,7 @@ No universal principles, but some pointers
 
 - format your data appropriately for the method: e.g. center variables by subtracting the mean? 
 - linear, generalized linear and related methods require your matrix of data `\(X\)` to be **non-singular**
-- mainly, this means no columns or rows that are almost constant
+- mainly, this means no columns or rows that are almost constant (excluding intercept)
 - variables `\(p &gt;&gt; n\)` observations? Try dimension reduction (we'll do this later)
 - know your data before you model, meaning do lots of exploratory analysis first
 - plot, evaluate model outputs to be sure they make sense
