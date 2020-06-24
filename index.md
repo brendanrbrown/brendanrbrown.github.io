@@ -86,6 +86,7 @@ The list is a work in progress. I will add to it as I feel moved to do so. If yo
 
 A good way to find datasets is to look for data science projects, e.g. [at the Pudding](pudding.cool), where they either will provide a link to the data or at least give a source.
 
+- [Data for 'Land-Grab Universities' report, Morrill Act Indigenous Land Parcels database](https://github.com/HCN-Digital-Projects/landgrabu-data)
 - [Bureau of Economic Analysis API for R](https://github.com/us-bea/bea.R)
 - [Census API for R](https://cran.r-project.org/web/packages/censusapi/vignettes/getting-started.html)
 - [Data is plural](https://tinyletter.com/data-is-plural/archive)
